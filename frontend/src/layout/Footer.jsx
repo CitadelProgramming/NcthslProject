@@ -37,7 +37,7 @@ export default function Footer() {
               <MapPin className="text-red-600 mt-1" size={20} />
               <div>
                 <p className="font-semibold text-white">Address</p>
-                <p>Customs Technical Hangar, NAF Base, Kaduna, Nigeria</p>
+                <p>Customs Airwing Hangar, General Aviation Terminal, Nnamdi Azikiwe International Airport, Abuja.</p>
               </div>
             </li>
 
@@ -46,7 +46,6 @@ export default function Footer() {
               <div>
                 <p className="font-semibold text-white">Working Hours</p>
                 <p>Mon–Fri: 8:30 AM – 5:00 PM</p>
-                <p>Sat: 10:00 AM – 3:00 PM</p>
               </div>
             </li>
 
@@ -54,7 +53,7 @@ export default function Footer() {
               <Phone className="text-red-600 mt-1" size={18} />
               <div>
                 <p className="font-semibold text-white">Phone</p>
-                <p>+234 903 578 3766</p>
+                <p>+234 810 407 3973</p>
               </div>
             </li>
 
@@ -62,7 +61,7 @@ export default function Footer() {
               <Mail className="text-red-600 mt-1" size={18} />
               <div>
                 <p className="font-semibold text-white">Email</p>
-                <p>info@ncthsl.gov.ng</p>
+                <p>info@nigeriacustomshangar-services.ng</p>
               </div>
             </li>
 

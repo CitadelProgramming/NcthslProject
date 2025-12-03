@@ -141,7 +141,7 @@ export default function Contact() {
                 transition={{ type: "spring", stiffness: 200 }}
               >
                 <h4 className="font-semibold">Location</h4>
-                <p className="text-sm text-gray-600">NCTHSL — Abuja (Map Below)</p>
+                <p className="text-sm text-gray-600">Customs Airwing Hangar, General Aviation Terminal, Nnamdi Azikiwe International Airport, Abuja. (Map Below)</p>
               </motion.div>
 
             </div>
