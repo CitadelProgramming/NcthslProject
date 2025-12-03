@@ -4,7 +4,40 @@ import ncaaLogo from "../assets/Images/compliance/ncaa.png";
 import faanLogo from "../assets/Images/compliance/faan.png";
 import { Plane, Wrench, Satellite } from "lucide-react";
 
-// Helper slider component (clean + reusable)
+/* ===========================
+   IMPORT ALL SERVICE IMAGES
+=========================== */
+
+// FBO
+import fbo1 from "../assets/Images/services/fbo/fueling.jpg";
+import fbo2 from "../assets/Images/services/fbo/parking.jpg";
+import fbo3 from "../assets/Images/services/fbo/lounging.jpg";
+
+// Maintenance
+import m1 from "../assets/Images/services/maintenance/inspection.jpg";
+import m2 from "../assets/Images/services/maintenance/tools.jpg";
+import m3 from "../assets/Images/services/maintenance/team.jpg";
+
+// Oil & Gas
+import o1 from "../assets/Images/services/oilgas/helicopter.jpg";
+import o2 from "../assets/Images/services/oilgas/offshore.jpg";
+import o3 from "../assets/Images/services/oilgas/crew-transfer.jpg";
+
+// Security
+import s1 from "../assets/Images/services/security/surveillance.jpeg";
+import s2 from "../assets/Images/services/security/patrol.jpg";
+import s3 from "../assets/Images/services/security/mapping.jpg";
+
+// Delivery
+import d1 from "../assets/Images/services/delivery/air-mail.jpg";
+import d2 from "../assets/Images/services/delivery/cash.jpg";
+import d3 from "../assets/Images/services/delivery/cargo.jpg";
+
+
+/* ===========================
+   REUSABLE IMAGE SLIDER
+=========================== */
+
 function ImageSlider({ images }) {
   const [index, setIndex] = useState(0);
 
@@ -16,11 +49,11 @@ function ImageSlider({ images }) {
   }, [images.length]);
 
   const next = () => setIndex((prev) => (prev + 1) % images.length);
-  const prev = () => setIndex((prev) => (prev - 1 + images.length) % images.length);
+  const prev = () =>
+    setIndex((prev) => (prev - 1 + images.length) % images.length);
 
   return (
     <div className="relative w-full h-56 md:h-72 rounded-lg overflow-hidden shadow-lg">
-
       {/* Image */}
       <img
         src={images[index]}
@@ -43,7 +76,7 @@ function ImageSlider({ images }) {
         ›
       </button>
 
-      {/* Slider dots */}
+      {/* Dots */}
       <div className="absolute bottom-3 w-full flex justify-center gap-2">
         {images.map((_, i) => (
           <div
@@ -61,27 +94,24 @@ function ImageSlider({ images }) {
 export default function Services() {
   return (
     <div className="w-full">
-
-      {/* ===========================
-          PAGE HEADER
-      ============================ */}
+      {/* HEADER */}
       <section className="bg-gradient-to-br from-[#0a3a0a] to-[#052a05] text-white py-8 px-6 text-center animate-fadeIn">
         <div className="max-w-5xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold animate-slideUp">Our Services</h1>
+          <h1 className="text-4xl md:text-5xl font-bold animate-slideUp">
+            Our Services
+          </h1>
           <p className="mt-2 text-lg md:text-xl text-gray-200 animate-slideUp">
-            Comprehensive aviation, technical, logistics and security solutions tailored for
-            governmental, commercial and industrial operators.
+            Comprehensive aviation, technical, logistics and security solutions
+            tailored for governmental, commercial and industrial operators.
           </p>
         </div>
       </section>
 
-      {/* ===========================
-            FULL SERVICE SECTIONS
-      ============================ */}
+      {/* MAIN SECTIONS */}
       <section className="py-16 px-6 bg-gradient-to-br from-[#818589] to-[#525354]">
         <div className="max-w-7xl mx-auto space-y-20">
 
-          {/* FBO Section */}
+          {/* FBO */}
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="order-2 md:order-1 animate-staggerFade" style={{ "--delay": "100ms" }}>
               <h3 className="text-2xl text-red-700 font-bold mb-4">
@@ -100,26 +130,14 @@ export default function Services() {
             </div>
 
             <div className="order-1 md:order-2">
-              <ImageSlider
-                images={[
-                  "../assets/Images/services/fbo/fueling.jpg",
-                  "../assets/Images/services/fbo/parking.jpg",
-                  "../assets/Images/services/fbo/lounging.jpg",
-                ]}
-              />
+              <ImageSlider images={[fbo1, fbo2, fbo3]} />
             </div>
           </div>
 
-          {/* Maintenance + UAV */}
+          {/* Maintenance */}
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
-              <ImageSlider
-                images={[
-                  "../assets/Images/services/maintenance/inspection.jpg",
-                  "../assets/Images/services/maintenance/tools.jpg",
-                  "../assets/Images/services/maintenance/team.jpg",
-                ]}
-              />
+              <ImageSlider images={[m1, m2, m3]} />
             </div>
 
             <div className="animate-staggerFade" style={{ "--delay": "240ms" }}>
@@ -127,8 +145,8 @@ export default function Services() {
                 General Aviation Maintenance, Sales & UAV Operations
               </h3>
               <p className="text-black mb-4">
-                From scheduled maintenance to UAV operations and aircraft leasing,
-                we ensure compliance and airworthiness.
+                From scheduled maintenance to UAV operations and aircraft
+                leasing, we ensure compliance and airworthiness.
               </p>
               <ul className="list-disc list-inside text-black space-y-2">
                 <li>Inspections & repairs</li>
@@ -142,9 +160,12 @@ export default function Services() {
           {/* Oil & Gas */}
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="order-2 md:order-1 animate-staggerFade">
-              <h3 className="text-2xl text-red-700 font-bold mb-4">Oil & Gas — Offshore Support</h3>
+              <h3 className="text-2xl text-red-700 font-bold mb-4">
+                Oil & Gas — Offshore Support
+              </h3>
               <p className="text-black mb-4">
-                Specialized helicopter and fixed-wing support for offshore and onshore operations.
+                Specialized helicopter and fixed-wing support for offshore and
+                onshore operations.
               </p>
               <ul className="list-disc list-inside text-black space-y-2">
                 <li>Crew transfers</li>
@@ -154,26 +175,14 @@ export default function Services() {
             </div>
 
             <div className="order-1 md:order-2">
-              <ImageSlider
-                images={[
-                  "../assets/Images/services/oilgas/helicopter.jpg",
-                  "../assets/Images/services/oilgas/offshore.jpg",
-                  "../assets/Images/services/oilgas/crew-transfer.jpg",
-                ]}
-              />
+              <ImageSlider images={[o1, o2, o3]} />
             </div>
           </div>
 
           {/* Security */}
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
-              <ImageSlider
-                images={[
-                  "../assets/Images/services/security/surveillance.jpeg",
-                  "../assets/Images/services/security/patrol.jpg",
-                  "../assets/Images/services/security/mapping.jpg",
-                ]}
-              />
+              <ImageSlider images={[s1, s2, s3]} />
             </div>
 
             <div className="animate-staggerFade">
@@ -192,10 +201,12 @@ export default function Services() {
             </div>
           </div>
 
-          {/* Air Delivery */}
+          {/* Delivery */}
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="order-2 md:order-1 animate-staggerFade">
-              <h3 className="text-2xl text-red-700 font-bold mb-4">Airborne Mail & Cash Delivery</h3>
+              <h3 className="text-2xl text-red-700 font-bold mb-4">
+                Airborne Mail & Cash Delivery
+              </h3>
               <p className="text-black mb-4">
                 Secure airborne logistics for high-value items and urgent packages.
               </p>
@@ -207,20 +218,14 @@ export default function Services() {
             </div>
 
             <div className="order-1 md:order-2">
-              <ImageSlider
-                images={[
-                  "../assets/Images/services/delivery/air-mail.jpg",
-                  "../assets/Images/services/delivery/cash.jpg",
-                  "../assets/Images/services/delivery/cargo.jpg",
-                ]}
-              />
+              <ImageSlider images={[d1, d2, d3]} />
             </div>
           </div>
 
         </div>
       </section>
 
-      {/* SAFETY SECTION */}
+      {/* SAFETY */}
       <section className="py-12 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05] text-white">
         <div className="max-w-6xl mx-auto text-center animate-fadeIn">
           <h3 className="text-2xl font-bold mb-4">Quality, Safety & Compliance</h3>
@@ -229,27 +234,14 @@ export default function Services() {
             compliance with all Nigerian civil aviation regulatory bodies.
           </p>
 
-          {/* Logos */}
           <div className="flex flex-wrap justify-center items-center gap-8 mt-6">
-
-            {/* NCAA */}
             <div className="bg-white p-4 rounded-xl shadow-lg w-32 h-32 flex items-center justify-center hover:scale-105 transition duration-300">
-              <img
-                src={ncaaLogo}
-                alt="NCAA Logo"
-                className="w-full h-full object-contain"
-              />
+              <img src={ncaaLogo} alt="NCAA Logo" className="w-full h-full object-contain" />
             </div>
 
-            {/* FAAN */}
             <div className="bg-white p-4 rounded-xl shadow-lg w-32 h-32 flex items-center justify-center hover:scale-105 transition duration-300">
-              <img
-                src={faanLogo}
-                alt="FAAN Logo"
-                className="w-full h-full object-contain"
-              />
+              <img src={faanLogo} alt="FAAN Logo" className="w-full h-full object-contain" />
             </div>
-
           </div>
         </div>
       </section>
@@ -269,7 +261,6 @@ export default function Services() {
           </a>
         </div>
       </section>
-
     </div>
   );
 }
