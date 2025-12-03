@@ -58,7 +58,7 @@ export default function Footer() {
             </li>
 
             <li className="flex items-start gap-3">
-              <Mail className="text-red-600 mt-1" size={18} />
+              <Mail className="text-red-600 mt-1" size={20} />
               <div>
                 <p className="font-semibold text-white">Email</p>
                 <p>info@nigeriacustomshangar-services.ng</p>
