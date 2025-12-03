@@ -102,9 +102,9 @@ export default function Services() {
             <div className="order-1 md:order-2">
               <ImageSlider
                 images={[
-                  "/src/assets/Images/services/fbo/fueling.jpg",
-                  "/src/assets/Images/services/fbo/parking.jpg",
-                  "/src/assets/Images/services/fbo/lounging.jpg",
+                  "../assets/Images/services/fbo/fueling.jpg",
+                  "../assets/Images/services/fbo/parking.jpg",
+                  "../assets/Images/services/fbo/lounging.jpg",
                 ]}
               />
             </div>
@@ -115,9 +115,9 @@ export default function Services() {
             <div>
               <ImageSlider
                 images={[
-                  "/src/assets/Images/services/maintenance/inspection.jpg",
-                  "/src/assets/Images/services/maintenance/tools.jpg",
-                  "/src/assets/Images/services/maintenance/team.jpg",
+                  "../assets/Images/services/maintenance/inspection.jpg",
+                  "../assets/Images/services/maintenance/tools.jpg",
+                  "../assets/Images/services/maintenance/team.jpg",
                 ]}
               />
             </div>
@@ -156,9 +156,9 @@ export default function Services() {
             <div className="order-1 md:order-2">
               <ImageSlider
                 images={[
-                  "/src/assets/Images/services/oilgas/helicopter.jpg",
-                  "/src/assets/Images/services/oilgas/offshore.jpg",
-                  "/src/assets/Images/services/oilgas/crew-transfer.jpg",
+                  "../assets/Images/services/oilgas/helicopter.jpg",
+                  "../assets/Images/services/oilgas/offshore.jpg",
+                  "../assets/Images/services/oilgas/crew-transfer.jpg",
                 ]}
               />
             </div>
@@ -169,9 +169,9 @@ export default function Services() {
             <div>
               <ImageSlider
                 images={[
-                  "/src/assets/Images/services/security/surveillance.jpeg",
-                  "/src/assets/Images/services/security/patrol.jpg",
-                  "/src/assets/Images/services/security/mapping.jpg",
+                  "../assets/Images/services/security/surveillance.jpeg",
+                  "../assets/Images/services/security/patrol.jpg",
+                  "../assets/Images/services/security/mapping.jpg",
                 ]}
               />
             </div>
@@ -209,9 +209,9 @@ export default function Services() {
             <div className="order-1 md:order-2">
               <ImageSlider
                 images={[
-                  "/src/assets/Images/services/delivery/air-mail.jpg",
-                  "/src/assets/Images/services/delivery/cash.jpg",
-                  "/src/assets/Images/services/delivery/cargo.jpg",
+                  "../assets/Images/services/delivery/air-mail.jpg",
+                  "../assets/Images/services/delivery/cash.jpg",
+                  "../assets/Images/services/delivery/cargo.jpg",
                 ]}
               />
             </div>
