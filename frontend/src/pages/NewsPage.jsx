@@ -3,12 +3,12 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Import your images
-import news1 from "../assets/images/news/news1.jpg";
-import news2 from "../assets/images/news/news2.jpeg";
-import news3 from "../assets/images/news/news3.jpg";
+import news1 from "../assets/Images/news/news1.jpg";
+import news2 from "../assets/Images/news/news2.jpeg";
+import news3 from "../assets/Images/news/news3.jpg";
 
 // Page header image
-import headerImg from "../assets/images/news/news-header.jpg";
+import headerImg from "../assets/Images/news/news-header.jpg";
 
 export default function NewsPage() {
   const [expandedId, setExpandedId] = useState(null);

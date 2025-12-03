@@ -4,14 +4,14 @@ import { Award, ShieldCheck, Flame, Users, Briefcase, Building, Target, Telescop
 import { motion } from "framer-motion";
 import aboutBg from "../assets/Images/about/about-bg.jpg";
 
-// Import images
-import acgAb from "../assets/images/leadership/acg-ab.png";
-import acgT from "../assets/images/leadership/acg-t.jpg";
-import comp from "../assets/images/leadership/comp.png";
-import dcg from "../assets/images/leadership/dcg.jpeg";
-import dr from "../assets/images/leadership/dr.png";
-import la from "../assets/images/leadership/la.png";
-import md from "../assets/images/leadership/md.png";
+// Import Images
+import acgAb from "../assets/Images/leadership/acg-ab.png";
+import acgT from "../assets/Images/leadership/acg-t.jpg";
+import comp from "../assets/Images/leadership/comp.png";
+import dcg from "../assets/Images/leadership/dcg.jpeg";
+import dr from "../assets/Images/leadership/dr.png";
+import la from "../assets/Images/leadership/la.png";
+import md from "../assets/Images/leadership/md.png";
 
 export default function About() {
 

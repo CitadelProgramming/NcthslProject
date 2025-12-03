@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 
 // Hard-coded local images (7 images)
-import gallery1 from "../assets/images/gallery/gallery1.jpg";
-import gallery2 from "../assets/images/gallery/gallery2.jpg";
-import gallery3 from "../assets/images/gallery/gallery3.jpg";
-import gallery4 from "../assets/images/gallery/gallery4.jpg";
-import gallery5 from "../assets/images/gallery/gallery5.jpeg";
-import gallery6 from "../assets/images/gallery/gallery6.jpeg";
-import gallery7 from "../assets/images/gallery/gallery7.jpeg";
+import gallery1 from "../assets/Images/gallery/gallery1.jpg";
+import gallery2 from "../assets/Images/gallery/gallery2.jpg";
+import gallery3 from "../assets/Images/gallery/gallery3.jpg";
+import gallery4 from "../assets/Images/gallery/gallery4.jpg";
+import gallery5 from "../assets/Images/gallery/gallery5.jpeg";
+import gallery6 from "../assets/Images/gallery/gallery6.jpeg";
+import gallery7 from "../assets/Images/gallery/gallery7.jpeg";
 
 export default function Gallery({ setSelectedImage, selectedImage }) {
   const [selectedAlbum, setSelectedAlbum] = useState("all");

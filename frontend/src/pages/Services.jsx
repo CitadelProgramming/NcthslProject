@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import ncaaLogo from "../assets/images/compliance/ncaa.png";
-import faanLogo from "../assets/images/compliance/faan.png";
+
+import ncaaLogo from "../assets/Images/compliance/ncaa.png";
+import faanLogo from "../assets/Images/compliance/faan.png";
 import { Plane, Wrench, Satellite } from "lucide-react";
 
 // Helper slider component (clean + reusable)

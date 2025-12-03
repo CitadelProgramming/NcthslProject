@@ -2,12 +2,12 @@ import React from "react";
 import { motion } from "framer-motion";
 
 // Import testimonial images (6 images total)
-import client1 from "../assets/images/testimonials/client1.jpg";
-import client2 from "../assets/images/testimonials/client2.jpg";
-import client3 from "../assets/images/testimonials/client3.jpg";
-import client4 from "../assets/images/testimonials/client4.jpg"
-import client5 from "../assets/images/testimonials/client5.jpg";
-import client6 from "../assets/images/testimonials/client6.jpeg";
+import client1 from "../assets/Images/testimonials/client1.jpg";
+import client2 from "../assets/Images/testimonials/client2.jpg";
+import client3 from "../assets/Images/testimonials/client3.jpg";
+import client4 from "../assets/Images/testimonials/client4.jpg"
+import client5 from "../assets/Images/testimonials/client5.jpg";
+import client6 from "../assets/Images/testimonials/client6.jpeg";
 
 export default function Testimonials() {
   const testimonials = [

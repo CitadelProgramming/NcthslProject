@@ -3,20 +3,20 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Award, ShieldCheck, Flame, Image, Newspaper, Target, Telescope } from "lucide-react";
 
-import heroImg from "../assets/images/hero/hero.jpg";
-import aboutImg from "../assets/images/about/about.png";
+import heroImg from "../assets/Images/hero/hero.jpg";
+import aboutImg from "../assets/Images/about/about.png";
 
 /* Gallery imports */
 import Gallery from "../pages/Gallery";
-import gallery1 from "../assets/images/gallery/gallery1.jpg";
-import gallery2 from "../assets/images/gallery/gallery2.jpg";
-import gallery3 from "../assets/images/gallery/gallery3.jpg";
-import gallery4 from "../assets/images/gallery/gallery4.jpg";
+import gallery1 from "../assets/Images/gallery/gallery1.jpg";
+import gallery2 from "../assets/Images/gallery/gallery2.jpg";
+import gallery3 from "../assets/Images/gallery/gallery3.jpg";
+import gallery4 from "../assets/Images/gallery/gallery4.jpg";
 
-/* News images */
-import newsFbo from "../assets/images/news/news1.jpg";
-import newsUav from "../assets/images/news/news2.jpeg";
-import newsSafety from "../assets/images/news/news3.jpg";
+/* News Images */
+import newsFbo from "../assets/Images/news/news1.jpg";
+import newsUav from "../assets/Images/news/news2.jpeg";
+import newsSafety from "../assets/Images/news/news3.jpg";
 
 export default function Home() {
   const gallery = [gallery1, gallery2, gallery3, gallery4];
