@@ -1,0 +1,333 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================
+   Custom Animations
+   ============================ */
+
+/* Fade In */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.8s ease-in-out forwards;
+}
+
+/* Slide Up */
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-slideUp {
+  animation: slideUp 0.8s ease forwards;
+}
+
+/* Slide Down */
+@keyframes slideDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-slideDown {
+  animation: slideDown 0.8s ease forwards;
+}
+
+/* Fade + Scale */
+@keyframes fadeScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-fadeScale {
+  animation: fadeScale 0.5s ease-out forwards;
+}
+
+
+/* ============================
+   EXTRA PROFESSIONAL ANIMATIONS
+   ============================ */
+
+/* Soft Zoom In */
+@keyframes zoomInSoft {
+  from { transform: scale(0.98); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.animate-zoomInSoft {
+  animation: zoomInSoft 0.6s ease-out forwards;
+}
+
+/* Soft Zoom Out */
+@keyframes zoomOutSoft {
+  from { transform: scale(1.02); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.animate-zoomOutSoft {
+  animation: zoomOutSoft 0.6s ease-out forwards;
+}
+
+/* Slide From Left */
+@keyframes slideLeft {
+  from { transform: translateX(-30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-slideLeft {
+  animation: slideLeft 0.8s ease forwards;
+}
+
+/* Slide From Right */
+@keyframes slideRight {
+  from { transform: translateX(30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-slideRight {
+  animation: slideRight 0.8s ease forwards;
+}
+
+/* Delayed Stagger Fade (for lists or cards) */
+@keyframes staggerFade {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-staggerFade {
+  animation: staggerFade 0.7s ease forwards;
+  animation-delay: var(--delay, 0ms);
+}
+
+/* Pulsing Glow (buttons or important alerts) */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 0px rgba(179, 0, 0, 0.0); }
+  50% { box-shadow: 0 0 14px rgba(179, 0, 0, 0.4); }
+}
+.animate-glowPulse {
+  animation: glowPulse 2s infinite;
+}
+
+/* Hover Lift (subtle card lift) */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+/* Slow Rotation (icons, logos) */
+@keyframes smoothRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-rotateSlow {
+  animation: smoothRotate 6s linear infinite;
+}
+
+/* Fade In + Border Reveal */
+@keyframes borderReveal {
+  0% { opacity: 0; border-color: transparent; }
+  100% { opacity: 1; border-color: inherit; }
+}
+.animate-borderReveal {
+  animation: borderReveal 0.8s ease-out forwards;
+}
+
+/* Soft Bounce (professional minimal bounce) */
+@keyframes softBounce {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0); }
+}
+.animate-softBounce {
+  animation: softBounce 1.4s ease-in-out infinite;
+}
+
+
+/* ============================
+   HOVER ZOOM (Added as requested)
+   ============================ */
+
+.hover-zoom {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-zoom:hover,
+.hover-zoom:focus {
+  transform: scale(1.05);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+@layer utilities {
+  .animate-fadeUp {
+    animation: fadeUp 1.2s ease-out forwards;
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradientMove 6s ease-in-out infinite alternate;
+  }
+}
+
+{/* ANIMATIONS */}
+@keyframes fadeIn { 
+              from {opacity:0} 
+              to {opacity:1} 
+            }
+@keyframes slideUp { 
+              from {opacity:0; transform:translateY(20px)} 
+              to {opacity:1; transform:translateY(0)}
+            }
+.animate-fadeIn { animation: fadeIn 1s ease forwards; }
+.animate-slideUp { animation: slideUp 1s ease forwards; }
+
+/* ============================
+   Grow Line Animation
+   ============================ */
+@keyframes growLine {
+  from { width: 0; opacity: 0; }
+  to { width: 100%; opacity: 1; }
+}
+
+.animate-growLine {
+  animation: growLine 1s ease-out forwards;
+}
+
+/* ============================
+   Zoom In (Lightbox)
+   ============================ */
+@keyframes zoomIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-zoomIn {
+  animation: zoomIn 0.45s ease-out forwards;
+}
+
+/* ============================
+   SUBTLE HOVER ZOOM (Updated)
+   ============================ */
+.hover-zoom-soft {
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.hover-zoom-soft:hover {
+  transform: scale(3.03);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.10);
+}
+
+/* Optional: zoom-out on hover end */
+.hover-zoom-soft:active {
+  transform: scale(0.98);
+}
+
+/* ============================
+   UNIFIED CARD HOVER ZOOM
+   ============================ */
+.card-zoom {
+  @apply relative overflow-hidden transition-all duration-500 transform;
+}
+
+.card-zoom:hover {
+  transform: scale(1.04) translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+}
+
+/* Inner content zoom (like gallery img) */
+.card-zoom-inner {
+  transition: transform 0.7s ease-out;
+}
+
+.card-zoom:hover .card-zoom-inner {
+  transform: scale(1.10);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes growLine {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* Animation Classes */
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.5s ease-in-out forwards;
+}
+
+.animate-fadeScale {
+  animation: fadeScale 0.5s ease-in-out forwards;
+}
+
+.animate-zoomIn {
+  animation: zoomIn 0.5s ease-in-out forwards;
+}
+
+.animate-growLine {
+  animation: growLine 0.5s ease-in-out forwards;
+}
