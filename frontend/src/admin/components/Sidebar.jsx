@@ -11,7 +11,8 @@ import {
   FaInfoCircle,
   FaChevronDown,
   FaBars,
-  FaBorderAll
+  FaBorderAll,
+  FaUsersCog   // <-- NEW ICON ADDED
 } from "react-icons/fa";
 
 export default function Sidebar() {
@@ -154,6 +155,16 @@ export default function Sidebar() {
           }`}
         >
           <FaEnvelope /> Messages
+        </Link>
+
+        {/* NEW ADMIN REGISTRATION LINK (ADDED HERE) */}
+        <Link
+          to="/admin/register"
+          className={`flex items-center gap-2 p-3 rounded-lg ${
+            isActive("register") ? "bg-blue-700" : "hover:bg-blue-800"
+          }`}
+        >
+          <FaUsersCog /> Admin Registration
         </Link>
 
         {/* WEBSITE UI (Navbar + Footer) */}

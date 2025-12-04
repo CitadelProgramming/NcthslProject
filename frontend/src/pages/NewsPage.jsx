@@ -3,9 +3,9 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Import your images
-import news1 from "../assets/Images/news/news1.jpg";
-import news2 from "../assets/Images/news/news2.jpeg";
-import news3 from "../assets/Images/news/news3.jpg";
+import news1 from "../assets/Images/news/news1.png";
+import news2 from "../assets/Images/news/news2.jpg";
+import news3 from "../assets/Images/news/news3.png";
 
 // Page header image
 import headerImg from "../assets/Images/news/news-header.jpg";
@@ -20,81 +20,76 @@ export default function NewsPage() {
   const news = [
     {
       id: 1,
-      title: "NCTHSL Expands FBO Operations",
-      category: "FBO",
+      title: "NCTHSL receives the Nigerian Air Force.",
+      category: "General",
       author: "Admin",
-      date: "2025-11-01",
+      date: "2025-11-25",
       coverImage: news1,
       galleryImages: [],
       preview: `
-        NCTHSL has expanded its Fixed Base Operations to support more 
-        international flights. The upgrade includes new fueling bays...
+        NCTHSL warmly receives the Nigerian Air Force Executive Airlift Group...
       `,
       fullContent: `
-        NCTHSL has expanded its Fixed Base Operations to support more international flights. 
-        This major development includes new fueling bays, extended hangar capacity, upgraded 
-        maintenance equipment, and an expanded apron that can now accommodate additional 
-        executive aircraft.
+        The Managing Director of NCTHSL, Captain KW. Mbaya warmly received the 
+        Nigerian Air Force Executive Airlift Group team during their courtesy
+        visit to our company.
 
-        The upgrade also includes the construction of modern VIP lounges designed for 
-        comfort, privacy, and seamless travel experience. Passengers can now enjoy 
-        dedicated lounges with enhanced security, premium catering, high-speed Wi-Fi, 
-        conference facilities, and improved passenger handling efficiency.
-
-        These improvements align with NCTHSL’s commitment to deliver world-class ground 
-        support, reduce aircraft turnaround time, and strengthen Nigeria’s aviation 
-        infrastructure.
+        The visit, led by Commander Air Commodore O.A Oluwatayo was aimed 
+        at strengthening collaboration and fostering institutional relationships.
+        Discussions centered on reinforcing ties and exploring areas of mutual 
+        support and cooperation.
       `
     },
     {
       id: 2,
-      title: "New UAV Capability for Geo-Intelligence",
-      category: "Aviation",
+      title: "Strengthening Partnerships for Sustainable Growth.",
+      category: "partnership and Collaborations",
       author: "Admin",
       date: "2025-10-18",
       coverImage: news2,
       galleryImages: [],
       preview: `
-        A new advanced UAV mapping capability has been introduced to support aerial 
-        surveillance and terrain mapping...
+        Visitations to the Infrastructure Concession Regulatory Commission (ICRC)..
       `,
       fullContent: `
-        NCTHSL has deployed a new generation of UAVs equipped with advanced sensors 
-        for high-accuracy geo-intelligence operations. These UAV platforms are capable 
-        of long-range flights, high-resolution terrain imaging, thermal detection, and 
-        precise aerial mapping used in surveillance, border monitoring, emergency response, 
-        and environmental analysis.
+        On the 14th of October 2025, 
+        DCG Bomodi (Director), The Managing Director - Captain K.W Mbaya, 
+        and LACS visited the Infrastructure Concession Regulator Commission (ICRC) 
+        for strategic consultations focused on  enhancing collaboration, deepening 
+        partnerships, and driving sustainable growth for the Nigeria Customs 
+        Technical and Hangar Services Limited (NCTHSL) and its stakeholders.
 
-        The system integrates real-time telemetry, AI-powered terrain reconstruction, 
-        and encrypted communication channels, ensuring secure and reliable data delivery. 
-        This new capability supports aviation operations, national security agencies, and 
-        private sector clients requiring precision geospatial intelligence.
+        Together, we continue to build stronger frameworks for efficiency, 
+        innovation, and service excellence in the aviation sector.
       `
     },
     {
       id: 3,
-      title: "EASA-Compliant Maintenance Procedures Adopted",
+      title: "NCTHSL Hosts Africair for a Two-Day Demonstration Flight at its Hangar",
       category: "Maintenance",
       author: "Admin",
       date: "2025-09-24",
       coverImage: news3,
       galleryImages: [],
       preview: `
-        Our maintenance and safety workflow has been updated to align with EASA standards...
+        The Comptroller General of Nigeria Customs Service, BA Adeniyi MFR...
       `,
       fullContent: `
-        NCTHSL has officially updated its maintenance, repair, and overhaul (MRO) 
-        procedures to align with EASA Part-145 standards. These new safety protocols ensure 
-        that aircraft maintenance operations meet the highest levels of international 
-        compliance.
+        NCTHSL Hosts Africair for a Two-Day Demonstration Flight at its Hangar.
+        The two-day demonstration flight at our state-of-the-art hangar marks 
+        another milestone in our continous drive to enhance aviation excellence 
+        and strengthen industry partnerships.
 
-        The updated workflow includes enhanced quality assurance processes, precision 
-        inspection routines, digital maintenance tracking, and strict adherence to OEM 
-        requirements. The new framework improves aircraft reliability, safety performance, 
-        and operational efficiency across all engineering departments.
+        The Comptroller General of the Nigeria Customs Service, BA Adeniyi MFR, 
+        the Managing Director of NCTHSL, Capt. KW Mbaya, and Africair's Vice President, 
+        Mr. Robert Prentice, who led his technical team on this significant visit.
 
-        This milestone reinforces NCTHSL’s commitment to international best practices and 
-        positions the company as a leading aviation maintenance service provider.
+        During the engagement, Africair showcased its Cessna SkyCourier aircraft's 
+        cutting-edge capabilities through an impress test flight that underscored the potential 
+        for advanced operational collaborations within Nigeria's rapidly evolving 
+        aviation sector. The demonstration provideda an excellent platform for knowledge 
+        exchange, technical evaluation, and discussions on future partnerships aimed 
+        at improving efficiency and innovation across the aviation value chain.
       `
     }
   ];

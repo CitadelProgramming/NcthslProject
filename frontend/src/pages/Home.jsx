@@ -14,9 +14,9 @@ import gallery3 from "../assets/Images/gallery/gallery3.jpg";
 import gallery4 from "../assets/Images/gallery/gallery4.jpg";
 
 /* News Images */
-import newsFbo from "../assets/Images/news/news1.jpg";
-import newsUav from "../assets/Images/news/news2.jpeg";
-import newsSafety from "../assets/Images/news/news3.jpg";
+import newsFbo from "../assets/Images/news/news1.png";
+import newsUav from "../assets/Images/news/news2.jpg";
+import newsSafety from "../assets/Images/news/news3.png";
 
 export default function Home() {
   const gallery = [gallery1, gallery2, gallery3, gallery4];
@@ -150,94 +150,52 @@ export default function Home() {
           </div>
       </section>
 
-      {/* THREE CORE PILLARS – Premium Enhanced Version */}
-      <section
-        id="core-pillars"
-        className="py-28 px-6 relative bg-gradient-to-br from-[#818589] to-[#525354] overflow-hidden"
+      {/* NEWS SECTION – Replacing Core Pillars */}
+<section id="news" className="py-24 px-6 bg-gradient-to-br from-[#0A4D2D] to-[#0F3B27] text-white">
+  <div className="max-w-7xl mx-auto">
+
+    <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 animate-fadeUp">Latest News</h2>
+
+    <div className="grid md:grid-cols-3 gap-10">
+      {news.map((item, index) => (
+        <div
+          key={index}
+          className="bg-white/10 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl border border-white/10 backdrop-blur-md transition-all duration-300 hover:-translate-y-2 cursor-pointer animate-slideUp"
+          style={{ "--delay": `${150 * index}ms` }}
+        >
+          <img src={item.image} alt={item.title} className="w-full h-56 object-cover" />
+
+          <div className="p-6">
+            <p className="text-sm text-gray-300 mb-2">{item.date}</p>
+            <h3 className="text-xl font-bold mb-3">{item.title}</h3>
+
+            <p className="text-gray-200 leading-relaxed">
+              {item.excerpt.substring(0, 110)}...
+            </p>
+
+            <Link
+              to="/news"
+              className="inline-block mt-5 text-sm font-semibold text-red-400 hover:text-red-500 transition"
+            >
+              Read More →
+            </Link>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div className="mt-12 flex justify-center">
+      <Link
+        to="/news"
+        className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300"
       >
+        View All News
+      </Link>
+    </div>
 
-        {/* Floating particles background */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-10 left-20 w-32 h-32 bg-red-600/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-16 right-32 w-40 h-40 bg-red-500/10 rounded-full blur-2xl animate-ping"></div>
-          <div className="absolute top-1/2 right-1/3 w-24 h-24 bg-red-700/10 rounded-full blur-xl animate-bounce"></div>
-        </div>
+  </div>
+</section>
 
-        <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-white drop-shadow-xl animate-fadeUp">
-          Our Core Pillars
-        </h2>
-
-        <div className="grid md:grid-cols-3 gap-10 max-w-7xl mx-auto relative z-10 animate-fadeIn">
-
-          {/* Excellence */}
-          <div className="card-zoom-inner hover-zoom-soft relative p-10 rounded-2xl text-center bg-white/10 backdrop-blur-xl shadow-2xl
-                          border border-white/10 hover:border-red-500/40 transition-all duration-500 ease-out hover:-translate-y-3 hover:scale-[1.04]
-                          hover:shadow-[0_0_40px_rgba(255,0,0,0.3)] group cursor-pointer animate-slideUp"
-            style={{ '--delay': '100ms' }} >
-            {/* Shimmer overlay */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 blur-xl"></div>
-
-            {/* Icon */}
-            <div className="flex justify-center mb-4">
-              <Award className="w-16 h-16 text-white drop-shadow transition-all duration-500 group-hover:scale-125 group-hover:-rotate-3 group-hover:text-red-400" />
-            </div>
-
-            <h3 className="font-bold text-2xl mb-3 text-white group-hover:text-red-300 transition">
-              Excellence
-            </h3>
-
-            <p className="text-gray-300 group-hover:text-gray-100 transition">
-              Specialized maintenance for NCS aircraft, ensuring airworthiness and unmatched safety.
-            </p>
-          </div>
-
-          {/* Integrity */}
-          <div className="card-zoom-inner relative p-10 rounded-2xl text-center bg-white/10 backdrop-blur-xl shadow-2xl border
-                         border-white/10 hover:border-red-500/40 transition-all duration-500 ease-out hover:-translate-y-3 
-                         hover:scale-[1.04] hover:shadow-[0_0_40px_rgba(255,0,0,0.3)] group cursor-pointer animate-slideUp"
-            style={{ '--delay': '250ms' }}
-          >
-            {/* Shimmer overlay */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 blur-xl"></div>
-
-            <div className="flex justify-center mb-4">
-              <ShieldCheck className="w-16 h-16 text-white drop-shadow transition-all duration-500 group-hover:scale-125 group-hover:rotate-3 group-hover:text-red-400" />
-            </div>
-
-            <h3 className="font-bold text-2xl mb-3 text-white group-hover:text-red-300 transition">
-              Integrity
-            </h3>
-
-            <p className="text-gray-300 group-hover:text-gray-100 transition">
-              Engineering support, diagnostics, technical inspections, and transparent operations.
-            </p>
-          </div>
-
-          {/* Resilience */}
-          <div className="card-zoom-inner relative p-10 rounded-2xl text-center bg-white/10 backdrop-blur-xl shadow-2xl
-                         border border-white/10 hover:border-red-500/40 transition-all duration-500 ease-out
-                          hover:-translate-y-3 hover:scale-[1.04] hover:shadow-[0_0_40px_rgba(255,0,0,0.3)]
-                          group cursor-pointer animate-slideUp"
-            style={{ '--delay': '400ms' }}
-          >
-            {/* Shimmer overlay */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 blur-xl"></div>
-
-            <div className="flex justify-center mb-4">
-              <Flame className="w-16 h-16 text-red-500 drop-shadow transition-all duration-500 group-hover:scale-125 group-hover:-rotate-3 group-hover:text-red-400" />
-            </div>
-
-            <h3 className="font-bold text-2xl mb-3 text-white group-hover:text-red-300 transition">
-              Resilience & Determination
-            </h3>
-
-            <p className="text-gray-300 group-hover:text-gray-100 transition">
-              Aviation logistics, mission readiness, and dependable operational support services.
-            </p>
-          </div>
-
-        </div>
-      </section>
 
       {/* MINI GALLERY – Premium Green Theme + LIGHTBOX */}
       <section id="home-gallery" className="py-24 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05]">

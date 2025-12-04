@@ -12,7 +12,7 @@ import NewsAdmin from "./pages/NewsAdmin";
 import TestimonialsAdmin from "./pages/TestimonialsAdmin";
 import MessagesAdmin from "./pages/MessagesAdmin";
 
-// ABOUT SECTION ADMIN (CORRECT PATHS)
+// ABOUT SECTION ADMIN
 import CompanyOverviewAdmin from "./pages/about/CompanyOverviewAdmin";
 import MissionVisionAdmin from "./pages/about/MissionVisionAdmin";
 import CorePillarsAdmin from "./pages/about/CorePillarsAdmin";
@@ -23,6 +23,9 @@ import RegulatoryComplianceAdmin from "./pages/about/RegulatoryComplianceAdmin";
 // NAVBAR & FOOTER ADMIN
 import NavbarAdmin from "./pages/NavbarAdmin";
 import FooterAdmin from "./pages/FooterAdmin";
+
+// NEW ADMIN REGISTRATION PAGE
+import AdminRegistration from "./pages/AdminRegistration";
 
 import ProtectedRoute from "./ProtectedRoute";
 import AdminLayout from "./layout/AdminLayout";
@@ -60,6 +63,9 @@ export default function AdminApp() {
         {/* NAVIGATION UI ADMIN */}
         <Route path="navbar" element={<NavbarAdmin />} />
         <Route path="footer" element={<FooterAdmin />} />
+
+        {/* NEW ADMIN REGISTRATION ROUTE */}
+        <Route path="register" element={<AdminRegistration />} />
       </Route>
     </Routes>
   );
