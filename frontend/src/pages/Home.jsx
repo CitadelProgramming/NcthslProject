@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Award, ShieldCheck, Flame, Image, Newspaper, Target, Telescope } from "lucide-react";
+import { motion } from "framer-motion";
 
 import heroImg from "../assets/Images/hero/hero.jpg";
 import aboutImg from "../assets/Images/about/about.png";
@@ -150,92 +151,191 @@ export default function Home() {
           </div>
       </section>
 
-      {/* NEWS SECTION – Replacing Core Pillars */}
-<section id="news" className="py-24 px-6 bg-gradient-to-br from-[#0A4D2D] to-[#0F3B27] text-white">
+      {/* NEWS SECTION */}
+      <section
+        id="news"
+        className="py-24 px-6 bg-gradient-to-br from-[#818589] to-[#525354] text-white"
+      >
+        <div className="max-w-7xl mx-auto">
+
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            viewport={{ once: true }}
+            className="text-4xl md:text-5xl font-bold text-center mb-16"
+          >
+            Latest News
+          </motion.h2>
+
+          {/* Stagger Animation Wrapper */}
+          <motion.div
+            className="grid md:grid-cols-3 gap-10"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={{
+              hidden: {},
+              visible: {
+                transition: {
+                  staggerChildren: 0.25,
+                },
+              },
+            }}
+          >
+            {news.map((item, index) => (
+              <motion.div
+                key={index}
+                variants={{
+                  hidden: { opacity: 0, y: 40 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+                transition={{ duration: 0.7, ease: "easeOut" }}
+                whileHover={{ scale: 1.03, y: -5 }}
+                className="bg-white/10 rounded-2xl overflow-hidden 
+                bg-gradient-to-br from-[#0a3a0a] to-[#052a05] 
+                shadow-xl border border-white/10 backdrop-blur-md 
+                cursor-pointer transition-all duration-300"
+              >
+                {/* Image with zoom hover */}
+                <div className="overflow-hidden">
+                  <motion.img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-56 object-cover"
+                    whileHover={{ scale: 1.08 }}
+                    transition={{ duration: 0.4 }}
+                  />
+                </div>
+
+                {/* Content */}
+                <div className="p-6">
+                  <p className="text-sm text-gray-300 mb-2">{item.date}</p>
+
+                  <motion.h3
+                    whileHover={{ x: 3 }}
+                    transition={{ duration: 0.2 }}
+                    className="text-xl font-bold mb-3"
+                  >
+                    {item.title}
+                  </motion.h3>
+
+                  <p className="text-gray-200 leading-relaxed">
+                    {item.excerpt.substring(0, 110)}...
+                  </p>
+
+                  <Link
+                    to="/news"
+                    className="inline-block mt-5 text-sm font-semibold text-red-400 hover:text-red-500 transition"
+                  >
+                    Read More →
+                  </Link>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <div className="mt-12 flex justify-center">
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                to="/news"
+                className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300"
+              >
+                View All News
+              </Link>
+            </motion.div>
+          </div>
+
+        </div>
+      </section>
+
+
+
+      {/* MINI GALLERY – Premium Green Theme + LIGHTBOX */}
+<section id="home-gallery" className="py-24 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05] relative">
   <div className="max-w-7xl mx-auto">
 
-    <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 animate-fadeUp">Latest News</h2>
+    <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-white animate-fadeUp tracking-wide">
+      Gallery
+    </h2>
 
-    <div className="grid md:grid-cols-3 gap-10">
-      {news.map((item, index) => (
+    {/* GRID */}
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {gallery.map((src, idx) => (
         <div
-          key={index}
-          className="bg-white/10 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl border border-white/10 backdrop-blur-md transition-all duration-300 hover:-translate-y-2 cursor-pointer animate-slideUp"
-          style={{ "--delay": `${150 * index}ms` }}
+          key={idx}
+          className="group relative overflow-hidden rounded-2xl shadow-xl
+          bg-[#124E35] border border-white/10 cursor-pointer transform transition-all duration-500
+          hover:scale-[1.06] hover:-translate-y-2 hover:shadow-[0_8px_40px_rgba(0,0,0,0.35)]"
+          onClick={() => setSelectedImage(src)}
         >
-          <img src={item.image} alt={item.title} className="w-full h-56 object-cover" />
+          <img
+            src={src}
+            alt={`gallery-${idx + 1}`}
+            className="w-full h-60 object-cover rounded-2xl
+            transition-transform duration-700 ease-out group-hover:scale-110"
+          />
 
-          <div className="p-6">
-            <p className="text-sm text-gray-300 mb-2">{item.date}</p>
-            <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-
-            <p className="text-gray-200 leading-relaxed">
-              {item.excerpt.substring(0, 110)}...
-            </p>
-
-            <Link
-              to="/news"
-              className="inline-block mt-5 text-sm font-semibold text-red-400 hover:text-red-500 transition"
-            >
-              Read More →
-            </Link>
+          <div
+            className="absolute inset-0 flex items-end p-4 
+            bg-gradient-to-t from-black/50 via-black/10 to-transparent 
+            opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+          >
+            <span className="text-white text-sm font-semibold tracking-wide drop-shadow-md 
+            border-b border-yellow-400/70 pb-1">
+              View Image
+            </span>
           </div>
         </div>
       ))}
     </div>
 
-    <div className="mt-12 flex justify-center">
+    {/* VIEW MORE BUTTON */}
+    <div className="mt-12 flex justify-center relative z-10">
       <Link
-        to="/news"
-        className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300"
+        to="/gallery"
+        className="px-8 py-4 bg-red-600 text-white font-semibold text-lg rounded-xl shadow-lg
+        hover:bg-red-700 transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,0,0,0.35)]
+        animate-fadeIn animate-slideUp opacity-0"
+        style={{ "--delay": "600ms" }}
       >
-        View All News
+        View More
       </Link>
     </div>
 
   </div>
+
+  {/* LIGHTBOX (Full View Image) */}
+{/* LIGHTBOX (Full View Image) */}
+{selectedImage && (
+  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center
+  z-[9999] px-4 animate-fadeIn">
+
+    {/* Image Wrapper - so close button aligns with the image */}
+    <div className="relative max-h-[90vh] max-w-[90vw]">
+
+      {/* Close button */}
+      <button
+        onClick={() => setSelectedImage(null)}
+        className="absolute -top-4 -right-4 text-white bg-black/60 hover:bg-black/80
+        p-3 rounded-full z-[10000] transition shadow-xl border border-white/20"
+      >
+        ✕
+      </button>
+
+      {/* Full Image */}
+      <img
+        src={selectedImage}
+        alt="Full View"
+        className="max-h-[90vh] max-w-[90vw] rounded-2xl shadow-2xl object-contain
+        animate-scaleIn"
+      />
+
+    </div>
+  </div>
+)}
+
 </section>
-
-
-      {/* MINI GALLERY – Premium Green Theme + LIGHTBOX */}
-      <section id="home-gallery" className="py-24 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05]">
-        <div className="max-w-7xl mx-auto">
-
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-white animate-fadeUp tracking-wide">Gallery</h2>
-
-          {/* GRID */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {gallery.map((src, idx) => (
-              <div key={idx} className="group relative overflow-hidden rounded-2xl shadow-xl
-                            bg-[#124E35] border border-white/10 cursor-pointer transform transition-all duration-500
-                             hover:scale-[1.06] hover:-translate-y-2 hover:shadow-[0_8px_40px_rgba(0,0,0,0.35)]"
-                onClick={() => setSelectedImage(src)}
-              >
-                <img src={src} alt={`gallery-${idx + 1}`} className="w-full h-60 object-cover rounded-2xl
-                                                           transition-transform duration-700 ease-out group-hover:scale-110"/>
-
-                <div className="absolute inset-0 flex items-end p-4bg-gradient-to-t from-black/50 via-black/10 to-transparent
-                                 opacity-0 group-hover:opacity-100transition-opacity duration-700">
-                  <span className="text-white text-sm font-semibold tracking-wide drop-shadow-md border-b border-yellow-400/70 pb-1">
-                    View Image
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* VIEW MORE BUTTON */}
-          <div className="mt-12 flex justify-center relative z-10">
-            <Link to="/gallery" className="px-8 py-4 bg-red-600 text-white font-semibold text-lg rounded-xl shadow-lg
-                    hover:bg-red-700 transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,0,0,0.35)] animate-fadeIn animate-slideUp opacity-0"
-              style={{ "--delay": "600ms" }}
-            >
-              View More
-            </Link>
-          </div>
-
-        </div>
-      </section>
 
       {/* MISSION & VISION */}
       <section id="mission-vision" className="py-24 px-6 bg-gradient-to-br from-[#818589] to-[#525354] relative overflow-hidden text-white">
@@ -251,7 +351,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-start relative z-10">
 
           {/* Mission */}
-          <div className="card-zoom group p-10 rounded-2xl shadow-xl bg-white/10 backdrop-blur-xl border border-white/10
+          <div className="bg-gradient-to-br from-[#0a3a0a] to-[#052a05] card-zoom group p-10 rounded-2xl shadow-xl bg-white/10 backdrop-blur-xl border border-white/10
                     animate-slideUp animate-fadeIn opacity-0 transition-all duration-500 hover:shadow-[0_0_30px_rgba(255,0,0,0.25)]
                     hover:-translate-y-1"
             style={{ "--delay": "150ms" }}
@@ -275,7 +375,7 @@ export default function Home() {
           </div>
 
           {/* Vision */}
-          <div className="p-10 rounded-2xl shadow-xl bg-white/10 backdrop-blur-xl border border-white/10
+          <div className="bg-gradient-to-br from-[#0a3a0a] to-[#052a05] card-zoom group p-10 rounded-2xl shadow-xl bg-white/10 backdrop-blur-xl border border-white/10
                     animate-slideUp animate-fadeIn opacity-0 transition-all duration-500 hover:shadow-[0_0_30px_rgba(255,0,0,0.25)]
                     hover:-translate-y-1"
             style={{ "--delay": "300ms" }}

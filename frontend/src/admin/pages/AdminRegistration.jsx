@@ -4,13 +4,11 @@ import { Eye, EyeOff, UserPlus } from "lucide-react";
 
 export default function AdminRegistration() {
   const [showPassword, setShowPassword] = useState(false);
-
   const [form, setForm] = useState({
     fullname: "",
     email: "",
     password: "",
     confirmPassword: "",
-    role: "", // NEW ROLE FIELD
   });
 
   const [errors, setErrors] = useState({});
@@ -21,9 +19,6 @@ export default function AdminRegistration() {
 
     if (!form.fullname.trim()) newErrors.fullname = "Full name is required.";
     if (!form.email.trim()) newErrors.email = "Email is required.";
-
-    if (!form.role.trim()) newErrors.role = "Please select a role."; // Validate role
-
     if (!form.password.trim()) newErrors.password = "Password is required.";
     else if (form.password.length < 6)
       newErrors.password = "Password must be at least 6 characters.";
@@ -37,7 +32,6 @@ export default function AdminRegistration() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
 
     setSuccessMessage("Admin registered successfully! (Backend pending)");
@@ -47,7 +41,6 @@ export default function AdminRegistration() {
       email: "",
       password: "",
       confirmPassword: "",
-      role: "", // reset role too
     });
 
     setErrors({});
@@ -124,28 +117,6 @@ export default function AdminRegistration() {
             )}
           </div>
 
-          {/* Role Selection */}
-          <div>
-            <label className="block mb-1 font-medium">Role</label>
-            <select
-              name="role"
-              value={form.role}
-              onChange={handleChange}
-              className={`w-full p-3 border rounded-lg bg-white ${
-                errors.role ? "border-red-500" : "border-gray-300"
-              }`}
-            >
-              <option value="">-- Select Role --</option>
-              <option value="super-admin">Super Admin</option>
-              <option value="admin">Admin</option>
-              <option value="editor">Editor</option>
-            </select>
-
-            {errors.role && (
-              <p className="text-red-500 text-sm">{errors.role}</p>
-            )}
-          </div>
-
           {/* Password */}
           <div>
             <label className="block mb-1 font-medium">Password</label>
@@ -168,7 +139,6 @@ export default function AdminRegistration() {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-
             {errors.password && (
               <p className="text-red-500 text-sm">{errors.password}</p>
             )}
@@ -193,10 +163,7 @@ export default function AdminRegistration() {
           </div>
 
           {/* Submit Button */}
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-          >
+          <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
             <button
               type="submit"
               className="w-full h-12 bg-blue-700 text-white rounded-lg text-lg font-semibold hover:bg-blue-800 transition"
