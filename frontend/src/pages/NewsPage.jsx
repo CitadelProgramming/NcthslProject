@@ -23,7 +23,7 @@ export default function NewsPage() {
       title: "NCTHSL receives the Nigerian Air Force.",
       category: "General",
       author: "Admin",
-      date: "2025-11-25",
+      date: "Nov 25, 2025",
       coverImage: news1,
       galleryImages: [],
       preview: `
@@ -45,11 +45,11 @@ export default function NewsPage() {
       title: "Strengthening Partnerships for Sustainable Growth.",
       category: "partnership and Collaborations",
       author: "Admin",
-      date: "2025-10-18",
+      date: "Oct 15, 2025",
       coverImage: news2,
       galleryImages: [],
       preview: `
-        Visitations to the Infrastructure Concession Regulatory Commission (ICRC)..
+        Visitations to the Infrastructure Concession Regulatory Commission (ICRC)...
       `,
       fullContent: `
         On the 14th of October 2025, 
@@ -68,7 +68,7 @@ export default function NewsPage() {
       title: "NCTHSL Hosts Africair for a Two-Day Demonstration Flight at its Hangar",
       category: "Maintenance",
       author: "Admin",
-      date: "2025-09-24",
+      date: "Oct 8, 2025",
       coverImage: news3,
       galleryImages: [],
       preview: `

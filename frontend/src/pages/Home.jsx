@@ -25,24 +25,24 @@ export default function Home() {
 
   const news = [
     {
-      title: "NCTHSL Expands FBO Operations",
-      date: "Nov 1, 2025",
+      title: "NCTHSL receives the Nigerian Air Force.",
+      date: "Nov 25, 2025",
       excerpt:
-        "We have expanded our Fixed Base Operations to support more international flights with new fueling bays and lounges.",
+        "NCTHSL warmly receives the Nigerian Air Force Executive Airlift Group...",
       image: newsFbo
     },
     {
-      title: "New UAV Capability for Geo-Intelligence",
-      date: "Oct 18, 2025",
+      title: "Strengthening Partnerships for Sustainable Growth.",
+      date: "Oct 15, 2025",
       excerpt:
-        "NCTHSL introduces advanced UAV mapping services to improve aerial surveillance, surveying and mapping accuracy.",
+        "Visitations to the Infrastructure Concession Regulatory Commission (ICRC)...",
       image: newsUav
     },
     {
-      title: "Safety Audit — EASA-compliant Procedures Adopted",
-      date: "Sep 24, 2025",
+      title: "NCTHSL Hosts Africair for a Two-Day Demonstration Flight at its Hangar",
+      date: "Oct 8, 2025",
       excerpt:
-        "Updated maintenance procedures and QA checks aligned with EASA and OEM recommendations to enhance safety and compliance.",
+        "The Comptroller General of Nigeria Customs Service, BA Adeniyi MFR...",
       image: newsSafety
     }
   ];
