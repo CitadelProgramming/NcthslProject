@@ -10,10 +10,7 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    const payload = {
-      email: email,
-      password: password,
-    };
+    const payload = { email, password };
 
     try {
       setLoading(true);
@@ -23,27 +20,28 @@ export default function Login() {
         payload
       );
 
-      //backend returns JWT tokens in "token" or "accessToken"
+      // Extract token from backend response
       const token = response.data?.token || response.data?.accessToken;
 
       if (!token) {
-        Swal.fire("Error", "Invalid response from server", "error");
+        Swal.fire("Error", "Invalid server response.", "error");
         return;
       }
 
-      // Save token to localStorage
+      // Save token to local storage
       localStorage.setItem("adminToken", token);
 
       Swal.fire("Success", "Login Successful!", "success");
 
-      // Redirect to admin dashboard
+      // Redirect after successful login
       window.location.href = "/admin/dashboard";
+
     } catch (error) {
       console.error("Login error:", error);
 
       Swal.fire(
         "Login Failed",
-        error.response?.data?.message || "Invalid email or password",
+        error.response?.data?.message || "Invalid email or password.",
         "error"
       );
     } finally {
@@ -65,7 +63,6 @@ export default function Login() {
           placeholder="Admin Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
         />
 
         <input
@@ -74,7 +71,6 @@ export default function Login() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
         />
 
         <button
