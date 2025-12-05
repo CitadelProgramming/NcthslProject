@@ -16,25 +16,77 @@ export default function NewsAdmin() {
   const [newsList, setNewsList] = useState([
     {
       id: 1,
-      title: "NCTHSL Launches New Maintenance Program",
-      category: "Maintenance",
-      content:
-        "Nigeria Customs Technical Hangar Services Limited has introduced a new aircraft maintenance upgrade...",
+      title: "NCTHSL receives the Nigerian Air Force.",
+      category: "General",
+      preview: `
+        NCTHSL warmly receives the Nigerian Air Force Executive Airlift Group...
+      `,
+      content: `
+        The Managing Director of NCTHSL, Captain KW. Mbaya warmly received the 
+        Nigerian Air Force Executive Airlift Group team during their courtesy
+        visit to our company.
+
+        The visit, led by Commander Air Commodore O.A Oluwatayo was aimed 
+        at strengthening collaboration and fostering institutional relationships.
+        Discussions centered on reinforcing ties and exploring areas of mutual 
+        support and cooperation.
+      `,
       coverImage: null,
       galleryImages: [],
       author: "Admin",
-      date: "2025-11-01",
+      date: "Nov 25, 2025",
     },
     {
       id: 2,
-      title: "FBO Operations Improved for Faster Turnaround",
-      category: "FBO",
-      content:
-        "Our Fixed Based Operations have been optimized to provide better fueling, lounge experience...",
+      title: "Strengthening Partnerships for Sustainable Growth.",
+      category: "Partnership",
+      preview: `
+        Visitations to the Infrastructure Concession Regulatory Commission (ICRC)...
+      `,
+      content: `
+        On the 14th of October 2025, 
+        DCG Bomodi (Director), The Managing Director - Captain K.W Mbaya, 
+        and LACS visited the Infrastructure Concession Regulator Commission (ICRC) 
+        for strategic consultations focused on  enhancing collaboration, deepening 
+        partnerships, and driving sustainable growth for the Nigeria Customs 
+        Technical and Hangar Services Limited (NCTHSL) and its stakeholders.
+
+        Together, we continue to build stronger frameworks for efficiency, 
+        innovation, and service excellence in the aviation sector.
+      `,
       coverImage: null,
       galleryImages: [],
       author: "Admin",
-      date: "2025-11-05",
+      date: "Oct 15, 2025",
+    },
+    {
+      id: 3,
+      title: "NCTHSL Hosts Africair for a Two-Day Demonstration Flight at its Hangar",
+      category: "Maintenance",
+      preview: `
+        The Comptroller General of Nigeria Customs Service, BA Adeniyi MFR...
+      `,
+      content: `
+        NCTHSL Hosts Africair for a Two-Day Demonstration Flight at its Hangar.
+        The two-day demonstration flight at our state-of-the-art hangar marks 
+        another milestone in our continous drive to enhance aviation excellence 
+        and strengthen industry partnerships.
+
+        The Comptroller General of the Nigeria Customs Service, BA Adeniyi MFR, 
+        the Managing Director of NCTHSL, Capt. KW Mbaya, and Africair's Vice President, 
+        Mr. Robert Prentice, who led his technical team on this significant visit.
+
+        During the engagement, Africair showcased its Cessna SkyCourier aircraft's 
+        cutting-edge capabilities through an impress test flight that underscored the potential 
+        for advanced operational collaborations within Nigeria's rapidly evolving 
+        aviation sector. The demonstration provideda an excellent platform for knowledge 
+        exchange, technical evaluation, and discussions on future partnerships aimed 
+        at improving efficiency and innovation across the aviation value chain.
+      `,
+      coverImage: null,
+      galleryImages: [],
+      author: "Admin",
+      date: "Oct 8, 2025",
     },
   ]);
 
@@ -235,6 +287,16 @@ export default function NewsAdmin() {
             className="w-full p-2 border rounded"
             value={form.author}
             onChange={(e) => setForm({ ...form, author: e.target.value })}
+          />
+
+          {/* Preview*/}
+          <textarea
+            placeholder="News Preview"
+            className="w-full p-2 border rounded"
+            rows={5}
+            value={form.content}
+            onChange={(e) => setForm({ ...form, content: e.target.value })}
+            required
           />
 
           {/* CONTENT */}

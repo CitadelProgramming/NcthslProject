@@ -1,98 +1,44 @@
 // src/pages/NewsPage.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
+import Swal from "sweetalert2";
 
-// Import your images
-import news1 from "../assets/Images/news/news1.png";
-import news2 from "../assets/Images/news/news2.jpg";
-import news3 from "../assets/Images/news/news3.png";
-
-// Page header image
+// Header image remains static
 import headerImg from "../assets/Images/news/news-header.jpg";
 
 export default function NewsPage() {
   const [expandedId, setExpandedId] = useState(null);
+  const [news, setNews] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const toggleExpand = (id) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
-  const news = [
-    {
-      id: 1,
-      title: "NCTHSL receives the Nigerian Air Force.",
-      category: "General",
-      author: "Admin",
-      date: "Nov 25, 2025",
-      coverImage: news1,
-      galleryImages: [],
-      preview: `
-        NCTHSL warmly receives the Nigerian Air Force Executive Airlift Group...
-      `,
-      fullContent: `
-        The Managing Director of NCTHSL, Captain KW. Mbaya warmly received the 
-        Nigerian Air Force Executive Airlift Group team during their courtesy
-        visit to our company.
+  // Fetch all news from backend
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        const response = await axios.get(
+          "https://enchanting-expression-production.up.railway.app/api/v1/news"
+        );
 
-        The visit, led by Commander Air Commodore O.A Oluwatayo was aimed 
-        at strengthening collaboration and fostering institutional relationships.
-        Discussions centered on reinforcing ties and exploring areas of mutual 
-        support and cooperation.
-      `
-    },
-    {
-      id: 2,
-      title: "Strengthening Partnerships for Sustainable Growth.",
-      category: "partnership and Collaborations",
-      author: "Admin",
-      date: "Oct 15, 2025",
-      coverImage: news2,
-      galleryImages: [],
-      preview: `
-        Visitations to the Infrastructure Concession Regulatory Commission (ICRC)...
-      `,
-      fullContent: `
-        On the 14th of October 2025, 
-        DCG Bomodi (Director), The Managing Director - Captain K.W Mbaya, 
-        and LACS visited the Infrastructure Concession Regulator Commission (ICRC) 
-        for strategic consultations focused on  enhancing collaboration, deepening 
-        partnerships, and driving sustainable growth for the Nigeria Customs 
-        Technical and Hangar Services Limited (NCTHSL) and its stakeholders.
+        setNews(response.data || []);
+      } catch (error) {
+        console.error("News Fetch Error:", error);
+        Swal.fire(
+          "Error",
+          "Unable to load news. Please try again later.",
+          "error"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
 
-        Together, we continue to build stronger frameworks for efficiency, 
-        innovation, and service excellence in the aviation sector.
-      `
-    },
-    {
-      id: 3,
-      title: "NCTHSL Hosts Africair for a Two-Day Demonstration Flight at its Hangar",
-      category: "Maintenance",
-      author: "Admin",
-      date: "Oct 8, 2025",
-      coverImage: news3,
-      galleryImages: [],
-      preview: `
-        The Comptroller General of Nigeria Customs Service, BA Adeniyi MFR...
-      `,
-      fullContent: `
-        NCTHSL Hosts Africair for a Two-Day Demonstration Flight at its Hangar.
-        The two-day demonstration flight at our state-of-the-art hangar marks 
-        another milestone in our continous drive to enhance aviation excellence 
-        and strengthen industry partnerships.
-
-        The Comptroller General of the Nigeria Customs Service, BA Adeniyi MFR, 
-        the Managing Director of NCTHSL, Capt. KW Mbaya, and Africair's Vice President, 
-        Mr. Robert Prentice, who led his technical team on this significant visit.
-
-        During the engagement, Africair showcased its Cessna SkyCourier aircraft's 
-        cutting-edge capabilities through an impress test flight that underscored the potential 
-        for advanced operational collaborations within Nigeria's rapidly evolving 
-        aviation sector. The demonstration provideda an excellent platform for knowledge 
-        exchange, technical evaluation, and discussions on future partnerships aimed 
-        at improving efficiency and innovation across the aviation value chain.
-      `
-    }
-  ];
+    fetchNews();
+  }, []);
 
   return (
     <>
@@ -140,6 +86,18 @@ export default function NewsPage() {
             Latest News
           </motion.h1>
 
+          {/* Loading State */}
+          {loading && (
+            <div className="text-center text-white text-lg">Loading news...</div>
+          )}
+
+          {/* Empty State */}
+          {!loading && news.length === 0 && (
+            <div className="text-center text-white text-lg">
+              No news available yet.
+            </div>
+          )}
+
           <motion.div
             className="space-y-10"
             initial="hidden"
@@ -170,14 +128,16 @@ export default function NewsPage() {
                   }}
                 >
                   {/* Image */}
-                  <motion.img
-                    src={item.coverImage}
-                    alt={item.title}
-                    className="w-full h-64 object-cover rounded-xl mb-6"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.7 }}
-                  />
+                  {item.coverImage && (
+                    <motion.img
+                      src={item.coverImage}
+                      alt={item.title}
+                      className="w-full h-64 object-cover rounded-xl mb-6"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.7 }}
+                    />
+                  )}
 
                   {/* Meta */}
                   <motion.div
@@ -186,7 +146,8 @@ export default function NewsPage() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.3 }}
                   >
-                    {item.category} • {item.date} • {item.author}
+                    {item.category || "General"} • {item.date || ""} •{" "}
+                    {item.author || "Admin"}
                   </motion.div>
 
                   {/* Title */}
@@ -194,25 +155,17 @@ export default function NewsPage() {
                     {item.title}
                   </motion.h2>
 
-                  {/* Preview or Full Content */}
+                  {/* Preview / Full */}
                   <motion.p className="text-gray-700 whitespace-pre-line leading-relaxed">
                     {isExpanded ? item.fullContent : item.preview}
                   </motion.p>
 
                   {/* Expandable Section */}
                   <AnimatePresence>
-                    {isExpanded && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.4 }}
-                        className="mt-4"
-                      ></motion.div>
-                    )}
+                    {isExpanded && <motion.div />}
                   </AnimatePresence>
 
-                  {/* READ MORE / SHOW LESS */}
+                  {/* Read More Button */}
                   <motion.button
                     onClick={() => toggleExpand(item.id)}
                     className="mt-4 text-[#0A4D2D] font-semibold hover:underline"
