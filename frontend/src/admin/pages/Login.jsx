@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
 
+const API_BASE = "https://enchanting-expression-production.up.railway.app/api/v1";
+// const API_BASE = "http://localhost:8080/api/v1"; // When running backend locally
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -16,11 +19,10 @@ export default function Login() {
       setLoading(true);
 
       const response = await axios.post(
-        "https://enchanting-expression-production.up.railway.app/api/v1/auth/authenticate",
+        `${API_BASE}/auth/authenticate`,
         payload
       );
 
-      // Extract token from backend response
       const token = response.data?.token || response.data?.accessToken;
 
       if (!token) {
@@ -28,12 +30,11 @@ export default function Login() {
         return;
       }
 
-      // Save token to local storage
+      // Save token
       localStorage.setItem("adminToken", token);
 
       Swal.fire("Success", "Login Successful!", "success");
 
-      // Redirect after successful login
       window.location.href = "/admin/dashboard";
 
     } catch (error) {

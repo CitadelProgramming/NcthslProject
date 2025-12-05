@@ -3,6 +3,9 @@ import { motion } from "framer-motion";
 import { Eye, EyeOff, UserPlus } from "lucide-react";
 import axios from "axios";
 
+const API_BASE = "https://enchanting-expression-production.up.railway.app/api/v1";
+// const API_BASE = "http://localhost:8080/api/v1";  // If you ever want to switch to local backend
+
 export default function AdminRegistration() {
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
@@ -39,13 +42,13 @@ export default function AdminRegistration() {
       setSuccessMessage("");
 
       const response = await axios.post(
-        "https://enchanting-expression-production.up.railway.app/api/v1/auth/register",
+        `${API_BASE}/auth/register`,
         payload
       );
 
       setSuccessMessage("Admin registered successfully!");
 
-      // Reset form after successful registration
+      // Reset form
       setForm({
         firstname: "",
         lastname: "",
@@ -58,19 +61,13 @@ export default function AdminRegistration() {
 
     } catch (error) {
       console.error("Registration error:", error);
-
       setSuccessMessage("");
 
-      // Backend validation errors (field errors)
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
-      }
-      // Backend global error (message)
-      else if (error.response?.data?.message) {
+      } else if (error.response?.data?.message) {
         setErrors({ api: error.response.data.message });
-      }
-      // Fallback error
-      else {
+      } else {
         setErrors({ api: "Registration failed. Please try again." });
       }
 
@@ -123,7 +120,6 @@ export default function AdminRegistration() {
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
 
-          {/* First Name */}
           <div>
             <label className="block mb-1 font-medium">First Name</label>
             <input
@@ -138,7 +134,6 @@ export default function AdminRegistration() {
             )}
           </div>
 
-          {/* Last Name */}
           <div>
             <label className="block mb-1 font-medium">Last Name</label>
             <input
@@ -153,7 +148,6 @@ export default function AdminRegistration() {
             )}
           </div>
 
-          {/* Email */}
           <div>
             <label className="block mb-1 font-medium">Email</label>
             <input
@@ -169,7 +163,6 @@ export default function AdminRegistration() {
             )}
           </div>
 
-          {/* Phone Number */}
           <div>
             <label className="block mb-1 font-medium">Phone Number</label>
             <input
@@ -184,7 +177,6 @@ export default function AdminRegistration() {
             )}
           </div>
 
-          {/* Address */}
           <div>
             <label className="block mb-1 font-medium">Address</label>
             <input
@@ -199,7 +191,6 @@ export default function AdminRegistration() {
             )}
           </div>
 
-          {/* Password */}
           <div>
             <label className="block mb-1 font-medium">Password</label>
             <div className="relative">
@@ -224,7 +215,6 @@ export default function AdminRegistration() {
             )}
           </div>
 
-          {/* Confirm Password */}
           <div>
             <label className="block mb-1 font-medium">Confirm Password</label>
             <input
