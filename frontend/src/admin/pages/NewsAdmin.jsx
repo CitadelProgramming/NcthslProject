@@ -11,7 +11,7 @@ const toBase64 = (file) =>
   });
 
 // BACKEND NEWS API ENDPOINTS
-const API_BASE = "https://enchanting-expression-production.up.railway.app/api/v1/news";
+const API_BASE = "https://enchanting-expression-production.up.railway.app/api/v1/news/all-news";
 
 export default function NewsAdmin() {
   const [newsList, setNewsList] = useState([]);
