@@ -47,14 +47,14 @@ export default function About() {
       bio: "Nigeria Customs Service.",
     },
     {
-      name: "ACG Timi Bomodi",
-      title: "Assistant Comptroller General EI&I",
+      name: "DCG Timi Bomodi",
+      title: "Deputy Comptroller General EI&I",
       img: acgT,
       bio: "Nigeria Customs Service.",
     },
     {
-      name: "Comptroller N. Isiyaku",
-      title: "Comptroller (Trade Facilitation)",
+      name: "ACG N. Isiyaku",
+      title: "Asst. Comptroller General (Trade Facilitation)",
       img: comp,
       bio: "Nigeria Customs Service.",
     },
@@ -420,7 +420,7 @@ export default function About() {
               <div
                 key={index}
                 className="
-                    group relative bg-white p-8 rounded-3xl shadow-lg 
+                    group relative bg-[#B8860B] p-8 rounded-3xl shadow-lg 
                     hover:shadow-2xl transition-all duration-500 
                     hover:-translate-y-3 hover:scale-[1.03]
                     backdrop-blur-lg cursor-pointer
