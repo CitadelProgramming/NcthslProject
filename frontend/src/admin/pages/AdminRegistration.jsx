@@ -5,7 +5,6 @@ import axios from "axios";
 
 export default function AdminRegistration() {
   const [showPassword, setShowPassword] = useState(false);
-
   const [form, setForm] = useState({
     firstname: "",
     lastname: "",
@@ -20,82 +19,53 @@ export default function AdminRegistration() {
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!form.firstname.trim()) newErrors.firstname = "First name is required.";
-    if (!form.lastname.trim()) newErrors.lastname = "Last name is required.";
-    if (!form.email.trim()) newErrors.email = "Email is required.";
-    if (!form.password.trim()) newErrors.password = "Password is required.";
-    else if (form.password.length < 6)
-      newErrors.password = "Password must be at least 6 characters.";
-
-    if (form.password !== form.confirmPassword)
-      newErrors.confirmPassword = "Passwords do not match.";
-
-    if (!form.phone_no.trim()) newErrors.phone_no = "Phone number is required.";
-    if (!form.address.trim()) newErrors.address = "Address is required.";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!validateForm()) return;
+    e.preventDefault();
 
-  const payload = {
-    firstname: form.firstname,
-    lastname: form.lastname,
-    email: form.email,
-    password: form.password,
-    confirmPassword: form.confirmPassword,
-    phone_no: form.phone_no,
-    address: form.address,
-    role: "admin",
+    const payload = {
+      firstname: form.firstname,
+      lastname: form.lastname,
+      email: form.email,
+      password: form.password,
+      confirmPassword: form.confirmPassword,
+      phone_no: form.phone_no,
+      address: form.address,
+      role: "admin",
+    };
+
+    try {
+      setLoading(true);
+
+      const response = await axios.post(
+        "https://enchanting-expression-production.up.railway.app/api/v1/auth/register",
+        payload
+      );
+
+      setSuccessMessage("Admin registered successfully!");
+      setErrors({});
+      console.log("Registration successful:", response.data);
+
+      setForm({
+        firstname: "",
+        lastname: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        phone_no: "",
+        address: "",
+      });
+
+    } catch (error) {
+      console.error(error);
+
+      setSuccessMessage("");
+      setErrors({
+        api: error.response?.data?.message || "Registration failed. Check your input.",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
-
-  try {
-    setLoading(true);
-
-    const response = await axios.post(
-      "https://enchanting-expression-production.up.railway.app/api/v1/auth/register",
-      payload
-    );
-    if (resonse.status === 200) {
-
-          setSuccessMessage("Admin registered successfully!");
-          console.log("Registration successful:", response.data);
-    }
-    else {
-
-        setErrors({ api: ("Registration failed. Check your input."
-) });
-        console.log("Registration failed:", response.data);
-    }
-
-    setForm({
-      firstname: "",
-      lastname: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      phone_no: "",
-      address: "",
-    });
-
-    setErrors({});
-  } catch (error) {
-    console.error(error);
-
-    setSuccessMessage("");
-    setErrors({
-      api: error.response?.data?.message || "Registration failed. Check your input.",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -148,15 +118,11 @@ export default function AdminRegistration() {
               placeholder="Enter first name"
               value={form.firstname}
               onChange={handleChange}
-              className={`w-full p-3 border rounded-lg ${
-                errors.firstname ? "border-red-500" : "border-gray-300"
-              }`}
+              className="w-full p-3 border rounded-lg border-gray-300"
             />
-            {errors.firstname && (
-              <p className="text-red-500 text-sm">{errors.firstname}</p>
-            )}
           </div>
-           {/* Last Name */}
+
+          {/* Last Name */}
           <div>
             <label className="block mb-1 font-medium">Last Name</label>
             <input
@@ -164,13 +130,8 @@ export default function AdminRegistration() {
               placeholder="Enter last name"
               value={form.lastname}
               onChange={handleChange}
-              className={`w-full p-3 border rounded-lg ${
-                errors.lastname ? "border-red-500" : "border-gray-300"
-              }`}
+              className="w-full p-3 border rounded-lg border-gray-300"
             />
-            {errors.lastname && (
-              <p className="text-red-500 text-sm">{errors.lastname}</p>
-            )}
           </div>
 
           {/* Email */}
@@ -182,13 +143,8 @@ export default function AdminRegistration() {
               placeholder="Enter email"
               value={form.email}
               onChange={handleChange}
-              className={`w-full p-3 border rounded-lg ${
-                errors.email ? "border-red-500" : "border-gray-300"
-              }`}
+              className="w-full p-3 border rounded-lg border-gray-300"
             />
-            {errors.email && (
-              <p className="text-red-500 text-sm">{errors.email}</p>
-            )}
           </div>
 
           {/* Phone Number */}
@@ -199,13 +155,8 @@ export default function AdminRegistration() {
               placeholder="Enter phone number"
               value={form.phone_no}
               onChange={handleChange}
-              className={`w-full p-3 border rounded-lg ${
-                errors.phone_no ? "border-red-500" : "border-gray-300"
-              }`}
+              className="w-full p-3 border rounded-lg border-gray-300"
             />
-            {errors.phone_no && (
-              <p className="text-red-500 text-sm">{errors.phone_no}</p>
-            )}
           </div>
 
           {/* Address */}
@@ -216,13 +167,8 @@ export default function AdminRegistration() {
               placeholder="Enter address"
               value={form.address}
               onChange={handleChange}
-              className={`w-full p-3 border rounded-lg ${
-                errors.address ? "border-red-500" : "border-gray-300"
-              }`}
+              className="w-full p-3 border rounded-lg border-gray-300"
             />
-            {errors.address && (
-              <p className="text-red-500 text-sm">{errors.address}</p>
-            )}
           </div>
 
           {/* Password */}
@@ -235,9 +181,7 @@ export default function AdminRegistration() {
                 type={showPassword ? "text" : "password"}
                 value={form.password}
                 onChange={handleChange}
-                className={`w-full p-3 border rounded-lg ${
-                  errors.password ? "border-red-500" : "border-gray-300"
-                }`}
+                className="w-full p-3 border rounded-lg border-gray-300"
               />
               <button
                 type="button"
@@ -247,9 +191,6 @@ export default function AdminRegistration() {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {errors.password && (
-              <p className="text-red-500 text-sm">{errors.password}</p>
-            )}
           </div>
 
           {/* Confirm Password */}
@@ -261,13 +202,8 @@ export default function AdminRegistration() {
               type="password"
               value={form.confirmPassword}
               onChange={handleChange}
-              className={`w-full p-3 border rounded-lg ${
-                errors.confirmPassword ? "border-red-500" : "border-gray-300"
-              }`}
+              className="w-full p-3 border rounded-lg border-gray-300"
             />
-            {errors.confirmPassword && (
-              <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
-            )}
           </div>
 
           <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
