@@ -60,8 +60,16 @@ export default function AdminRegistration() {
       "https://enchanting-expression-production.up.railway.app/api/v1/auth/register",
       payload
     );
+    if (resonse.status === 200) {
 
-    setSuccessMessage("Admin registered successfully!");
+          setSuccessMessage("Admin registered successfully!");
+    }
+    else {
+
+        setErrorMessage("Registration failed. Check your input.")
+    }
+
+
 
     setForm({
       firstname: "",
