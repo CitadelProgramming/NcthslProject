@@ -49,8 +49,10 @@ export default function AdminRegistration() {
     lastname: form.lastname,
     email: form.email,
     password: form.password,
+    confirmPassword: form.confirmPassword,
     phone_no: form.phone_no,
     address: form.address,
+    role: "admin",
   };
 
   try {

@@ -1,27 +1,53 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
+import axios from "axios";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    // 🔐 HARD-CODED ADMIN CREDENTIALS
-    const ADMIN_EMAIL = "admin@ncthsl.com";
-    const ADMIN_PASSWORD = "Ncthsl@123";
+    const payload = {
+      email: email,
+      password: password,
+    };
 
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      // Store fake token
-      localStorage.setItem("adminToken", "FAKE_ADMIN_TOKEN");
+    try {
+      setLoading(true);
+
+      const response = await axios.post(
+        "https://enchanting-expression-production.up.railway.app/api/v1/auth/authenticate",
+        payload
+      );
+
+      //backend returns JWT tokens in "token" or "accessToken"
+      const token = response.data?.token || response.data?.accessToken;
+
+      if (!token) {
+        Swal.fire("Error", "Invalid response from server", "error");
+        return;
+      }
+
+      // Save token to localStorage
+      localStorage.setItem("adminToken", token);
 
       Swal.fire("Success", "Login Successful!", "success");
 
-      // Redirect to dashboard
+      // Redirect to admin dashboard
       window.location.href = "/admin/dashboard";
-    } else {
-      Swal.fire("Error", "Invalid email or password", "error");
+    } catch (error) {
+      console.error("Login error:", error);
+
+      Swal.fire(
+        "Login Failed",
+        error.response?.data?.message || "Invalid email or password",
+        "error"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,9 +79,10 @@ export default function Login() {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 disabled:opacity-50"
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </button>
       </form>
     </div>
