@@ -17,24 +17,25 @@ export default function NewsAdmin() {
   const [newsList, setNewsList] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [form, setForm] = useState({
+  const emptyForm = {
     title: "",
     category: "",
+    newsPreview: "",
     content: "",
     author: "",
     coverImage: null,
     galleryImages: [],
-  });
+  };
 
+  const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Pagination
   const PER_PAGE = 5;
   const [page, setPage] = useState(1);
 
   // ===============================
-  // LOAD ALL NEWS FROM BACKEND
+  // LOAD ALL NEWS
   // ===============================
   const loadNews = async () => {
     try {
@@ -42,19 +43,17 @@ export default function NewsAdmin() {
       const res = await axios.get(`${API_BASE}/all`);
       setNewsList(res.data || []);
     } catch (err) {
-      console.error(err);
+      console.error("Load error:", err);
       Swal.fire("Error", "Failed to load news", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadNews();
-  }, []);
+  useEffect(() => loadNews(), []);
 
   // ===============================
-  // COVER IMAGE UPLOAD
+  // COVER UPLOAD
   // ===============================
   const handleCoverUpload = async (e) => {
     const file = e.target.files[0];
@@ -64,7 +63,7 @@ export default function NewsAdmin() {
   };
 
   // ===============================
-  // GALLERY UPLOAD
+  // GALLERY
   // ===============================
   const handleGalleryUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -76,33 +75,29 @@ export default function NewsAdmin() {
   };
 
   // ===============================
-  // SUBMIT FORM (Create or Update)
+  // SUBMIT FORM
   // ===============================
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.title || !form.content) {
+    if (!form.title.trim() || !form.content.trim()) {
       Swal.fire("Error", "Title & Content are required", "error");
       return;
     }
 
     try {
-      let res;
-
       if (editingId) {
-        // UPDATE
-        res = await axios.put(`${API_BASE}/update/${editingId}`, form);
-        Swal.fire("Updated", "News updated successfully!", "success");
+          await axios.put(`${API_BASE}/update/${editingId}`, form);
+          Swal.fire("Updated!", "News updated successfully", "success");
       } else {
-        // CREATE
-        res = await axios.post(`${API_BASE}/create`, form);
-        Swal.fire("Success", "News created successfully!", "success");
+          await axios.post(`${API_BASE}/create`, form);
+          Swal.fire("Success!", "News created successfully", "success");
       }
 
       loadNews();
       cancelEdit();
     } catch (err) {
-      console.error(err);
+      console.error("Save error:", err);
       Swal.fire(
         "Error",
         err.response?.data?.message || "Failed to save news",
@@ -112,22 +107,24 @@ export default function NewsAdmin() {
   };
 
   // ===============================
-  // DELETE NEWS
+  // DELETE
   // ===============================
   const deleteNews = (id) => {
     Swal.fire({
       title: "Delete?",
-      text: "This cannot be undone.",
+      text: "This action cannot be undone.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Yes, delete",
+      confirmButtonText: "Delete",
+      confirmButtonColor: "#d33",
     }).then(async (res) => {
       if (res.isConfirmed) {
         try {
           await axios.delete(`${API_BASE}/delete/${id}`);
-          Swal.fire("Deleted", "News removed", "success");
+          Swal.fire("Deleted", "News removed successfully", "success");
           loadNews();
         } catch (err) {
+          console.error("Delete error:", err);
           Swal.fire("Error", "Failed to delete news", "error");
         }
       }
@@ -135,24 +132,27 @@ export default function NewsAdmin() {
   };
 
   // ===============================
-  // EDITING
+  // EDIT
   // ===============================
   const startEdit = (item) => {
-    setEditingId(item.id);
-    setForm({ ...item });
+    setEditingId(item.id || item._id);
+
+    setForm({
+      title: item.title,
+      category: item.category || "",
+      newsPreview: item.newsPreview || "",
+      content: item.content,
+      author: item.author || "",
+      coverImage: item.coverImage || null,
+      galleryImages: item.galleryImages || [],
+    });
+
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const cancelEdit = () => {
     setEditingId(null);
-    setForm({
-      title: "",
-      category: "",
-      content: "",
-      author: "",
-      coverImage: null,
-      galleryImages: [],
-    });
+    setForm(emptyForm);
   };
 
   // ===============================
@@ -184,13 +184,14 @@ export default function NewsAdmin() {
         <span className="text-sm">{filtered.length} found</span>
       </div>
 
-      {/* NEWS FORM */}
+      {/* FORM */}
       <div className="bg-white shadow p-4 rounded mb-6 max-w-3xl">
         <h2 className="text-xl font-semibold mb-4">
           {editingId ? "Edit News" : "Add News"}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* TITLE */}
           <input
             type="text"
             placeholder="Title"
@@ -200,6 +201,19 @@ export default function NewsAdmin() {
             required
           />
 
+          {/* PREVIEW */}
+          <input
+            type="text"
+            placeholder="Short Preview (1–2 sentences)"
+            className="w-full p-2 border rounded"
+            value={form.newsPreview}
+            onChange={(e) =>
+              setForm({ ...form, newsPreview: e.target.value })
+            }
+            required
+          />
+
+          {/* CATEGORY */}
           <select
             className="w-full p-2 border rounded"
             value={form.category}
@@ -212,6 +226,7 @@ export default function NewsAdmin() {
             <option>General</option>
           </select>
 
+          {/* AUTHOR */}
           <input
             type="text"
             placeholder="Author"
@@ -220,19 +235,26 @@ export default function NewsAdmin() {
             onChange={(e) => setForm({ ...form, author: e.target.value })}
           />
 
+          {/* CONTENT */}
           <textarea
             placeholder="Content"
             className="w-full p-2 border rounded"
             rows={6}
             value={form.content}
-            onChange={(e) => setForm({ ...form, content: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, content: e.target.value })
+            }
             required
           />
 
           {/* COVER IMAGE */}
           <div>
             <label className="text-sm block mb-1">Cover Image</label>
-            <input type="file" accept="image/*" onChange={handleCoverUpload} />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleCoverUpload}
+            />
             {form.coverImage && (
               <img
                 src={form.coverImage}
@@ -245,7 +267,12 @@ export default function NewsAdmin() {
           {/* GALLERY */}
           <div>
             <label className="text-sm block mb-1">Gallery Images</label>
-            <input type="file" accept="image/*" multiple onChange={handleGalleryUpload} />
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleGalleryUpload}
+            />
             <div className="flex flex-wrap gap-2 mt-2">
               {form.galleryImages.map((img, i) => (
                 <img
@@ -276,13 +303,16 @@ export default function NewsAdmin() {
         </form>
       </div>
 
-      {/* LIST */}
+      {/* NEWS LIST */}
       {loading ? (
         <p>Loading...</p>
       ) : (
         <div className="space-y-4">
           {paginated.map((item) => (
-            <div key={item.id} className="bg-white p-4 rounded shadow">
+            <div
+              key={item.id || item._id}
+              className="bg-white p-4 rounded shadow"
+            >
               {item.coverImage && (
                 <img
                   src={item.coverImage}
@@ -291,13 +321,15 @@ export default function NewsAdmin() {
               )}
 
               <h3 className="text-xl font-bold">{item.title}</h3>
+
               <p className="text-sm text-gray-600">
                 {item.category} • {item.author}
               </p>
 
-              <p className="mt-2">{item.content.substring(0, 250)}...</p>
+              <p className="mt-2 text-gray-800">
+                {item.newsPreview || "No preview added."}
+              </p>
 
-              {/* GALLERY */}
               <div className="flex gap-2 mt-2 flex-wrap">
                 {item.galleryImages?.map((img, idx) => (
                   <img
@@ -315,9 +347,10 @@ export default function NewsAdmin() {
                 >
                   Edit
                 </button>
+
                 <button
                   className="text-red-600"
-                  onClick={() => deleteNews(item.id)}
+                  onClick={() => deleteNews(item.id || item._id)}
                 >
                   Delete
                 </button>
@@ -337,6 +370,7 @@ export default function NewsAdmin() {
           >
             Previous
           </button>
+
           <button
             disabled={page === totalPages}
             onClick={() => setPage(page + 1)}
