@@ -67,7 +67,8 @@ export default function AdminRegistration() {
     }
     else {
 
-        setErrorMessage("Registration failed. Check your input.");
+        setErrors({ api: ("Registration failed. Check your input."
+) });
         console.log("Registration failed:", response.data);
     }
 
