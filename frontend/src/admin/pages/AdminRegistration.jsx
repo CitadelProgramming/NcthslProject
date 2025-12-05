@@ -35,6 +35,8 @@ export default function AdminRegistration() {
 
     try {
       setLoading(true);
+      setErrors({});
+      setSuccessMessage("");
 
       const response = await axios.post(
         "https://enchanting-expression-production.up.railway.app/api/v1/auth/register",
@@ -42,9 +44,8 @@ export default function AdminRegistration() {
       );
 
       setSuccessMessage("Admin registered successfully!");
-      setErrors({});
-      console.log("Registration successful:", response.data);
 
+      // Reset form after successful registration
       setForm({
         firstname: "",
         lastname: "",
@@ -56,12 +57,23 @@ export default function AdminRegistration() {
       });
 
     } catch (error) {
-      console.error(error);
+      console.error("Registration error:", error);
 
       setSuccessMessage("");
-      setErrors({
-        api: error.response?.data?.message || "Registration failed. Check your input.",
-      });
+
+      // Backend validation errors (field errors)
+      if (error.response?.data?.errors) {
+        setErrors(error.response.data.errors);
+      }
+      // Backend global error (message)
+      else if (error.response?.data?.message) {
+        setErrors({ api: error.response.data.message });
+      }
+      // Fallback error
+      else {
+        setErrors({ api: "Registration failed. Please try again." });
+      }
+
     } finally {
       setLoading(false);
     }
@@ -110,6 +122,7 @@ export default function AdminRegistration() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+
           {/* First Name */}
           <div>
             <label className="block mb-1 font-medium">First Name</label>
@@ -120,6 +133,9 @@ export default function AdminRegistration() {
               onChange={handleChange}
               className="w-full p-3 border rounded-lg border-gray-300"
             />
+            {errors.firstname && (
+              <p className="text-red-600 text-sm">{errors.firstname}</p>
+            )}
           </div>
 
           {/* Last Name */}
@@ -132,6 +148,9 @@ export default function AdminRegistration() {
               onChange={handleChange}
               className="w-full p-3 border rounded-lg border-gray-300"
             />
+            {errors.lastname && (
+              <p className="text-red-600 text-sm">{errors.lastname}</p>
+            )}
           </div>
 
           {/* Email */}
@@ -145,6 +164,9 @@ export default function AdminRegistration() {
               onChange={handleChange}
               className="w-full p-3 border rounded-lg border-gray-300"
             />
+            {errors.email && (
+              <p className="text-red-600 text-sm">{errors.email}</p>
+            )}
           </div>
 
           {/* Phone Number */}
@@ -157,6 +179,9 @@ export default function AdminRegistration() {
               onChange={handleChange}
               className="w-full p-3 border rounded-lg border-gray-300"
             />
+            {errors.phone_no && (
+              <p className="text-red-600 text-sm">{errors.phone_no}</p>
+            )}
           </div>
 
           {/* Address */}
@@ -169,6 +194,9 @@ export default function AdminRegistration() {
               onChange={handleChange}
               className="w-full p-3 border rounded-lg border-gray-300"
             />
+            {errors.address && (
+              <p className="text-red-600 text-sm">{errors.address}</p>
+            )}
           </div>
 
           {/* Password */}
@@ -191,6 +219,9 @@ export default function AdminRegistration() {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+            {errors.password && (
+              <p className="text-red-600 text-sm">{errors.password}</p>
+            )}
           </div>
 
           {/* Confirm Password */}
@@ -204,6 +235,9 @@ export default function AdminRegistration() {
               onChange={handleChange}
               className="w-full p-3 border rounded-lg border-gray-300"
             />
+            {errors.confirmPassword && (
+              <p className="text-red-600 text-sm">{errors.confirmPassword}</p>
+            )}
           </div>
 
           <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
