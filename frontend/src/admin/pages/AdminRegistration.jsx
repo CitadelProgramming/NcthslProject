@@ -63,13 +63,13 @@ export default function AdminRegistration() {
     if (resonse.status === 200) {
 
           setSuccessMessage("Admin registered successfully!");
+          console.log("Registration successful:", response.data);
     }
     else {
 
-        setErrorMessage("Registration failed. Check your input.")
+        setErrorMessage("Registration failed. Check your input.");
+        console.log("Registration failed:", response.data);
     }
-
-
 
     setForm({
       firstname: "",
