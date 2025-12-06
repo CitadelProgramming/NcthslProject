@@ -1,325 +1,389 @@
 // src/admin/pages/GalleryAdmin.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Swal from "sweetalert2";
+import axios from "axios";
+import { motion } from "framer-motion";
+import { ImagePlus, Trash2, Edit, Search } from "lucide-react";
 
-/**
- * GalleryAdmin (Albums system)
- *
- * Features:
- * - Create albums (title + description)
- * - Add multiple images to an album (local upload, base64 preview)
- * - Edit album metadata
- * - Remove individual images from an album
- * - Delete whole album
- * - Search albums
- * - Scrollable album list
- *
- * Frontend-only (hard-coded data / local state). Replace state operations
- * with API calls when your backend is ready.
- */
+const API_BASE = "https://enchanting-expression-production.up.railway.app/api/v1/gallery";
+const HOST = "https://enchanting-expression-production.up.railway.app";
 
 export default function GalleryAdmin() {
-  // initial sample albums
-  const [albums, setAlbums] = useState([
-    {
-      id: 1,
-      title: "Facility & Hangar",
-      description: "Photos of the hangar, workshop and facility spaces.",
-      images: [], // base64 strings
-      createdAt: "2025-11-01T10:00:00",
-    },
-    {
-      id: 2,
-      title: "Events & Training",
-      description: "Snapshots from training sessions and corporate events.",
-      images: [],
-      createdAt: "2025-11-10T12:30:00",
-    },
-  ]);
+  const [albums, setAlbums] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // form states
-  const [newAlbum, setNewAlbum] = useState({ title: "", description: "", images: [] });
-  const [editingAlbumId, setEditingAlbumId] = useState(null);
-  const [editAlbumData, setEditAlbumData] = useState({ title: "", description: "", images: [] });
+  const emptyForm = {
+    title: "",
+    category: "",
+    description: "",
+    galleryFile: null,
+  };
+
+  const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [previewMap, setPreviewMap] = useState({}); // id -> objectURL (server blobs)
+  const objectUrlsRef = useRef({}); // keep track for cleanup of server blobs
 
-  // helpers: convert files -> base64
-  const filesToBase64 = (fileList) => {
-    const files = Array.from(fileList || []);
-    const readers = files.map(
-      (file) =>
-        new Promise((res) => {
-          const r = new FileReader();
-          r.onloadend = () => res(r.result);
-          r.readAsDataURL(file);
-        })
-    );
-    return Promise.all(readers);
+  // temp preview for newly selected local file
+  const [previewTemp, setPreviewTemp] = useState(null);
+  const previewTempRef = useRef(null);
+
+  const PER_PAGE = 6;
+  const [page, setPage] = useState(1);
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("adminToken");
+    return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
-  // add images to album form (new or editing)
-  const handleAlbumImagesUpload = async (e, isEditing = false) => {
-    const fileList = e.target.files;
-    if (!fileList || fileList.length === 0) return;
-    const results = await filesToBase64(fileList);
+  // -------------------
+  // Load albums + secure images
+  // -------------------
+  const loadAlbums = async () => {
+    try {
+      setLoading(true);
+      const config = { headers: getAuthHeaders() };
+      const res = await axios.get(`${API_BASE}/galleries`, config);
+      const list = Array.isArray(res.data) ? res.data : [];
 
-    if (isEditing) {
-      setEditAlbumData((prev) => ({ ...prev, images: [...(prev.images || []), ...results] }));
-    } else {
-      setNewAlbum((prev) => ({ ...prev, images: [...(prev.images || []), ...results] }));
+      // sort latest first
+      list.sort((a, b) => b.id - a.id);
+      setAlbums(list);
+
+      // kick off loading each image as blob (authenticated)
+      list.forEach((item) => loadImageWithAuth(item));
+    } catch (err) {
+      console.error("Failed to load albums:", err);
+      Swal.fire("Error", "Failed to load albums", "error");
+      setAlbums([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // create or update album
-  const handleSaveAlbum = (e) => {
-    e.preventDefault();
+  const loadImageWithAuth = async (item) => {
+    if (!item?.galleryImage) return;
 
-    if (!editingAlbumId) {
-      // create
-      if (!newAlbum.title.trim()) {
-        Swal.fire("Error", "Album title is required", "error");
+    try {
+      const fullUrl = `${HOST}${item.galleryImage}`;
+      const response = await fetch(fullUrl, {
+        headers: getAuthHeaders(),
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        console.warn("Image fetch failed", fullUrl, response.status);
         return;
       }
 
-      const album = {
-        ...newAlbum,
-        id: Date.now(),
-        createdAt: new Date().toISOString(),
-      };
-      setAlbums((prev) => [album, ...prev]);
-      setNewAlbum({ title: "", description: "", images: [] });
-      Swal.fire("Success", "Album created", "success");
-    } else {
-      // update existing album
-      if (!editAlbumData.title.trim()) {
-        Swal.fire("Error", "Album title is required", "error");
-        return;
-      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
 
-      setAlbums((prev) =>
-        prev.map((a) => (a.id === editingAlbumId ? { ...a, ...editAlbumData } : a))
-      );
-      setEditingAlbumId(null);
-      setEditAlbumData({ title: "", description: "", images: [] });
-      Swal.fire("Success", "Album updated", "success");
+      // store url in state and ref for cleanup
+      setPreviewMap((prev) => ({ ...prev, [item.id]: url }));
+      objectUrlsRef.current[item.id] = url;
+    } catch (error) {
+      console.error("Secure image load failed:", error);
     }
   };
 
-  // start editing album
-  const startEdit = (album) => {
-    setEditingAlbumId(album.id);
-    setEditAlbumData({ title: album.title, description: album.description, images: [...(album.images || [])] });
+  useEffect(() => {
+    loadAlbums();
+
+    // cleanup on unmount: revoke objectURLs
+    return () => {
+      Object.values(objectUrlsRef.current || {}).forEach((u) => {
+        try {
+          URL.revokeObjectURL(u);
+        } catch (e) {}
+      });
+      objectUrlsRef.current = {};
+
+      if (previewTempRef.current) {
+        try {
+          URL.revokeObjectURL(previewTempRef.current);
+        } catch (e) {}
+        previewTempRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // -------------------
+  // Form helpers
+  // -------------------
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0] ?? null;
+    setForm((f) => ({ ...f, galleryFile: file }));
+
+    // revoke previous local preview if any and not a server-blob
+    if (previewTempRef.current && !Object.values(objectUrlsRef.current).includes(previewTempRef.current)) {
+      try {
+        URL.revokeObjectURL(previewTempRef.current);
+      } catch (e) {}
+    }
+
+    if (file) {
+      const localUrl = URL.createObjectURL(file);
+      setPreviewTemp(localUrl);
+      previewTempRef.current = localUrl;
+    } else {
+      setPreviewTemp(null);
+      previewTempRef.current = null;
+    }
+  };
+
+  const buildFormData = () => {
+    const fd = new FormData();
+    const dataObj = {
+      title: form.title,
+      category: form.category,
+      description: form.description,
+      caption: "",
+    };
+    fd.append("data", new Blob([JSON.stringify(dataObj)], { type: "application/json" }));
+
+    // IMPORTANT: backend expects RequestPart("file") for create. Name must be "file".
+    if (form.galleryFile) fd.append("file", form.galleryFile);
+    return fd;
+  };
+
+  // -------------------
+  // Submit (Create / Update)
+  // -------------------
+  const handleSubmit = async (e) => {
+    e?.preventDefault?.();
+
+    // Option A: image required for CREATE, optional for UPDATE
+    if (!editingId && !form.galleryFile) {
+      return Swal.fire("Error", "Please choose an image for the gallery (required on create).", "error");
+    }
+
+    if (!form.title?.trim() || !form.category?.trim()) {
+      return Swal.fire("Error", "Title and Category are required", "error");
+    }
+
+    try {
+      const fd = buildFormData();
+      const headers = getAuthHeaders(); // don't set Content-Type, let axios/browser set boundary
+      const config = { headers };
+
+      const url = editingId ? `${API_BASE}/update/${editingId}` : `${API_BASE}/add-gallery`;
+      const method = editingId ? "put" : "post";
+
+      await axios[method](url, fd, config);
+
+      Swal.fire("Success", editingId ? "Gallery updated" : "Gallery created", "success");
+
+      // refresh list and images
+      await loadAlbums();
+      cancelEdit();
+    } catch (err) {
+      console.error("Submit error:", err);
+
+      // extract readable message: backend might return string or object
+      const resp = err?.response?.data;
+      let message = "Failed to save gallery";
+      if (typeof resp === "string") message = resp;
+      else if (resp?.message) message = resp.message;
+      else if (resp && typeof resp === "object") message = JSON.stringify(resp);
+
+      Swal.fire("Error", message, "error");
+    }
+  };
+
+  // -------------------
+  // Edit / Cancel / Delete
+  // -------------------
+  const startEdit = (item) => {
+    setEditingId(item.id);
+    setForm({
+      title: item.title || "",
+      category: item.category || "",
+      description: item.description || "",
+      galleryFile: null,
+    });
+
+    // if server blob preview already available use it; otherwise try to load it
+    if (previewMap[item.id]) {
+      setPreviewTemp(previewMap[item.id]);
+      previewTempRef.current = previewMap[item.id];
+    } else if (item.galleryImage) {
+      loadImageWithAuth(item);
+    }
+
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // cancel editing
   const cancelEdit = () => {
-    setEditingAlbumId(null);
-    setEditAlbumData({ title: "", description: "", images: [] });
-  };
+    setEditingId(null);
+    setForm(emptyForm);
 
-  // remove image from new/edit form
-  const removeFormImage = (index, isEditing = false) => {
-    if (isEditing) {
-      const images = [...(editAlbumData.images || [])];
-      images.splice(index, 1);
-      setEditAlbumData({ ...editAlbumData, images });
-    } else {
-      const images = [...(newAlbum.images || [])];
-      images.splice(index, 1);
-      setNewAlbum({ ...newAlbum, images });
+    // revoke local preview if it was a new local object URL (not a server blob)
+    if (previewTempRef.current && !Object.values(objectUrlsRef.current).includes(previewTempRef.current)) {
+      try {
+        URL.revokeObjectURL(previewTempRef.current);
+      } catch (e) {}
     }
+    previewTempRef.current = null;
+    setPreviewTemp(null);
   };
 
-  // remove image from saved album
-  const removeAlbumImage = (albumId, imageIndex) => {
-    setAlbums((prev) =>
-      prev.map((a) => {
-        if (a.id !== albumId) return a;
-        const images = [...(a.images || [])];
-        images.splice(imageIndex, 1);
-        return { ...a, images };
-      })
-    );
-    Swal.fire("Removed", "Image removed from album", "success");
-  };
-
-  // delete whole album
   const deleteAlbum = (id) => {
     Swal.fire({
-      title: "Delete album?",
-      text: "This will remove the album and all its images. This action cannot be undone.",
+      title: "Delete?",
+      text: "This album will be permanently deleted.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Yes, delete",
-    }).then((result) => {
-      if (result.isConfirmed) {
+      confirmButtonText: "Delete",
+      confirmButtonColor: "#d33",
+    }).then(async (result) => {
+      if (!result.isConfirmed) return;
+
+      try {
+        const config = { headers: getAuthHeaders() };
+        await axios.delete(`${API_BASE}/delete/${id}`, config);
+        Swal.fire("Deleted!", "Album removed", "success");
+        // Optimistically remove from UI and revoke object URL
         setAlbums((prev) => prev.filter((a) => a.id !== id));
-        Swal.fire("Deleted", "Album removed", "success");
+        if (objectUrlsRef.current[id]) {
+          try {
+            URL.revokeObjectURL(objectUrlsRef.current[id]);
+          } catch (e) {}
+          delete objectUrlsRef.current[id];
+          setPreviewMap((prev) => {
+            const copy = { ...prev };
+            delete copy[id];
+            return copy;
+          });
+        }
+      } catch (err) {
+        console.error("Delete error:", err);
+        Swal.fire("Error", "Failed to delete album", "error");
       }
     });
   };
 
-  // search + filtered
-  const filteredAlbums = albums.filter((a) =>
-    a.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (a.description || "").toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // -------------------
+  // Pagination / helpers
+  // -------------------
+  const filtered = albums.filter((a) => JSON.stringify(a).toLowerCase().includes(searchTerm.toLowerCase()));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
+  const getDisplayPreview = (albumId) => {
+    // prefer a newly selected local preview (previewTemp when editing), otherwise server blob
+    if (previewTemp && editingId === albumId) return previewTemp;
+    return previewMap[albumId] || null;
+  };
+
+  // styles
+  const glassButton =
+    "px-4 py-2 rounded-xl backdrop-blur-md bg-white/20 border border-white/30 shadow-md text-sm transition-all hover:bg-white/30 hover:shadow-lg active:scale-95";
+  const editBtn = `${glassButton} text-blue-700 font-semibold`;
+  const deleteBtn = `${glassButton} text-red-700 font-semibold`;
+  const paginationBtn = "px-4 py-2 bg-white/30 border border-gray-300 rounded-lg backdrop-blur-md hover:bg-white/40 transition disabled:opacity-40";
+
+  // -------------------
+  // Render
+  // -------------------
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Gallery — Albums Manager</h1>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Gallery Admin</h1>
 
-      {/* Create / Edit Form */}
-      <div className="mb-6 bg-white p-4 shadow rounded max-w-3xl">
-        <h2 className="text-lg font-semibold mb-3">{editingAlbumId ? "Edit Album" : "Create Album"}</h2>
+      {/* Search */}
+      <div className="mb-6 flex items-center gap-2 bg-gray-100 p-3 rounded-xl">
+        <Search className="text-gray-500" />
+        <input
+          type="text"
+          placeholder="Search galleries..."
+          className="w-full bg-transparent outline-none"
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setPage(1);
+          }}
+        />
+        <div className="text-sm text-gray-600">{filtered.length} found</div>
+      </div>
 
-        <form onSubmit={handleSaveAlbum} className="space-y-3">
-          <input
-            type="text"
-            placeholder="Album title"
-            className="w-full p-2 border rounded"
-            value={editingAlbumId ? editAlbumData.title : newAlbum.title}
-            onChange={(e) =>
-              editingAlbumId
-                ? setEditAlbumData({ ...editAlbumData, title: e.target.value })
-                : setNewAlbum({ ...newAlbum, title: e.target.value })
-            }
-            required
-          />
+      {/* Form */}
+      <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white p-6 rounded-xl shadow mb-8 max-w-3xl">
+        <h2 className="text-xl font-semibold mb-4">{editingId ? "Edit Gallery" : "Add Gallery"}</h2>
 
-          <textarea
-            placeholder="Short description (optional)"
-            className="w-full p-2 border rounded"
-            rows={3}
-            value={editingAlbumId ? editAlbumData.description : newAlbum.description}
-            onChange={(e) =>
-              editingAlbumId
-                ? setEditAlbumData({ ...editAlbumData, description: e.target.value })
-                : setNewAlbum({ ...newAlbum, description: e.target.value })
-            }
-          />
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <input type="text" className="w-full p-3 border rounded" placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
 
-          <div>
-            <label className="block text-sm mb-1">Add images (you can select multiple)</label>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={(e) => handleAlbumImagesUpload(e, !!editingAlbumId)}
-              className="w-full"
-            />
+          <input type="text" className="w-full p-3 border rounded" placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+
+          <textarea className="w-full p-3 border rounded" rows="4" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium flex items-center gap-2 cursor-pointer">
+              <ImagePlus /> Upload Image {editingId ? "(optional)" : "(required)"}
+              <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+            </label>
+
+            {/* local preview (new file) or server preview when editing */}
+            {previewTemp ? (
+              <img src={previewTemp} alt="preview" className="h-40 rounded mb-2 object-cover" />
+            ) : editingId && previewMap[editingId] ? (
+              <img src={previewMap[editingId]} alt="preview" className="h-40 rounded mb-2 object-cover" />
+            ) : null}
           </div>
 
-          {/* preview thumbnails for form */}
-          <div className="flex flex-wrap gap-2 mt-2">
-            {(editingAlbumId ? editAlbumData.images : newAlbum.images).map((img, i) => (
-              <div key={i} className="relative">
-                <img src={img} alt={`preview-${i}`} className="w-28 h-20 object-cover rounded border" />
-                <button
-                  type="button"
-                  onClick={() => removeFormImage(i, !!editingAlbumId)}
-                  className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center"
-                  title="Remove image"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex gap-2 mt-3">
+          <div className="flex gap-2">
             <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">
-              {editingAlbumId ? "Save Changes" : "Create Album"}
+              {editingId ? "Update Gallery" : "Add Gallery"}
             </button>
-
-            {editingAlbumId ? (
-              <button type="button" onClick={cancelEdit} className="bg-gray-400 text-white px-4 py-2 rounded">
+            {editingId && (
+              <button type="button" onClick={cancelEdit} className="bg-gray-500 text-white px-4 py-2 rounded">
                 Cancel
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setNewAlbum({ title: "", description: "", images: [] })}
-                className="bg-gray-100 px-4 py-2 rounded"
-              >
-                Clear
               </button>
             )}
           </div>
         </form>
-      </div>
+      </motion.div>
 
-      {/* Search */}
-      <div className="mb-4 flex items-center gap-2">
-        <input
-          type="text"
-          placeholder="Search albums..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="p-2 border rounded max-w-lg w-full"
-        />
-        <div className="text-sm text-gray-500">{filteredAlbums.length} albums</div>
-      </div>
+      {/* List */}
+      <div className="grid md:grid-cols-3 gap-6">
+        {paginated.map((album) => (
+          <motion.div key={album.id} whileHover={{ scale: 1.02 }} className="bg-white rounded-xl shadow p-4">
+            {getDisplayPreview(album.id) ? (
+              <img src={getDisplayPreview(album.id)} alt={album.title} className="h-48 w-full object-cover rounded mb-3" />
+            ) : (
+              <div className="h-48 w-full bg-gray-100 rounded mb-3 flex items-center justify-center text-gray-400">No preview</div>
+            )}
 
-      {/* Albums list */}
-      <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-2">
-        {filteredAlbums.length === 0 ? (
-          <p className="text-gray-600">No albums found. Create one above.</p>
-        ) : (
-          filteredAlbums.map((album) => (
-            <div key={album.id} className="bg-white p-4 shadow rounded">
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold">{album.title}</h3>
-                      <p className="text-sm text-gray-600">{album.description}</p>
-                      <p className="text-xs text-gray-400 mt-1">Created: {new Date(album.createdAt).toLocaleString()}</p>
-                    </div>
+            <h2 className="font-bold text-lg">{album.title}</h2>
+            <p className="text-sm text-gray-600">{album.category}</p>
+            <p className="text-sm text-gray-600 mb-3">{album.description}</p>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => startEdit(album)}
-                        className="text-blue-600 text-sm"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => deleteAlbum(album.id)}
-                        className="text-red-600 text-sm"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* images preview with remove buttons */}
-                  {album.images && album.images.length > 0 ? (
-                    <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                      {album.images.map((img, idx) => (
-                        <div key={idx} className="relative">
-                          <img src={img} alt={`album-${album.id}-img-${idx}`} className="w-full h-20 object-cover rounded" />
-                          <button
-                            type="button"
-                            onClick={() => removeAlbumImage(album.id, idx)}
-                            className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center"
-                            title="Remove image"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="mt-3 text-sm text-gray-500">No images in this album yet.</p>
-                  )}
-                </div>
-              </div>
+            <div className="flex gap-3">
+              <button onClick={() => startEdit(album)} className={editBtn}>
+                <Edit size={16} /> Edit
+              </button>
+              <button onClick={() => deleteAlbum(album.id)} className={deleteBtn}>
+                <Trash2 size={16} /> Delete
+              </button>
             </div>
-          ))
-        )}
+          </motion.div>
+        ))}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-6 flex gap-2">
+          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className={paginationBtn}>
+            Previous
+          </button>
+          <div className="px-4 py-2 rounded bg-white/10 border">{page} / {totalPages}</div>
+          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className={paginationBtn}>
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }

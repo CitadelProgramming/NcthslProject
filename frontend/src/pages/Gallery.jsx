@@ -1,61 +1,78 @@
 import React, { useState, useEffect } from "react";
-
-// Hard-coded local images (7 images)
-import gallery1 from "../assets/Images/gallery/gallery1.jpg";
-import gallery2 from "../assets/Images/gallery/gallery2.jpg";
-import gallery3 from "../assets/Images/gallery/gallery3.jpg";
-import gallery4 from "../assets/Images/gallery/gallery4.jpg";
-import gallery5 from "../assets/Images/gallery/gallery5.jpeg";
-import gallery6 from "../assets/Images/gallery/gallery6.jpeg";
-import gallery7 from "../assets/Images/gallery/gallery7.jpeg";
+import axios from "axios";
 
 export default function Gallery({ setSelectedImage, selectedImage }) {
   const [selectedAlbum, setSelectedAlbum] = useState("all");
+  const [albums, setAlbums] = useState([]);
 
-  const albums = [
-    {
-      id: 1,
-      title: "Facility & Hangar",
-      images: [
-        { src: gallery1, caption: "Aircraft hangar interior view" },
-        { src: gallery2, caption: "Maintenance bay workspace" },
-        { src: gallery3, caption: "Aircraft inspection in progress" },
-        { src: gallery4, caption: "Hangar equipment and tools section" }
-      ]
-    },
-    {
-      id: 2,
-      title: "Events & Training",
-      images: [
-        { src: gallery5, caption: "Training session in progress" },
-        { src: gallery6, caption: "Staff briefing and coordination" },
-        { src: gallery7, caption: "Certification event photography" }
-      ]
-    }
-  ];
+  const BASE_URL = "https://enchanting-expression-production.up.railway.app";
+
+  // Fetch galleries from backend
+  useEffect(() => {
+    const fetchGallery = async () => {
+      try {
+        const res = await axios.get(`${BASE_URL}/api/v1/gallery/galleries`);
+        setAlbums(res.data); // backend returns list of gallery objects
+      } catch (error) {
+        console.error("Failed to fetch galleries", error);
+      }
+    };
+
+    fetchGallery();
+  }, []);
+
+  // Format gallery items
+// GROUP galleries by category
+const grouped = {};
+
+albums.forEach((g) => {
+  const category = g.category || "Gallery";
+
+  if (!grouped[category]) {
+    grouped[category] = {
+      id: category,       // Use CATEGORY as album ID
+      title: category,    // Album title = category
+      images: [],
+    };
+  }
+
+  // Build correct full URL for image
+  const imageUrl = `${BASE_URL}${g.galleryImage.startsWith("/") ? g.galleryImage : "/" + g.galleryImage}`;
+
+  grouped[category].images.push({
+    src: imageUrl,
+    caption: g.caption || g.description || g.title || "Gallery Image",
+  });
+});
+
+// FINAL album list
+const formattedAlbums = Object.values(grouped);
+
 
   const galleryImages =
     selectedAlbum === "all"
-      ? albums.flatMap((a) => a.images)
-      : albums.find((a) => a.id === selectedAlbum)?.images || [];
+      ? formattedAlbums.flatMap((a) => a.images)
+      : formattedAlbums.find((a) => a.id === selectedAlbum)?.images || [];
 
-  // ===== Navigation Helpers =====
-  const flatImages = albums.flatMap((a) => a.images);
+  // Navigation helpers
+  const flatImages = formattedAlbums.flatMap((a) => a.images);
   const currentIndex = flatImages.findIndex(
     (img) => img.src === (selectedImage?.src || selectedImage)
   );
 
   const goPrevImage = () => {
-    const prevIndex = currentIndex === 0 ? flatImages.length - 1 : currentIndex - 1;
+    const prevIndex =
+      currentIndex === 0 ? flatImages.length - 1 : currentIndex - 1;
     setSelectedImage(flatImages[prevIndex]);
   };
 
   const goNextImage = () => {
-    const nextIndex = currentIndex === flatImages.length - 1 ? 0 : currentIndex + 1;
+    const nextIndex =
+      currentIndex === flatImages.length - 1 ? 0 : currentIndex + 1;
     setSelectedImage(flatImages[nextIndex]);
   };
 
-  // ESC + Arrow Keys
+  // ESC + Arrow keys
   useEffect(() => {
     const handleKey = (e) => {
       if (e.key === "Escape") setSelectedImage(null);
@@ -68,7 +85,10 @@ export default function Gallery({ setSelectedImage, selectedImage }) {
   });
 
   return (
-    <section id="gallery" className="py-24 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05]">
+    <section
+      id="gallery"
+      className="py-24 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05]"
+    >
       <div className="max-w-7xl mx-auto">
         <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-white animate-fadeUp tracking-wide">
           Gallery
@@ -78,14 +98,16 @@ export default function Gallery({ setSelectedImage, selectedImage }) {
         <div className="flex flex-wrap justify-center gap-3 mb-12">
           <button
             className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 border ${
-              selectedAlbum === "all" ? "bg-red-500 text-black" : "text-white border-white/20 hover:bg-white/10"
+              selectedAlbum === "all"
+                ? "bg-red-500 text-black"
+                : "text-white border-white/20 hover:bg-white/10"
             }`}
             onClick={() => setSelectedAlbum("all")}
           >
-            All Albums
+            All Galleries
           </button>
 
-          {albums.map((album) => (
+          {formattedAlbums.map((album) => (
             <button
               key={album.id}
               className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 border ${
@@ -114,7 +136,9 @@ export default function Gallery({ setSelectedImage, selectedImage }) {
               />
 
               <div className="absolute inset-0 p-4 flex flex-col justify-end bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
-                <span className="text-white text-xs mb-2 font-medium pointer-events-none">{item.caption}</span>
+                <span className="text-white text-xs mb-2 font-medium pointer-events-none">
+                  {item.caption}
+                </span>
 
                 <button
                   className="px-4 py-1 bg-red-500 text-black text-xs font-semibold rounded-full pointer-events-auto"
@@ -128,7 +152,7 @@ export default function Gallery({ setSelectedImage, selectedImage }) {
         </div>
       </div>
 
-      {/* ===== MODAL ===== */}
+      {/* Modal */}
       {selectedImage && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-md z-[200] flex justify-center items-center animate-fadeIn px-4"

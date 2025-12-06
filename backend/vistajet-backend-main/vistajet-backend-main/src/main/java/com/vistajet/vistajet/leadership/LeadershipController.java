@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/leadership")
-@CrossOrigin(origins = "https://customshangarservices.netlify.app/")
+@CrossOrigin(origins = "http://localhost:5173")
 @Validated
 public class LeadershipController {
 
@@ -32,12 +32,14 @@ public class LeadershipController {
     }
 
     @GetMapping("/leaders")
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<List<LeadershipResponse>> getAll() {
         return ResponseEntity.ok(leadershipService.getAllLeaders());
     }
 
     @GetMapping("/leader/find")
     @PreAuthorize("isAuthenticated()")
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<LeadershipResponse> getLeader(
             @RequestParam(required = false) Integer id,
             @RequestParam(required = false) String fullName
@@ -47,6 +49,7 @@ public class LeadershipController {
 
     @PutMapping(value = "/update/{id}", consumes = "multipart/form-data")
     @PreAuthorize("isAuthenticated()")
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<?> update(
             @PathVariable Integer id,
             @RequestPart("data") @Valid LeadershipRequest request,
@@ -58,6 +61,7 @@ public class LeadershipController {
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("isAuthenticated()")
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         leadershipService.delete(id);
         return ResponseEntity.ok("Leadership removed successfully");

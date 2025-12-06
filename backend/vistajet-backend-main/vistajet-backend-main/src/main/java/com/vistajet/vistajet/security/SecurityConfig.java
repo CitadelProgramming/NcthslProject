@@ -1,6 +1,5 @@
 package com.vistajet.vistajet.security;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +10,10 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -22,24 +25,46 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
-
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.setAllowedOrigins(List.of("http://localhost:5173")); // frontend origin
+                    config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+                    config.setAllowedHeaders(List.of("*"));
+                    config.setAllowCredentials(true);
+
+                    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                    source.registerCorsConfiguration("/**", config);
+
+                    cors.configurationSource(source);
+                })
                 .authorizeHttpRequests(req -> req
+                        // PUBLIC endpoints
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/leadership/leaders").permitAll()
                         .requestMatchers("/api/v1/news/all-news").permitAll()
-                        .requestMatchers("/api/v1/testimonials/create-testimonials","/api/v1/testimonials/all-testimonials", "/api/v1/testimonials/find/**").permitAll()
+                        .requestMatchers("/api/v1/testimonials/create-testimonials",
+                                         "/api/v1/testimonials/all-testimonials",
+                                         "/api/v1/testimonials/find/**").permitAll()
                         .requestMatchers("/api/v1/partners/all-partners").permitAll()
                         .requestMatchers("/api/v1/contact/add-contact").permitAll()
                         .requestMatchers("/api/v1/about/all-about").permitAll()
-                        .requestMatchers("/api/v1/gallery/galleries").permitAll()
+                        .requestMatchers("/api/v1/gallery/galleries").permitAll() // public gallery data
                         .requestMatchers("/api/v1/service/all-service").permitAll()
-                        .requestMatchers("/api/v1/leadership/**", "/api/v1/news/**", "/api/v1/gallery/**", "/api/v1/partners/**", "/api/v1/service/**", "/api/v1/service/**").hasRole("ADMIN")
+                        .requestMatchers("/uploads/**").permitAll() // ✅ public images
+
+                        // ADMIN-only endpoints
+                        .requestMatchers("/api/v1/leadership/**",
+                                         "/api/v1/news/**",
+                                         "/api/v1/gallery/**",
+                                         "/api/v1/partners/**",
+                                         "/api/v1/service/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/user/**").hasAnyRole("ADMIN", "USER")
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

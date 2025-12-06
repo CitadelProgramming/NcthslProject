@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import Swal from "sweetalert2";
 
-// Header image remains static
 import headerImg from "../assets/Images/news/news-header.jpg";
 
 export default function NewsPage() {
@@ -16,15 +15,72 @@ export default function NewsPage() {
     setExpandedId(expandedId === id ? null : id);
   };
 
-  // Fetch all news from backend
+  const getAuthConfig = () => {
+    const token = localStorage.getItem("adminToken");
+    return {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      responseType: "blob",
+    };
+  };
+
+  // Fetch secure images
+  const fetchSecureImage = async (relativePath) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+
+      const res = await axios.get(
+        `https://enchanting-expression-production.up.railway.app${relativePath}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          responseType: "blob",
+        }
+      );
+
+      return URL.createObjectURL(res.data);
+    } catch (err) {
+      console.error("Image fetch failed:", err);
+      return null;
+    }
+  };
+
   useEffect(() => {
     const fetchNews = async () => {
       try {
+        const token = localStorage.getItem("adminToken");
+
+        // FIX 1 — secure authenticated news fetch
         const response = await axios.get(
-          "https://enchanting-expression-production.up.railway.app/api/v1/news"
+          "https://enchanting-expression-production.up.railway.app/api/v1/news/all-news",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
 
-        setNews(response.data || []);
+        const list = response.data || [];
+
+        // FIX 2 — load secure images
+        const processed = await Promise.all(
+          list.map(async (item) => {
+            let imageSrc = null;
+
+            if (item.imageUrl) {
+              imageSrc = await fetchSecureImage(item.imageUrl);
+            }
+
+            return {
+              ...item,
+              imageSrc,
+            };
+          })
+        );
+
+        setNews(processed);
       } catch (error) {
         console.error("News Fetch Error:", error);
         Swal.fire(
@@ -42,7 +98,6 @@ export default function NewsPage() {
 
   return (
     <>
-      {/* Header */}
       <motion.header
         className="w-full h-72 md:h-80 bg-cover bg-center relative flex items-center justify-center"
         style={{ backgroundImage: `url(${headerImg})` }}
@@ -68,7 +123,6 @@ export default function NewsPage() {
         </motion.div>
       </motion.header>
 
-      {/* Main Section */}
       <motion.section
         className="py-20 px-6 bg-gradient-to-br from-[#818589] to-[#525354] min-h-screen"
         initial={{ opacity: 0 }}
@@ -76,7 +130,6 @@ export default function NewsPage() {
         transition={{ duration: 0.6 }}
       >
         <div className="max-w-5xl mx-auto">
-
           <motion.h1
             className="text-4xl font-bold text-[#f7f7f7] mb-10"
             initial={{ y: -20, opacity: 0 }}
@@ -86,12 +139,10 @@ export default function NewsPage() {
             Latest News
           </motion.h1>
 
-          {/* Loading State */}
           {loading && (
             <div className="text-center text-white text-lg">Loading news...</div>
           )}
 
-          {/* Empty State */}
           {!loading && news.length === 0 && (
             <div className="text-center text-white text-lg">
               No news available yet.
@@ -127,10 +178,9 @@ export default function NewsPage() {
                     },
                   }}
                 >
-                  {/* Image */}
-                  {item.coverImage && (
+                  {item.imageSrc && (
                     <motion.img
-                      src={item.coverImage}
+                      src={item.imageSrc}
                       alt={item.title}
                       className="w-full h-64 object-cover rounded-xl mb-6"
                       initial={{ opacity: 0, scale: 0.95 }}
@@ -139,33 +189,34 @@ export default function NewsPage() {
                     />
                   )}
 
-                  {/* Meta */}
                   <motion.div
                     className="text-xs text-gray-500 mb-2"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.3 }}
                   >
-                    {item.category || "General"} • {item.date || ""} •{" "}
+                    {item.createdAt?.slice(0, 10) || ""}
+                    {" • "}
                     {item.author || "Admin"}
                   </motion.div>
 
-                  {/* Title */}
                   <motion.h2 className="text-2xl font-bold text-[#0A4D2D] mb-3">
                     {item.title}
                   </motion.h2>
 
-                  {/* Preview / Full */}
                   <motion.p className="text-gray-700 whitespace-pre-line leading-relaxed">
-                    {isExpanded ? item.fullContent : item.preview}
+                    {isExpanded
+                      ? item.content
+                      : item.preview ||
+                        (item.content
+                          ? item.content.slice(0, 200) + "..."
+                          : "")}
                   </motion.p>
 
-                  {/* Expandable Section */}
                   <AnimatePresence>
                     {isExpanded && <motion.div />}
                   </AnimatePresence>
 
-                  {/* Read More Button */}
                   <motion.button
                     onClick={() => toggleExpand(item.id)}
                     className="mt-4 text-[#0A4D2D] font-semibold hover:underline"
