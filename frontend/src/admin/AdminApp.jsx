@@ -11,14 +11,7 @@ import GalleryAdmin from "./pages/GalleryAdmin";
 import NewsAdmin from "./pages/NewsAdmin";
 import TestimonialsAdmin from "./pages/TestimonialsAdmin";
 import MessagesAdmin from "./pages/MessagesAdmin";
-
-// ABOUT SECTION ADMIN
-import CompanyOverviewAdmin from "./pages/about/CompanyOverviewAdmin";
-import MissionVisionAdmin from "./pages/about/MissionVisionAdmin";
-import CorePillarsAdmin from "./pages/about/CorePillarsAdmin";
-import LeadershipTeamAdmin from "./pages/about/LeadershipTeamAdmin";
-import PartnersAdmin from "./pages/about/PartnersAdmin";
-import RegulatoryComplianceAdmin from "./pages/about/RegulatoryComplianceAdmin";
+import AboutAdmin from "./pages/AboutAdmin";
 
 // NAVBAR & FOOTER ADMIN
 import NavbarAdmin from "./pages/NavbarAdmin";
@@ -51,14 +44,7 @@ export default function AdminApp() {
         <Route path="news" element={<NewsAdmin />} />
         <Route path="testimonials" element={<TestimonialsAdmin />} />
         <Route path="messages" element={<MessagesAdmin />} />
-
-        {/* ABOUT ADMIN SECTIONS */}
-        <Route path="about/company-overview" element={<CompanyOverviewAdmin />} />
-        <Route path="about/mission-vision" element={<MissionVisionAdmin />} />
-        <Route path="about/core-pillars" element={<CorePillarsAdmin />} />
-        <Route path="about/leadership-team" element={<LeadershipTeamAdmin />} />
-        <Route path="about/partners" element={<PartnersAdmin />} />
-        <Route path="about/regulatory-compliance" element={<RegulatoryComplianceAdmin />} />
+        <Route path="about" element={<AboutAdmin />} />
 
         {/* NAVIGATION UI ADMIN */}
         <Route path="navbar" element={<NavbarAdmin />} />

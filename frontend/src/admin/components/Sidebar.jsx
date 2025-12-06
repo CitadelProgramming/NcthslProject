@@ -10,16 +10,14 @@ import {
   FaEnvelope,
   FaInfoCircle,
   FaChevronDown,
-  FaBars,
   FaBorderAll,
-  FaUsersCog   // <-- NEW ICON ADDED
+  FaUsersCog
 } from "react-icons/fa";
 
 export default function Sidebar() {
   const location = useLocation();
   const isActive = (path) => location.pathname.includes(path);
 
-  const [aboutOpen, setAboutOpen] = React.useState(false);
   const [uiOpen, setUiOpen] = React.useState(false);
 
   return (
@@ -38,80 +36,7 @@ export default function Sidebar() {
           <FaTachometerAlt /> Dashboard
         </Link>
 
-        {/* ABOUT DROPDOWN */}
-        <div>
-          <button
-            onClick={() => setAboutOpen(!aboutOpen)}
-            className="flex items-center justify-between w-full p-3 rounded-lg hover:bg-blue-800"
-          >
-            <span className="flex items-center gap-2">
-              <FaInfoCircle /> About Section
-            </span>
-            <FaChevronDown
-              className={`transition-transform ${aboutOpen ? "rotate-180" : ""}`}
-            />
-          </button>
-
-          {aboutOpen && (
-            <div className="ml-6 mt-2 flex flex-col gap-2">
-              <Link
-                to="/admin/about/company-overview"
-                className={`p-2 rounded ${
-                  isActive("company-overview") ? "bg-blue-700" : "hover:bg-blue-800"
-                }`}
-              >
-                Company Overview
-              </Link>
-
-              <Link
-                to="/admin/about/mission-vision"
-                className={`p-2 rounded ${
-                  isActive("mission-vision") ? "bg-blue-700" : "hover:bg-blue-800"
-                }`}
-              >
-                Mission & Vision
-              </Link>
-
-              <Link
-                to="/admin/about/core-pillars"
-                className={`p-2 rounded ${
-                  isActive("core-pillars") ? "bg-blue-700" : "hover:bg-blue-800"
-                }`}
-              >
-                Core Pillars
-              </Link>
-
-              <Link
-                to="/admin/about/leadership-team"
-                className={`p-2 rounded ${
-                  isActive("leadership-team") ? "bg-blue-700" : "hover:bg-blue-800"
-                }`}
-              >
-                Leadership Team
-              </Link>
-
-              <Link
-                to="/admin/about/partners"
-                className={`p-2 rounded ${
-                  isActive("partners") ? "bg-blue-700" : "hover:bg-blue-800"
-                }`}
-              >
-                Partners
-              </Link>
-
-              <Link
-                to="/admin/about/regulatory-compliance"
-                className={`p-2 rounded ${
-                  isActive("regulatory-compliance") ? "bg-blue-700" : "hover:bg-blue-800"
-                }`}
-              >
-                Regulatory Compliance
-              </Link>
-            </div>
-          )}
-        </div>
-
-        {/* Additional Admin Sections */}
+        {/* Services */}
         <Link
           to="/admin/services"
           className={`flex items-center gap-2 p-3 rounded-lg ${
@@ -121,6 +46,7 @@ export default function Sidebar() {
           <FaBoxes /> Services
         </Link>
 
+        {/* Gallery */}
         <Link
           to="/admin/gallery"
           className={`flex items-center gap-2 p-3 rounded-lg ${
@@ -130,6 +56,7 @@ export default function Sidebar() {
           <FaImages /> Gallery
         </Link>
 
+        {/* News */}
         <Link
           to="/admin/news"
           className={`flex items-center gap-2 p-3 rounded-lg ${
@@ -139,6 +66,7 @@ export default function Sidebar() {
           <FaRegNewspaper /> News
         </Link>
 
+        {/* Testimonials */}
         <Link
           to="/admin/testimonials"
           className={`flex items-center gap-2 p-3 rounded-lg ${
@@ -148,6 +76,7 @@ export default function Sidebar() {
           <FaUsers /> Testimonials
         </Link>
 
+        {/* Messages */}
         <Link
           to="/admin/messages"
           className={`flex items-center gap-2 p-3 rounded-lg ${
@@ -157,7 +86,7 @@ export default function Sidebar() {
           <FaEnvelope /> Messages
         </Link>
 
-        {/* NEW ADMIN REGISTRATION LINK (ADDED HERE) */}
+        {/* Admin Registration */}
         <Link
           to="/admin/register"
           className={`flex items-center gap-2 p-3 rounded-lg ${
@@ -167,7 +96,17 @@ export default function Sidebar() {
           <FaUsersCog /> Admin Registration
         </Link>
 
-        {/* WEBSITE UI (Navbar + Footer) */}
+        {/* ⭐ NEW — About Page Admin */}
+        <Link
+          to="/admin/about"
+          className={`flex items-center gap-2 p-3 rounded-lg ${
+            isActive("about") ? "bg-blue-700" : "hover:bg-blue-800"
+          }`}
+        >
+          <FaInfoCircle /> About Page
+        </Link>
+
+        {/* Website UI (Navbar + Footer) */}
         <div>
           <button
             onClick={() => setUiOpen(!uiOpen)}
