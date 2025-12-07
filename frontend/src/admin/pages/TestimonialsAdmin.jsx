@@ -1,382 +1,360 @@
-import React, { useState } from "react";
+// src/admin/pages/TestimonialsAdmin.jsx
+import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import axios from "axios";
 
-/**
- * TestimonialsAdmin.jsx
- *
- * FEATURES:
- * - Add testimonial (name, position, message, rating, photo)
- * - Edit testimonial
- * - Delete testimonial
- * - Search testimonials by name, position or message
- * - Pagination (5 per page)
- * - Live image preview (base64)
- * - Clean modern admin UI
- *
- * Replace local state with API calls once backend is ready.
- */
+const API_BASE = "https://enchanting-expression-production.up.railway.app/api/v1/testimonials";
 
 export default function TestimonialsAdmin() {
-  // ---------------------------------------------
-  // SAMPLE TESTIMONIALS (mock data for now)
-  // ---------------------------------------------
-  const [testimonials, setTestimonials] = useState([
-    {
-      id: 1,
-      name: "John David",
-      position: "Aircraft Engineer",
-      message:
-        "NCTHSL is truly the best aviation maintenance team I have ever worked with. Their professionalism is world class.",
-      rating: 5,
-      image: null,
-      createdAt: "2025-11-01T09:00:00",
-    },
-    {
-      id: 2,
-      name: "Sarah Williams",
-      position: "Logistics Manager",
-      message:
-        "A very reliable and efficient technical service provider. I highly recommend them!",
-      rating: 4,
-      image: null,
-      createdAt: "2025-11-10T13:20:00",
-    },
-  ]);
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // ---------------------------------------------
-  // FORM STATES
-  // ---------------------------------------------
-  const [formData, setFormData] = useState({
+  const emptyForm = {
     name: "",
-    position: "",
+    role: "",
     message: "",
-    rating: 5,
-    image: null,
-  });
+    photoFile: null,
+  };
 
+  const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // ---------------------------------------------
-  // HELPERS: Convert file → base64
-  // ---------------------------------------------
-  const toBase64 = (file) =>
-    new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.readAsDataURL(file);
-    });
+  const [previewMap, setPreviewMap] = useState({});
 
-  const handlePhotoUpload = async (e) => {
+  const PER_PAGE = 5;
+  const [page, setPage] = useState(1);
+
+  const getAuthConfig = () => {
+    const token = localStorage.getItem("adminToken");
+    return {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    };
+  };
+
+  // Exactly like NewsAdmin.jsx
+  const loadImageWithAuth = async (item) => {
+    if (!item.image) return;
+
+    try {
+      const token = localStorage.getItem("adminToken");
+      const fullUrl = `https://enchanting-expression-production.up.railway.app${item.image}`;
+
+      const response = await fetch(fullUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      });
+
+      if (!response.ok) return;
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      setPreviewMap((prev) => ({
+        ...prev,
+        [item.id]: url,
+      }));
+    } catch (error) {
+      console.error("Secure image load failed:", error);
+    }
+  };
+
+  // Load all testimonials
+  const loadTestimonials = async () => {
+    try {
+      setLoading(true);
+      const config = getAuthConfig();
+      const res = await axios.get(`${API_BASE}/all-testimonials`, config);
+
+      const list = res.data || [];
+      setTestimonials(list);
+
+      // Load images for each testimonial
+      list.forEach((item) => loadImageWithAuth(item));
+    } catch (err) {
+      Swal.fire("Error", "Failed to load testimonials", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadTestimonials();
+  }, []);
+
+  const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    const base64 = await toBase64(file);
-    setFormData({ ...formData, image: base64 });
+    setForm({ ...form, photoFile: file });
   };
 
-  // ---------------------------------------------
-  // CREATE / UPDATE TESTIMONIAL
-  // ---------------------------------------------
-  const handleSubmit = (e) => {
+  const buildFormData = () => {
+    const fd = new FormData();
+
+    const dataObj = {
+      name: form.name,
+      role: form.role,
+      message: form.message,
+    };
+
+    fd.append("data", new Blob([JSON.stringify(dataObj)], { type: "application/json" }));
+
+    if (form.photoFile) {
+      fd.append("file", form.photoFile);
+    }
+
+    return fd;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.name.trim() || !formData.message.trim()) {
-      Swal.fire("Error", "Name and message are required", "error");
-      return;
+    if (!form.name.trim() || !form.role.trim() || !form.message.trim()) {
+      return Swal.fire("Error", "All fields are required", "error");
     }
 
-    if (editingId) {
-      // UPDATE EXISTING
-      setTestimonials((prev) =>
-        prev.map((item) =>
-          item.id === editingId ? { ...item, ...formData } : item
-        )
-      );
+    try {
+      const config = getAuthConfig();
+      const fd = buildFormData();
 
-      Swal.fire("Success", "Testimonial updated", "success");
-      setEditingId(null);
-    } else {
-      // CREATE NEW
-      const newTestimonial = {
-        ...formData,
-        id: Date.now(),
-        createdAt: new Date().toISOString(),
-      };
+      if (editingId) {
+        await axios.put(`${API_BASE}/update/${editingId}`, fd, config);
+        Swal.fire("Updated!", "Testimonial updated", "success");
 
-      setTestimonials((prev) => [newTestimonial, ...prev]);
+        setTestimonials((prev) =>
+          prev.map((t) =>
+            t.id === editingId ? { ...t, ...form, image: t.image } : t
+          )
+        );
+      } else {
+        const res = await axios.post(`${API_BASE}/create-testimonials`, fd, config);
+        Swal.fire("Success!", "Testimonial created", "success");
 
-      Swal.fire("Success", "Testimonial added", "success");
+        const newItem = res.data?.data || res.data;
+        if (newItem) {
+          setTestimonials((prev) => [newItem, ...prev]);
+          loadImageWithAuth(newItem);
+        }
+      }
+
+      cancelEdit();
+    } catch (err) {
+      Swal.fire("Error", err.response?.data?.message || "Failed to save", "error");
     }
-
-    // RESET FORM
-    setFormData({
-      name: "",
-      position: "",
-      message: "",
-      rating: 5,
-      image: null,
-    });
   };
 
-  // ---------------------------------------------
-  // START EDITING
-  // ---------------------------------------------
-  const startEdit = (item) => {
-    setEditingId(item.id);
-    setFormData({
-      name: item.name,
-      position: item.position,
-      message: item.message,
-      rating: item.rating,
-      image: item.image,
-    });
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  // CANCEL EDIT
-  const cancelEdit = () => {
-    setEditingId(null);
-    setFormData({
-      name: "",
-      position: "",
-      message: "",
-      rating: 5,
-      image: null,
-    });
-  };
-
-  // ---------------------------------------------
-  // DELETE TESTIMONIAL
-  // ---------------------------------------------
   const deleteTestimonial = (id) => {
     Swal.fire({
       title: "Delete testimonial?",
-      text: "This action cannot be undone.",
+      text: "This cannot be undone.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Yes, delete",
-    }).then((res) => {
-      if (res.isConfirmed) {
+      confirmButtonColor: "#d33",
+      confirmButtonText: "Delete",
+    }).then(async (res) => {
+      if (!res.isConfirmed) return;
+
+      try {
+        const config = getAuthConfig();
+        await axios.delete(`${API_BASE}/delete/${id}`, config);
+
+        Swal.fire("Deleted!", "Testimonial removed", "success");
         setTestimonials((prev) => prev.filter((t) => t.id !== id));
-        Swal.fire("Deleted", "Testimonial removed", "success");
+      } catch (err) {
+      Swal.fire("Error", "Failed to delete", "error");
       }
     });
   };
 
-  // ---------------------------------------------
-  // SEARCH FILTERING
-  // ---------------------------------------------
-  const filtered = testimonials.filter(
-    (t) =>
-      t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.message.toLowerCase().includes(searchTerm.toLowerCase())
+  const startEdit = (item) => {
+    setEditingId(item.id);
+    setForm({
+      name: item.name,
+      role: item.role,
+      message: item.message,
+      photoFile: null,
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+  };
+
+  // Search + Pagination
+  const filtered = testimonials.filter((t) =>
+    JSON.stringify(t).toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // ---------------------------------------------
-  // PAGINATION
-  // ---------------------------------------------
-  const PER_PAGE = 5;
-  const [page, setPage] = useState(1);
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
-
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
-  // ---------------------------------------------
-  // COMPONENT RENDER
-  // ---------------------------------------------
+  // Glass buttons - same as NewsAdmin
+  const glassButton =
+    "px-4 py-2 rounded-xl backdrop-blur-md bg-white/20 border border-white/30 shadow-md text-sm transition-all hover:bg-white/30 hover:shadow-lg active:scale-95";
+  const editBtn = `${glassButton} text-blue-700 font-semibold`;
+  const deleteBtn = `${glassButton} text-red-700 font-semibold`;
+
+  if (loading) return <div className="p-8 text-center text-xl">Loading...</div>;
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Testimonials Manager</h1>
+    <div className="p-6 max-w-7xl mx-auto">
+      <h1 className="text-3xl font-extrabold mb-8 text-center">Testimonials Management</h1>
 
-      {/* ----------------------------------------------------
-          CREATE / EDIT FORM
-      ------------------------------------------------------ */}
-      <div className="bg-white p-4 rounded shadow max-w-3xl mb-6">
-        <h2 className="text-lg font-semibold mb-4">
-          {editingId ? "Edit Testimonial" : "Add New Testimonial"}
-        </h2>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Full name"
-            className="w-full p-2 border rounded"
-            value={formData.name}
-            onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
-            }
-            required
-          />
-
-          <input
-            type="text"
-            placeholder="Position (Optional)"
-            className="w-full p-2 border rounded"
-            value={formData.position}
-            onChange={(e) =>
-              setFormData({ ...formData, position: e.target.value })
-            }
-          />
-
-          <textarea
-            placeholder="Testimonial message"
-            className="w-full p-2 border rounded"
-            rows={4}
-            value={formData.message}
-            onChange={(e) =>
-              setFormData({ ...formData, message: e.target.value })
-            }
-            required
-          />
-
-          {/* Rating */}
-          <div>
-            <label className="block text-sm mb-1">Rating (1–5)</label>
-            <select
-              className="p-2 border rounded"
-              value={formData.rating}
-              onChange={(e) =>
-                setFormData({ ...formData, rating: Number(e.target.value) })
-              }
-            >
-              {[1, 2, 3, 4, 5].map((r) => (
-                <option key={r}>{r}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* PHOTO UPLOAD */}
-          <div>
-            <label className="block text-sm mb-1">Photo (optional)</label>
-            <input type="file" accept="image/*" onChange={handlePhotoUpload} />
-
-            {formData.image && (
-              <div className="mt-2">
-                <img
-                  src={formData.image}
-                  alt="preview"
-                  className="h-24 w-24 object-cover rounded border"
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="flex gap-2">
-            <button className="bg-green-600 text-white px-4 py-2 rounded">
-              {editingId ? "Save Changes" : "Add Testimonial"}
-            </button>
-
-            {editingId && (
-              <button
-                type="button"
-                onClick={cancelEdit}
-                className="bg-gray-400 text-white px-4 py-2 rounded"
-              >
-                Cancel
-              </button>
-            )}
-          </div>
-        </form>
-      </div>
-
-      {/* ----------------------------------------------------
-          SEARCH BAR
-      ------------------------------------------------------ */}
-      <div className="mb-4 flex items-center gap-2">
+      {/* Search */}
+      <div className="mb-6 flex justify-center">
         <input
           type="text"
-          className="p-2 border rounded w-full max-w-md"
           placeholder="Search testimonials..."
+          className="w-full max-w-lg p-3 border rounded-lg shadow-sm"
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setPage(1);
           }}
         />
-        <span className="text-sm text-gray-500">{filtered.length} found</span>
       </div>
 
-      {/* ----------------------------------------------------
-          TESTIMONIALS LIST
-      ------------------------------------------------------ */}
-      <div className="space-y-4">
-        {paginated.length === 0 ? (
-          <p className="text-gray-500">No testimonials found.</p>
-        ) : (
-          paginated.map((t) => (
-            <div key={t.id} className="bg-white p-4 rounded shadow">
-              <div className="flex gap-4">
-                {/* PHOTO */}
-                {t.image ? (
-                  <img
-                    src={t.image}
-                    alt={t.name}
-                    className="w-20 h-20 object-cover rounded"
-                  />
-                ) : (
-                  <div className="w-20 h-20 bg-gray-200 rounded flex items-center justify-center">
-                    <span className="text-gray-500 text-sm">No Photo</span>
-                  </div>
-                )}
+      {/* Form */}
+      <div className="bg-white rounded-xl shadow-lg p-8 mb-10 max-w-4xl mx-auto">
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          {editingId ? "Edit Testimonial" : "Add New Testimonial"}
+        </h2>
 
-                {/* CONTENT */}
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold">{t.name}</h3>
-                  <p className="text-sm text-gray-600">{t.position}</p>
-                  <p className="mt-1">{t.message}</p>
+        <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-6">
+          <div className="space-y-5">
+            <input
+              type="text"
+              placeholder="Full Name"
+              className="w-full p-4 border rounded-lg text-lg"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Position / Role"
+              className="w-full p-4 border rounded-lg text-lg"
+              value={form.role}
+              onChange={(e) => setForm({ ...form, role: e.target.value })}
+              required
+            />
+            <textarea
+              placeholder="Testimonial message"
+              rows={6}
+              className="w-full p-4 border rounded-lg text-lg"
+              value={form.message}
+              onChange={(e) => setForm({ ...form, message: e.target.value })}
+              required
+            />
+          </div>
 
-                  {/* Rating */}
-                  <div className="mt-2 text-yellow-500">
-                    {"★".repeat(t.rating)}
-                    {"☆".repeat(5 - t.rating)}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="mt-3 flex gap-4 text-sm">
-                    <button
-                      className="text-blue-600"
-                      onClick={() => startEdit(t)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="text-red-600"
-                      onClick={() => deleteTestimonial(t.id)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
+          <div className="space-y-5">
+            <div>
+              <label className="block text-lg font-medium mb-3">Photo</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="block w-full text-lg"
+              />
             </div>
-          ))
-        )}
+
+            <div className="flex gap-4 mt-8">
+              <button
+                type="submit"
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition"
+              >
+                {editingId ? "Update Testimonial" : "Add Testimonial"}
+              </button>
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="bg-gray-500 hover:bg-gray-600 text-white px-8 py-4 rounded-xl text-lg font-semibold transition"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          </div>
+        </form>
       </div>
 
-      {/* ----------------------------------------------------
-          PAGINATION
-      ------------------------------------------------------ */}
+      {/* Table */}
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <table className="min-w-full">
+          <thead className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+            <tr>
+              <th className="py-4 px-6 text-left">ID</th>
+              <th className="py-4 px-6 text-left">Photo</th>
+              <th className="py-4 px-6 text-left">Name</th>
+              <th className="py-4 px-6 text-left">Role</th>
+              <th className="py-4 px-6 text-left">Message</th>
+              <th className="py-4 px-6 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginated.map((t) => (
+              <tr key={t.id} className="border-b hover:bg-gray-50 transition">
+                <td className="py-4 px-6 font-medium">{t.id}</td>
+                <td className="py-4 px-6">
+                  {previewMap[t.id] ? (
+                    <img
+                      src={previewMap[t.id]}
+                      alt={t.name}
+                      className="w-20 h-20 object-cover rounded-lg shadow"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500 text-sm">
+                      Loading...
+                    </div>
+                  )}
+                </td>
+                <td className="py-4 px-6 font-semibold">{t.name}</td>
+                <td className="py-4 px-6 text-gray-600">{t.role}</td>
+                <td className="py-4 px-6 italic text-gray-700 max-w-md truncate">
+                  {t.message}
+                </td>
+                <td className="py-4 px-6 text-center">
+                  <button onClick={() => startEdit(t)} className={editBtn}>
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => deleteTestimonial(t.id)}
+                    className={deleteBtn}
+                    style={{ marginLeft: "12px" }}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-5 flex gap-2">
+        <div className="mt-8 flex justify-center gap-4">
           <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            onClick={() => setPage((p) => p - 1)}
-            className={`px-3 py-1 rounded border ${
-              page === 1 ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className="px-6 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             Previous
           </button>
-
+          <span className="py-3 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-medium">
+            Page {page} of {totalPages}
+          </span>
           <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            onClick={() => setPage((p) => p + 1)}
-            className={`px-3 py-1 rounded border ${
-              page === totalPages ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className="px-6 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             Next
           </button>

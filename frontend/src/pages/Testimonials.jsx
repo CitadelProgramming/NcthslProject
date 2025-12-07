@@ -1,69 +1,86 @@
-import React from "react";
+// src/pages/Testimonials.jsx
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-
-// Import testimonial images (6 images total)
-import client1 from "../assets/Images/testimonials/client1.jpg";
-import client2 from "../assets/Images/testimonials/client2.jpg";
-import client3 from "../assets/Images/testimonials/client3.jpg";
-import client4 from "../assets/Images/testimonials/client4.jpg"
-import client5 from "../assets/Images/testimonials/client5.jpg";
-import client6 from "../assets/Images/testimonials/client6.jpeg";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 export default function Testimonials() {
-  const testimonials = [
-    {
-      name: "Captain Ibrahim Musa",
-      position: "Aviation Operations Partner",
-      message:
-        "NCTHSL has consistently delivered world-class technical and aviation services. Their professionalism, precision, and safety standards are unmatched.",
-      rating: 5,
-      image: client1,
-    },
-    {
-      name: "Engr. Tunde Okafor",
-      position: "Maintenance & Engineering Lead",
-      message:
-        "Their maintenance support and technical expertise have drastically improved our operational efficiency. Truly reliable and trusted.",
-      rating: 5,
-      image: client2,
-    },
-    {
-      name: "Maryam A.",
-      position: "Charter Services Client",
-      message:
-        "From booking to touchdown, the experience was seamless. Their charter service is the best in the industry—efficient, safe, and reliable.",
-      rating: 4,
-      image: client3,
-    },
-    {
-      name: "Samuel Johnson",
-      position: "Oil & Gas Logistics Coordinator",
-      message:
-        "NCTHSL provides excellent offshore and remote support services. Highly secure, efficient, and impressively responsive.",
-      rating: 5,
-      image: client4,
-    },
-    {
-      name: "Ms. Rebecca Adams",
-      position: "Corporate Flight Manager",
-      message:
-        "Their attention to detail and aircraft readiness is second to none. NCTHSL remains our number one partner for corporate aviation needs.",
-      rating: 4,
-      image: client5,
-    },
-    {
-      name: "Major Abdullahi Garba",
-      position: "Defense Air Mobility Supervisor",
-      message:
-        "Their technical hangar support has improved our mission readiness significantly. Reliable, trustworthy, and exceptional service delivery.",
-      rating: 5,
-      image: client6,
-    },
-  ];
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Secure image fetch (same logic used in NewsPage)
+  const fetchSecureImage = async (relativePath) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+
+      const res = await axios.get(
+        `https://enchanting-expression-production.up.railway.app${relativePath}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          responseType: "blob",
+        }
+      );
+
+      return URL.createObjectURL(res.data);
+    } catch (err) {
+      console.error("Image Fetch Failed:", err);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const loadTestimonials = async () => {
+      try {
+        const token = localStorage.getItem("adminToken");
+
+        const response = await axios.get(
+          "https://enchanting-expression-production.up.railway.app/api/v1/testimonials/all-testimonials",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const list = response.data || [];
+
+        // Load secure images for each testimonial
+        const processed = await Promise.all(
+          list.map(async (item) => {
+            let imageSrc = null;
+
+            if (item.image) {
+              imageSrc = await fetchSecureImage(item.image);
+            }
+
+            return {
+              ...item,
+              imageSrc,
+              rating: 5, // default rating for now
+            };
+          })
+        );
+
+        setTestimonials(processed);
+      } catch (error) {
+        console.error("Testimonials Fetch Error:", error);
+        Swal.fire(
+          "Error",
+          "Unable to load testimonials. Please try again later.",
+          "error"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTestimonials();
+  }, []);
 
   return (
     <div className="w-full">
-
       {/* HEADER */}
       <motion.section
         className="bg-[#0A4D2D] text-white py-20 px-6 text-center"
@@ -93,56 +110,69 @@ export default function Testimonials() {
       {/* TESTIMONIAL GRID */}
       <section className="py-16 px-6 bg-gradient-to-br from-[#818589] to-[#525354]">
         <div className="max-w-7xl mx-auto grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+          {loading && (
+            <p className="text-center text-white text-lg col-span-full">
+              Loading testimonials...
+            </p>
+          )}
 
-          {testimonials.map((item, index) => (
-            <motion.div
-              key={index}
-              className="bg-white shadow-md rounded-xl p-8 text-center cursor-default"
-              initial={{ opacity: 0, y: 40, scale: 0.9 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{
-                delay: index * 0.15,
-                duration: 0.7,
-                ease: "easeOut",
-              }}
-              whileHover={{
-                scale: 1.05,
-                rotateX: 2,
-                rotateY: -2,
-                transition: { duration: 0.35 },
-              }}
-            >
-              {/* IMAGE */}
-              <motion.img
-                src={item.image}
-                alt={item.name}
-                className="w-24 h-24 object-cover rounded-full mx-auto mb-5 shadow"
-                whileHover={{ scale: 1.1 }}
-                transition={{ duration: 0.3 }}
-              />
+          {!loading && testimonials.length === 0 && (
+            <p className="text-center text-white text-lg col-span-full">
+              No testimonials available yet.
+            </p>
+          )}
 
-              {/* NAME */}
-              <h3 className="text-xl font-semibold text-[#0A4D2D] mt-2">
-                {item.name}
-              </h3>
+          {!loading &&
+            testimonials.map((item, index) => (
+              <motion.div
+                key={item.id}
+                className="bg-white shadow-md rounded-xl p-8 text-center cursor-default"
+                initial={{ opacity: 0, y: 40, scale: 0.9 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{
+                  delay: index * 0.15,
+                  duration: 0.7,
+                  ease: "easeOut",
+                }}
+                whileHover={{
+                  scale: 1.05,
+                  rotateX: 2,
+                  rotateY: -2,
+                  transition: { duration: 0.35 },
+                }}
+              >
+                {/* IMAGE */}
+                {item.imageSrc && (
+                  <motion.img
+                    src={item.imageSrc}
+                    alt={item.name}
+                    className="w-24 h-24 object-cover rounded-full mx-auto mb-5 shadow"
+                    whileHover={{ scale: 1.1 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                )}
 
-              {/* POSITION */}
-              <p className="text-gray-600 mb-2 text-sm">{item.position}</p>
+                {/* NAME */}
+                <h3 className="text-xl font-semibold text-[#0A4D2D] mt-2">
+                  {item.name}
+                </h3>
 
-              {/* RATING */}
-              <div className="text-yellow-500 mb-3 text-lg">
-                {"★".repeat(item.rating)}
-                {"☆".repeat(5 - item.rating)}
-              </div>
+                {/* ROLE / POSITION */}
+                <p className="text-gray-600 mb-2 text-sm">{item.role}</p>
 
-              {/* MESSAGE */}
-              <p className="text-gray-700 text-sm italic leading-relaxed">
-                "{item.message}"
-              </p>
-            </motion.div>
-          ))}
+                {/* RATING */}
+                <div className="text-yellow-500 mb-3 text-lg">
+                  {"★".repeat(item.rating)}
+                  {"☆".repeat(5 - item.rating)}
+                </div>
 
+                {/* MESSAGE */}
+                <p className="text-gray-700 text-sm italic leading-relaxed">
+                  "{item.message}"
+                </p>
+              </motion.div>
+            ))}
         </div>
       </section>
     </div>
