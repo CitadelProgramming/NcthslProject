@@ -167,7 +167,7 @@ export default function Contact() {
                   className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500"
                   required
                 />
-                />
+                
                 <input
                   type="email"
                   name="email"
