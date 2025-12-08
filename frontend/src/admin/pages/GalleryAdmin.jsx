@@ -1,16 +1,21 @@
 // src/admin/pages/GalleryAdmin.jsx
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { ImagePlus, Trash2, Edit, Search } from "lucide-react";
 
 const API_BASE = "https://enchanting-expression-production.up.railway.app/api/v1/gallery";
-const HOST = "https://enchanting-expression-production.up.railway.app";
+const BASE_URL = "https://enchanting-expression-production.up.railway.app";
+
+const PLACEHOLDER_IMAGE =
+  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzk5OSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+";
 
 export default function GalleryAdmin() {
   const [albums, setAlbums] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
 
   const emptyForm = {
     title: "",
@@ -21,117 +26,46 @@ export default function GalleryAdmin() {
 
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [previewMap, setPreviewMap] = useState({}); // id -> objectURL (server blobs)
-  const objectUrlsRef = useRef({}); // keep track for cleanup of server blobs
-
-  // temp preview for newly selected local file
   const [previewTemp, setPreviewTemp] = useState(null);
-  const previewTempRef = useRef(null);
 
   const PER_PAGE = 6;
-  const [page, setPage] = useState(1);
 
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem("adminToken");
-    return token ? { Authorization: `Bearer ${token}` } : {};
+  const getToken = () => localStorage.getItem("adminToken");
+  const getAuthHeaders = () => ({ headers: { Authorization: `Bearer ${getToken()}` } });
+
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return PLACEHOLDER_IMAGE;
+    const token = getToken();
+    return token ? `${BASE_URL}${imagePath}?access_token=${token}` : PLACEHOLDER_IMAGE;
   };
 
-  // -------------------
-  // Load albums + secure images
-  // -------------------
   const loadAlbums = async () => {
     try {
       setLoading(true);
-      const config = { headers: getAuthHeaders() };
-      const res = await axios.get(`${API_BASE}/galleries`, config);
+      const res = await axios.get(`${API_BASE}/galleries`, getAuthHeaders());
       const list = Array.isArray(res.data) ? res.data : [];
-
-      // sort latest first
       list.sort((a, b) => b.id - a.id);
       setAlbums(list);
-
-      // kick off loading each image as blob (authenticated)
-      list.forEach((item) => loadImageWithAuth(item));
     } catch (err) {
       console.error("Failed to load albums:", err);
-      Swal.fire("Error", "Failed to load albums", "error");
+      Swal.fire("Error", "Failed to load gallery albums", "error");
       setAlbums([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadImageWithAuth = async (item) => {
-    if (!item?.galleryImage) return;
-
-    try {
-      const fullUrl = `${HOST}${item.galleryImage}`;
-      const response = await fetch(fullUrl, {
-        headers: getAuthHeaders(),
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        console.warn("Image fetch failed", fullUrl, response.status);
-        return;
-      }
-
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-
-      // store url in state and ref for cleanup
-      setPreviewMap((prev) => ({ ...prev, [item.id]: url }));
-      objectUrlsRef.current[item.id] = url;
-    } catch (error) {
-      console.error("Secure image load failed:", error);
-    }
-  };
-
   useEffect(() => {
     loadAlbums();
-
-    // cleanup on unmount: revoke objectURLs
-    return () => {
-      Object.values(objectUrlsRef.current || {}).forEach((u) => {
-        try {
-          URL.revokeObjectURL(u);
-        } catch (e) {}
-      });
-      objectUrlsRef.current = {};
-
-      if (previewTempRef.current) {
-        try {
-          URL.revokeObjectURL(previewTempRef.current);
-        } catch (e) {}
-        previewTempRef.current = null;
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // -------------------
-  // Form helpers
-  // -------------------
   const handleFileChange = (e) => {
     const file = e.target.files?.[0] ?? null;
     setForm((f) => ({ ...f, galleryFile: file }));
 
-    // revoke previous local preview if any and not a server-blob
-    if (previewTempRef.current && !Object.values(objectUrlsRef.current).includes(previewTempRef.current)) {
-      try {
-        URL.revokeObjectURL(previewTempRef.current);
-      } catch (e) {}
-    }
-
-    if (file) {
-      const localUrl = URL.createObjectURL(file);
-      setPreviewTemp(localUrl);
-      previewTempRef.current = localUrl;
-    } else {
-      setPreviewTemp(null);
-      previewTempRef.current = null;
-    }
+    if (previewTemp) URL.revokeObjectURL(previewTemp);
+    if (file) setPreviewTemp(URL.createObjectURL(file));
+    else setPreviewTemp(null);
   };
 
   const buildFormData = () => {
@@ -143,59 +77,62 @@ export default function GalleryAdmin() {
       caption: "",
     };
     fd.append("data", new Blob([JSON.stringify(dataObj)], { type: "application/json" }));
-
-    // IMPORTANT: backend expects RequestPart("file") for create. Name must be "file".
     if (form.galleryFile) fd.append("file", form.galleryFile);
     return fd;
   };
 
-  // -------------------
-  // Submit (Create / Update)
-  // -------------------
   const handleSubmit = async (e) => {
-    e?.preventDefault?.();
-
-    // Option A: image required for CREATE, optional for UPDATE
+    e.preventDefault();
     if (!editingId && !form.galleryFile) {
-      return Swal.fire("Error", "Please choose an image for the gallery (required on create).", "error");
+      return Swal.fire("Error", "Image is required when creating a new album", "error");
     }
-
-    if (!form.title?.trim() || !form.category?.trim()) {
+    if (!form.title.trim() || !form.category.trim()) {
       return Swal.fire("Error", "Title and Category are required", "error");
     }
 
     try {
       const fd = buildFormData();
-      const headers = getAuthHeaders(); // don't set Content-Type, let axios/browser set boundary
-      const config = { headers };
+      const config = getAuthHeaders();
 
-      const url = editingId ? `${API_BASE}/update/${editingId}` : `${API_BASE}/add-gallery`;
-      const method = editingId ? "put" : "post";
+      if (editingId) {
+        await axios.put(`${API_BASE}/update/${editingId}`, fd, config);
+        Swal.fire("Updated!", "Gallery updated successfully", "success");
+      } else {
+        await axios.post(`${API_BASE}/add-gallery`, fd, config);
+        Swal.fire("Success!", "Gallery created successfully", "success");
+      }
 
-      await axios[method](url, fd, config);
-
-      Swal.fire("Success", editingId ? "Gallery updated" : "Gallery created", "success");
-
-      // refresh list and images
-      await loadAlbums();
       cancelEdit();
+      await loadAlbums();
+      setPage(1);
     } catch (err) {
-      console.error("Submit error:", err);
-
-      // extract readable message: backend might return string or object
-      const resp = err?.response?.data;
-      let message = "Failed to save gallery";
-      if (typeof resp === "string") message = resp;
-      else if (resp?.message) message = resp.message;
-      else if (resp && typeof resp === "object") message = JSON.stringify(resp);
-
-      Swal.fire("Error", message, "error");
+      const msg = err.response?.data?.message || err.response?.data || "Failed to save gallery";
+      Swal.fire("Error", String(msg), "error");
     }
   };
 
-  // -------------------
-  // Edit / Cancel / Delete
-  // -------------------
+  const deleteAlbum = async (id) => {
+    const result = await Swal.fire({
+      title: "Delete Album?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      confirmButtonText: "Delete",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await axios.delete(`${API_BASE}/delete/${id}`, getAuthHeaders());
+      Swal.fire("Deleted!", "Album removed", "success");
+      await loadAlbums();
+      setPage(1);
+    } catch (err) {
+      Swal.fire("Error", "Failed to delete album", "error");
+    }
+  };
+
   const startEdit = (item) => {
     setEditingId(item.id);
     setForm({
@@ -204,141 +141,114 @@ export default function GalleryAdmin() {
       description: item.description || "",
       galleryFile: null,
     });
-
-    // if server blob preview already available use it; otherwise try to load it
-    if (previewMap[item.id]) {
-      setPreviewTemp(previewMap[item.id]);
-      previewTempRef.current = previewMap[item.id];
-    } else if (item.galleryImage) {
-      loadImageWithAuth(item);
-    }
-
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setForm(emptyForm);
-
-    // revoke local preview if it was a new local object URL (not a server blob)
-    if (previewTempRef.current && !Object.values(objectUrlsRef.current).includes(previewTempRef.current)) {
-      try {
-        URL.revokeObjectURL(previewTempRef.current);
-      } catch (e) {}
+    if (previewTemp) {
+      URL.revokeObjectURL(previewTemp);
+      setPreviewTemp(null);
     }
-    previewTempRef.current = null;
-    setPreviewTemp(null);
   };
 
-  const deleteAlbum = (id) => {
-    Swal.fire({
-      title: "Delete?",
-      text: "This album will be permanently deleted.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Delete",
-      confirmButtonColor: "#d33",
-    }).then(async (result) => {
-      if (!result.isConfirmed) return;
-
-      try {
-        const config = { headers: getAuthHeaders() };
-        await axios.delete(`${API_BASE}/delete/${id}`, config);
-        Swal.fire("Deleted!", "Album removed", "success");
-        // Optimistically remove from UI and revoke object URL
-        setAlbums((prev) => prev.filter((a) => a.id !== id));
-        if (objectUrlsRef.current[id]) {
-          try {
-            URL.revokeObjectURL(objectUrlsRef.current[id]);
-          } catch (e) {}
-          delete objectUrlsRef.current[id];
-          setPreviewMap((prev) => {
-            const copy = { ...prev };
-            delete copy[id];
-            return copy;
-          });
-        }
-      } catch (err) {
-        console.error("Delete error:", err);
-        Swal.fire("Error", "Failed to delete album", "error");
-      }
-    });
-  };
-
-  // -------------------
-  // Pagination / helpers
-  // -------------------
-  const filtered = albums.filter((a) => JSON.stringify(a).toLowerCase().includes(searchTerm.toLowerCase()));
+  const filtered = albums.filter((a) =>
+    JSON.stringify(a).toLowerCase().includes(searchTerm.toLowerCase())
+  );
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
-  const getDisplayPreview = (albumId) => {
-    // prefer a newly selected local preview (previewTemp when editing), otherwise server blob
-    if (previewTemp && editingId === albumId) return previewTemp;
-    return previewMap[albumId] || null;
-  };
-
-  // styles
   const glassButton =
     "px-4 py-2 rounded-xl backdrop-blur-md bg-white/20 border border-white/30 shadow-md text-sm transition-all hover:bg-white/30 hover:shadow-lg active:scale-95";
-  const editBtn = `${glassButton} text-blue-700 font-semibold`;
-  const deleteBtn = `${glassButton} text-red-700 font-semibold`;
+  const editBtn = `${glassButton} text-blue-700 font-semibold flex items-center gap-2`;
+  const deleteBtn = `${glassButton} text-red-700 font-semibold flex items-center gap-2`;
   const paginationBtn = "px-4 py-2 bg-white/30 border border-gray-300 rounded-lg backdrop-blur-md hover:bg-white/40 transition disabled:opacity-40";
 
-  // -------------------
-  // Render
-  // -------------------
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Gallery Admin</h1>
+    <div className="p-6 bg-gray-50 min-h-screen">
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">Gallery Management</h1>
 
       {/* Search */}
-      <div className="mb-6 flex items-center gap-2 bg-gray-100 p-3 rounded-xl">
-        <Search className="text-gray-500" />
+      <div className="mb-6 flex items-center gap-3 bg-white p-4 rounded-xl shadow">
+        <Search className="text-gray-500" size={20} />
         <input
           type="text"
-          placeholder="Search galleries..."
-          className="w-full bg-transparent outline-none"
+          placeholder="Search albums..."
+          className="flex-1 outline-none text-gray-700"
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setPage(1);
           }}
         />
-        <div className="text-sm text-gray-600">{filtered.length} found</div>
+        <span className="text-sm text-gray-600">{filtered.length} album(s)</span>
       </div>
 
       {/* Form */}
-      <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white p-6 rounded-xl shadow mb-8 max-w-3xl">
-        <h2 className="text-xl font-semibold mb-4">{editingId ? "Edit Gallery" : "Add Gallery"}</h2>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white p-8 rounded-2xl shadow-xl mb-10 max-w-4xl"
+      >
+        <h2 className="text-2xl font-bold mb-6 text-gray-800">
+          {editingId ? "Edit Album" : "Add New Album"}
+        </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <input type="text" className="w-full p-3 border rounded" placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <input
+            type="text"
+            placeholder="Album Title *"
+            className="w-full p-4 border rounded-lg text-lg"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            required
+          />
+          <input
+            type="text"
+            placeholder="Category * (e.g. Events, Facilities)"
+            className="w-full p-4 border rounded-lg text-lg"
+            value={form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })}
+            required
+          />
+          <textarea
+            placeholder="Description (optional)"
+            rows="4"
+            className="w-full p-4 border rounded-lg text-lg"
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+          />
 
-          <input type="text" className="w-full p-3 border rounded" placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
-
-          <textarea className="w-full p-3 border rounded" rows="4" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium flex items-center gap-2 cursor-pointer">
-              <ImagePlus /> Upload Image {editingId ? "(optional)" : "(required)"}
+          <div className="space-y-3">
+            <label className="flex items-center gap-3 cursor-pointer text-lg font-medium text-gray-700">
+              <ImagePlus size={24} />
+              {editingId ? "Change Image (optional)" : "Upload Image *"}
               <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
             </label>
 
-            {/* local preview (new file) or server preview when editing */}
-            {previewTemp ? (
-              <img src={previewTemp} alt="preview" className="h-40 rounded mb-2 object-cover" />
-            ) : editingId && previewMap[editingId] ? (
-              <img src={previewMap[editingId]} alt="preview" className="h-40 rounded mb-2 object-cover" />
-            ) : null}
+            {previewTemp && (
+              <img
+                src={previewTemp}
+                alt="Preview"
+                className="w-full max-w-md h-64 object-cover rounded-lg shadow-lg"
+              />
+            )}
           </div>
 
-          <div className="flex gap-2">
-            <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">
-              {editingId ? "Update Gallery" : "Add Gallery"}
+          <div className="flex gap-4">
+            <button
+              type="submit"
+              className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition"
+            >
+              {editingId ? "Update Album" : "Create Album"}
             </button>
             {editingId && (
-              <button type="button" onClick={cancelEdit} className="bg-gray-500 text-white px-4 py-2 rounded">
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-lg font-semibold transition"
+              >
                 Cancel
               </button>
             )}
@@ -346,43 +256,83 @@ export default function GalleryAdmin() {
         </form>
       </motion.div>
 
-      {/* List */}
-      <div className="grid md:grid-cols-3 gap-6">
-        {paginated.map((album) => (
-          <motion.div key={album.id} whileHover={{ scale: 1.02 }} className="bg-white rounded-xl shadow p-4">
-            {getDisplayPreview(album.id) ? (
-              <img src={getDisplayPreview(album.id)} alt={album.title} className="h-48 w-full object-cover rounded mb-3" />
-            ) : (
-              <div className="h-48 w-full bg-gray-100 rounded mb-3 flex items-center justify-center text-gray-400">No preview</div>
-            )}
+      {/* Loading */}
+      {loading && (
+        <div className="text-center py-20">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-4 border-blue-600"></div>
+          <p className="mt-4 text-gray-600 text-lg">Loading gallery...</p>
+        </div>
+      )}
 
-            <h2 className="font-bold text-lg">{album.title}</h2>
-            <p className="text-sm text-gray-600">{album.category}</p>
-            <p className="text-sm text-gray-600 mb-3">{album.description}</p>
+      {/* Gallery Grid with ID */}
+      {!loading && (
+        <>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {paginated.map((album) => (
+              <motion.div
+                key={album.id}
+                whileHover={{ scale: 1.03 }}
+                className="bg-white rounded-2xl shadow-xl overflow-hidden relative"
+              >
+                {/* ID Badge */}
+                <div className="absolute top-3 left-3 z-10 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-bold">
+                  ID: #{album.id}
+                </div>
 
-            <div className="flex gap-3">
-              <button onClick={() => startEdit(album)} className={editBtn}>
-                <Edit size={16} /> Edit
+                <img
+                  src={getImageUrl(album.galleryImage)}
+                  alt={album.title}
+                  className="w-full h-64 object-cover"
+                  onError={(e) => {
+                    e.target.src = PLACEHOLDER_IMAGE;
+                  }}
+                />
+
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-800 mb-2">{album.title}</h3>
+                  <p className="text-sm text-gray-600 mb-1">
+                    <strong>Category:</strong> {album.category}
+                  </p>
+                  {album.description && (
+                    <p className="text-gray-700 text-sm mt-2 line-clamp-2">{album.description}</p>
+                  )}
+
+                  <div className="flex gap-3 mt-6">
+                    <button onClick={() => startEdit(album)} className={editBtn}>
+                      <Edit size={18} /> Edit
+                    </button>
+                    <button onClick={() => deleteAlbum(album.id)} className={deleteBtn}>
+                      <Trash2 size={18} /> Delete
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-12 flex justify-center items-center gap-4">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className={paginationBtn}
+              >
+                Previous
               </button>
-              <button onClick={() => deleteAlbum(album.id)} className={deleteBtn}>
-                <Trash2 size={16} /> Delete
+              <span className="text-gray-700 font-medium">
+                Page {page} of {totalPages}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className={paginationBtn}
+              >
+                Next
               </button>
             </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-6 flex gap-2">
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className={paginationBtn}>
-            Previous
-          </button>
-          <div className="px-4 py-2 rounded bg-white/10 border">{page} / {totalPages}</div>
-          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className={paginationBtn}>
-            Next
-          </button>
-        </div>
+          )}
+        </>
       )}
     </div>
   );

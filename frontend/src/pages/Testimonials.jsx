@@ -2,75 +2,40 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
-import Swal from "sweetalert2";
+
+// Public endpoint — confirmed working without token
+const PUBLIC_API = "https://enchanting-expression-production.up.railway.app/api/v1/testimonials/all-testimonials";
+const BASE_URL = "https://enchanting-expression-production.up.railway.app";
+
+// Reliable placeholder
+const PLACEHOLDER = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzk5OSI+Tm8gUGhvdG88L3RleHQ+PC9zdmc+";
 
 export default function Testimonials() {
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Secure image fetch (same logic used in NewsPage)
-  const fetchSecureImage = async (relativePath) => {
-    try {
-      const token = localStorage.getItem("adminToken");
-
-      const res = await axios.get(
-        `https://enchanting-expression-production.up.railway.app${relativePath}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          responseType: "blob",
-        }
-      );
-
-      return URL.createObjectURL(res.data);
-    } catch (err) {
-      console.error("Image Fetch Failed:", err);
-      return null;
-    }
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return PLACEHOLDER;
+    return `${BASE_URL}${imagePath}`;
   };
 
   useEffect(() => {
     const loadTestimonials = async () => {
       try {
-        const token = localStorage.getItem("adminToken");
+        setLoading(true);
+        const res = await axios.get(PUBLIC_API); // Public — no token needed!
 
-        const response = await axios.get(
-          "https://enchanting-expression-production.up.railway.app/api/v1/testimonials/all-testimonials",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const list = Array.isArray(res.data) ? res.data : [];
 
-        const list = response.data || [];
-
-        // Load secure images for each testimonial
-        const processed = await Promise.all(
-          list.map(async (item) => {
-            let imageSrc = null;
-
-            if (item.image) {
-              imageSrc = await fetchSecureImage(item.image);
-            }
-
-            return {
-              ...item,
-              imageSrc,
-              rating: 5, // default rating for now
-            };
-          })
-        );
+        const processed = list.map((item) => ({
+          ...item,
+          imageSrc: item.image ? getImageUrl(item.image) : PLACEHOLDER,
+          rating: item.rating || 5, // fallback to 5 stars
+        }));
 
         setTestimonials(processed);
-      } catch (error) {
-        console.error("Testimonials Fetch Error:", error);
-        Swal.fire(
-          "Error",
-          "Unable to load testimonials. Please try again later.",
-          "error"
-        );
+      } catch (err) {
+        console.error("Failed to load testimonials:", err);
       } finally {
         setLoading(false);
       }
@@ -79,100 +44,106 @@ export default function Testimonials() {
     loadTestimonials();
   }, []);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#818589] to-[#525354] flex items-center justify-center">
+        <div className="text-white text-2xl font-medium">Loading testimonials...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
-      {/* HEADER */}
+      {/* Header */}
       <motion.section
-        className="bg-[#0A4D2D] text-white py-20 px-6 text-center"
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
+        className="bg-gradient-to-br from-[#0A4D2D] to-[#052a05] text-white py-24 px-6 text-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
       >
-        <motion.h1
-          className="text-4xl md:text-5xl font-bold"
-          initial={{ opacity: 0, y: 25 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.7 }}
-        >
-          What Our Clients Say
-        </motion.h1>
-
-        <motion.p
-          className="mt-4 text-lg text-gray-200 max-w-2xl mx-auto"
-          initial={{ opacity: 0, y: 25 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.7 }}
-        >
-          Trusted by aviation, defense, security, and oil & gas industries across Nigeria and beyond.
-        </motion.p>
+        <div className="max-w-5xl mx-auto">
+          <motion.h1
+            initial={{ y: -30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            className="text-5xl md:text-7xl font-bold tracking-tight"
+          >
+            What Our Clients Say
+          </motion.h1>
+          <motion.p
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="mt-6 text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto"
+          >
+            Trusted by aviation, defense, security, and oil & gas industries across Nigeria and beyond.
+          </motion.p>
+        </div>
       </motion.section>
 
-      {/* TESTIMONIAL GRID */}
-      <section className="py-16 px-6 bg-gradient-to-br from-[#818589] to-[#525354]">
-        <div className="max-w-7xl mx-auto grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-          {loading && (
-            <p className="text-center text-white text-lg col-span-full">
-              Loading testimonials...
-            </p>
+      {/* Testimonials Grid */}
+      <section className="py-20 px-6 bg-gradient-to-br from-[#818589] to-[#525354]">
+        <div className="max-w-7xl mx-auto">
+          {testimonials.length === 0 ? (
+            <div className="text-center text-white text-2xl py-20 font-light">
+              No testimonials available at the moment.
+            </div>
+          ) : (
+            <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-3">
+              {testimonials.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{
+                    duration: 0.7,
+                    delay: index * 0.15,
+                    ease: "easeOut",
+                  }}
+                  whileHover={{
+                    scale: 1.05,
+                    y: -10,
+                    transition: { duration: 0.3 },
+                  }}
+                  className="bg-white rounded-3xl shadow-2xl overflow-hidden transform-gpu"
+                >
+                  {/* Photo */}
+                  <div className="p-8 pb-0">
+                    <motion.img
+                      src={item.imageSrc}
+                      alt={item.name}
+                      className="w-28 h-28 md:w-32 md:h-32 object-cover rounded-full mx-auto shadow-xl border-4 border-white"
+                      whileHover={{ scale: 1.1 }}
+                      onError={(e) => (e.target.src = PLACEHOLDER)}
+                    />
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-8 text-center">
+                    <h3 className="text-2xl font-bold text-[#0A4D2D] mb-1">
+                      {item.name}
+                    </h3>
+                    <p className="text-gray-600 font-medium mb-4">{item.role}</p>
+
+                    {/* Stars */}
+                    <div className="flex justify-center gap-1 mb-6 text-yellow-500 text-2xl">
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i}>
+                          {i < item.rating ? "★" : "☆"}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Message */}
+                    <p className="text-gray-700 italic leading-relaxed text-base">
+                      "{item.message}"
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           )}
-
-          {!loading && testimonials.length === 0 && (
-            <p className="text-center text-white text-lg col-span-full">
-              No testimonials available yet.
-            </p>
-          )}
-
-          {!loading &&
-            testimonials.map((item, index) => (
-              <motion.div
-                key={item.id}
-                className="bg-white shadow-md rounded-xl p-8 text-center cursor-default"
-                initial={{ opacity: 0, y: 40, scale: 0.9 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{
-                  delay: index * 0.15,
-                  duration: 0.7,
-                  ease: "easeOut",
-                }}
-                whileHover={{
-                  scale: 1.05,
-                  rotateX: 2,
-                  rotateY: -2,
-                  transition: { duration: 0.35 },
-                }}
-              >
-                {/* IMAGE */}
-                {item.imageSrc && (
-                  <motion.img
-                    src={item.imageSrc}
-                    alt={item.name}
-                    className="w-24 h-24 object-cover rounded-full mx-auto mb-5 shadow"
-                    whileHover={{ scale: 1.1 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                )}
-
-                {/* NAME */}
-                <h3 className="text-xl font-semibold text-[#0A4D2D] mt-2">
-                  {item.name}
-                </h3>
-
-                {/* ROLE / POSITION */}
-                <p className="text-gray-600 mb-2 text-sm">{item.role}</p>
-
-                {/* RATING */}
-                <div className="text-yellow-500 mb-3 text-lg">
-                  {"★".repeat(item.rating)}
-                  {"☆".repeat(5 - item.rating)}
-                </div>
-
-                {/* MESSAGE */}
-                <p className="text-gray-700 text-sm italic leading-relaxed">
-                  "{item.message}"
-                </p>
-              </motion.div>
-            ))}
         </div>
       </section>
     </div>
