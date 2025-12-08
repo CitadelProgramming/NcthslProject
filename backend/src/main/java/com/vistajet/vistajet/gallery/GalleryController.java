@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/gallery")
-@CrossOrigin(origins = "https://ncthsl-project.vercel.app/")
+@CrossOrigin(origins = "http://localhost:5173")
 @Validated
 public class GalleryController {
 

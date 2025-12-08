@@ -1,93 +1,45 @@
 // src/pages/NewsPage.jsx
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import axios from "axios";
-import Swal from "sweetalert2";
 
 import headerImg from "../assets/Images/news/news-header.jpg";
 
+// THIS IS THE CORRECT PUBLIC ENDPOINT (already works without token!)
+const PUBLIC_API = "https://enchanting-expression-production.up.railway.app/api/v1/news/all-news";
+const BASE_URL = "https://enchanting-expression-production.up.railway.app";
+
+const PLACEHOLDER = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIyNTZweCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjRweCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==";
+
 export default function NewsPage() {
-  const [expandedId, setExpandedId] = useState(null);
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState(null);
 
   const toggleExpand = (id) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
-  const getAuthConfig = () => {
-    const token = localStorage.getItem("adminToken");
-    return {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      responseType: "blob",
-    };
-  };
-
-  // Fetch secure images
-  const fetchSecureImage = async (relativePath) => {
-    try {
-      const token = localStorage.getItem("adminToken");
-
-      const res = await axios.get(
-        `https://enchanting-expression-production.up.railway.app${relativePath}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          responseType: "blob",
-        }
-      );
-
-      return URL.createObjectURL(res.data);
-    } catch (err) {
-      console.error("Image fetch failed:", err);
-      return null;
-    }
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return PLACEHOLDER;
+    return `${BASE_URL}${imageUrl}`;
   };
 
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const token = localStorage.getItem("adminToken");
+        setLoading(true);
+        const res = await axios.get(PUBLIC_API); // ← NO TOKEN NEEDED!
 
-        // FIX 1 — secure authenticated news fetch
-        const response = await axios.get(
-          "https://enchanting-expression-production.up.railway.app/api/v1/news/all-news",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const list = response.data || [];
-
-        // FIX 2 — load secure images
-        const processed = await Promise.all(
-          list.map(async (item) => {
-            let imageSrc = null;
-
-            if (item.imageUrl) {
-              imageSrc = await fetchSecureImage(item.imageUrl);
-            }
-
-            return {
-              ...item,
-              imageSrc,
-            };
-          })
-        );
+        const list = res.data || [];
+        const processed = list.map((item) => ({
+          ...item,
+          imageSrc: item.imageUrl ? getImageUrl(item.imageUrl) : null,
+        }));
 
         setNews(processed);
-      } catch (error) {
-        console.error("News Fetch Error:", error);
-        Swal.fire(
-          "Error",
-          "Unable to load news. Please try again later.",
-          "error"
-        );
+      } catch (err) {
+        console.error("Failed to load news:", err);
       } finally {
         setLoading(false);
       }
@@ -95,6 +47,14 @@ export default function NewsPage() {
 
     fetchNews();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#818589] to-[#525354] flex items-center justify-center">
+        <div className="text-white text-2xl">Loading latest news...</div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -106,130 +66,77 @@ export default function NewsPage() {
         transition={{ duration: 0.8 }}
       >
         <div className="absolute inset-0 bg-black/60"></div>
-
-        <motion.div
-          className="relative text-center text-white px-6"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8 }}
-        >
-          <h1 className="text-4xl md:text-5xl font-bold tracking-wide">
-            News & Updates
-          </h1>
-          <p className="mt-3 text-gray-200 text-sm md:text-base max-w-xl mx-auto">
-            Stay informed about operational updates, aviation technology,
-            and key developments at NCTHSL.
+        <motion.div className="relative text-center text-white px-6 z-10">
+          <h1 className="text-4xl md:text-6xl font-bold">News & Updates</h1>
+          <p className="mt-4 text-lg md:text-xl text-gray-200 max-w-2xl mx-auto">
+            Stay informed about operational updates and key developments at NCTHSL.
           </p>
         </motion.div>
       </motion.header>
 
-      <motion.section
-        className="py-20 px-6 bg-gradient-to-br from-[#818589] to-[#525354] min-h-screen"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
+      <section className="py-20 px-6 bg-gradient-to-br from-[#818589] to-[#525354] min-h-screen">
         <div className="max-w-5xl mx-auto">
-          <motion.h1
-            className="text-4xl font-bold text-[#f7f7f7] mb-10"
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.7 }}
-          >
+          <motion.h1 className="text-4xl md:text-5xl font-bold text-white mb-12 text-center">
             Latest News
           </motion.h1>
 
-          {loading && (
-            <div className="text-center text-white text-lg">Loading news...</div>
-          )}
-
-          {!loading && news.length === 0 && (
-            <div className="text-center text-white text-lg">
-              No news available yet.
+          {news.length === 0 ? (
+            <div className="text-center text-white text-xl py-20">
+              No news available at the moment. Check back soon!
             </div>
+          ) : (
+            <motion.div className="space-y-12">
+              {news.map((item) => {
+                const isExpanded = expandedId === item.id;
+
+                return (
+                  <motion.article
+                    key={item.id}
+                    className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300"
+                    whileHover={{ y: -8 }}
+                  >
+                    {item.imageSrc && (
+                      <img
+                        src={item.imageSrc}
+                        alt={item.title}
+                        className="w-full h-64 md:h-80 object-cover"
+                        onError={(e) => {
+                          e.target.src = PLACEHOLDER;
+                        }}
+                      />
+                    )}
+
+                    <div className="p-8 md:p-10">
+                      <div className="text-sm text-gray-500 mb-3 font-medium">
+                        {item.createdAt?.slice(0, 10) || "Recently"} • {item.author || "NCTHSL"}
+                      </div>
+
+                      <h2 className="text-2xl md:text-3xl font-bold text-[#0A4D2D] mb-4">
+                        {item.title}
+                      </h2>
+
+                      <p className="text-gray-700 leading-relaxed text-base md:text-lg whitespace-pre-line">
+                        {isExpanded
+                          ? item.content
+                          : item.preview || item.content?.slice(0, 280) + "..."}
+                      </p>
+
+                      {(item.content?.length > 280 || item.preview) && (
+                        <button
+                          onClick={() => toggleExpand(item.id)}
+                          className="mt-6 text-[#0A4D2D] font-bold text-lg hover:underline"
+                        >
+                          {isExpanded ? "Show Less ↑" : "Read More →"}
+                        </button>
+                      )}
+                    </div>
+                  </motion.article>
+                );
+              })}
+            </motion.div>
           )}
-
-          <motion.div
-            className="space-y-10"
-            initial="hidden"
-            animate="show"
-            variants={{
-              hidden: {},
-              show: { transition: { staggerChildren: 0.15 } },
-            }}
-          >
-            {news.map((item) => {
-              const isExpanded = expandedId === item.id;
-
-              return (
-                <motion.article
-                  key={item.id}
-                  className="bg-white p-8 rounded-2xl shadow-md"
-                  whileHover={{
-                    scale: 1.02,
-                    boxShadow: "0 15px 35px rgba(0,0,0,0.18)",
-                  }}
-                  variants={{
-                    hidden: { opacity: 0, y: 40 },
-                    show: {
-                      opacity: 1,
-                      y: 0,
-                      transition: { duration: 0.6 },
-                    },
-                  }}
-                >
-                  {item.imageSrc && (
-                    <motion.img
-                      src={item.imageSrc}
-                      alt={item.title}
-                      className="w-full h-64 object-cover rounded-xl mb-6"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.7 }}
-                    />
-                  )}
-
-                  <motion.div
-                    className="text-xs text-gray-500 mb-2"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    {item.createdAt?.slice(0, 10) || ""}
-                    {" • "}
-                    {item.author || "Admin"}
-                  </motion.div>
-
-                  <motion.h2 className="text-2xl font-bold text-[#0A4D2D] mb-3">
-                    {item.title}
-                  </motion.h2>
-
-                  <motion.p className="text-gray-700 whitespace-pre-line leading-relaxed">
-                    {isExpanded
-                      ? item.content
-                      : item.preview ||
-                        (item.content
-                          ? item.content.slice(0, 200) + "..."
-                          : "")}
-                  </motion.p>
-
-                  <AnimatePresence>
-                    {isExpanded && <motion.div />}
-                  </AnimatePresence>
-
-                  <motion.button
-                    onClick={() => toggleExpand(item.id)}
-                    className="mt-4 text-[#0A4D2D] font-semibold hover:underline"
-                    whileHover={{ x: 5 }}
-                  >
-                    {isExpanded ? "Show Less ←" : "Read More →"}
-                  </motion.button>
-                </motion.article>
-              );
-            })}
-          </motion.div>
         </div>
-      </motion.section>
+      </section>
     </>
   );
 }

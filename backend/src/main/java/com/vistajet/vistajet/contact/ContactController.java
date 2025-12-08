@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/contact")
-@CrossOrigin(origins = "https://ncthsl-project.vercel.app/")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ContactController {
 
     private final ContactService contactService;
