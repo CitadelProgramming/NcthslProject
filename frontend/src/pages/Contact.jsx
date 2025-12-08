@@ -1,79 +1,93 @@
-// frontend/src/pages/Contact.jsx
+// src/pages/Contact.jsx
 import { useState } from "react";
-// Removed axios and api imports
 import { motion } from "framer-motion";
+
+// CORRECT PUBLIC ENDPOINT — NO AUTH REQUIRED
+const API_URL = "https://enchanting-expression-production.up.railway.app/api/v1/contact/add-contact";
 
 export default function Contact() {
   const [form, setForm] = useState({
-    name: "",
+    fullName: "",
     email: "",
     subject: "",
     message: "",
-    mobile: "",     // added
-    botphone: "",   // honeypot renamed
+    phoneNo: "",
+    botphone: "", // honeypot
   });
 
-  // Simplified status management, as we won't be calling a real API
-  const [status, setStatus] = useState({ loading: false, success: null, error: null });
+  const [status, setStatus] = useState({
+    loading: false,
+    success: null,
+    error: null,
+  });
 
-  function handleChange(e) {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((s) => ({ ...s, [name]: value }));
-  }
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
 
-  function validate() {
-    // UPDATED honeypot logic
-    if (form.botphone && form.botphone.trim() !== "") return "Bot detected.";
-
-    if (!form.name.trim()) return "Please enter your name.";
-    if (!form.email.trim()) return "Please enter your email.";
-
-    const re = /\S+@\S+\.\S+/;
-    if (!re.test(form.email)) return "Please enter a valid email address.";
-
-    if (!form.subject.trim()) return "Please add a subject.";
-
-    if (!form.message.trim() || form.message.trim().length < 10)
-      return "Please enter a message (10+ characters).";
-
+  const validate = () => {
+    if (form.botphone.trim() !== "") return "Spam detected.";
+    if (!form.fullName.trim()) return "Full name is required.";
+    if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email))
+      return "Valid email required.";
+    if (!form.phoneNo.trim()) return "Phone number is required.";
+    if (!form.subject.trim()) return "Subject is required.";
+    if (!form.message.trim() || form.message.length < 10)
+      return "Message must be at least 10 characters.";
     return null;
-  }
+  };
 
-  // Modified handleSubmit to simulate success without an API call
-  async function handleSubmit(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus({ loading: true, success: null, error: null });
 
-    const invalid = validate();
-    if (invalid) {
-      setStatus({ loading: false, success: null, error: invalid });
+    const error = validate();
+    if (error) {
+      setStatus({ loading: false, error });
       return;
     }
 
-    // Simulate an API call delay using a Promise/setTimeout
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500)); 
-      
-      // Simulate success
-      setStatus({ loading: false, success: "Message received (simulated success)!", error: null });
-      setForm({
-        name: "",
-        email: "",
-        subject: "",
-        message: "",
-        mobile: "",
-        botphone: "",
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullName: form.fullName.trim(),
+          email: form.email.trim(),
+          subject: form.subject.trim(),
+          message: form.message.trim(),
+          phoneNo: form.phoneNo.trim(),
+        }),
       });
 
+      if (res.ok) {
+        setStatus({
+          loading: false,
+          success: "Thank you! Your message has been sent successfully.",
+        });
+        setForm({
+          fullName: "",
+          email: "",
+          subject: "",
+          message: "",
+          phoneNo: "",
+          botphone: "",
+        });
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to send message");
+      }
     } catch (err) {
-      // Catch any simulated errors
+      console.error("Contact error:", err);
       setStatus({
         loading: false,
-        success: null,
-        error: "An unexpected error occurred during simulation.",
+        error: err.message || "Network error. Please try again.",
       });
     }
-  }
+  };
 
   return (
     <div className="w-full">
@@ -83,30 +97,19 @@ export default function Contact() {
         className="bg-gradient-to-br from-[#0a3a0a] to-[#052a05] text-white py-20 px-6 text-center"
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+        transition={{ duration: 0.8 }}
       >
         <div className="max-w-4xl mx-auto">
-          <motion.h1
-            className="text-4xl md:text-5xl font-bold"
-            initial={{ opacity: 0, y: 25 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-          >
+          <motion.h1 className="text-4xl md:text-5xl font-bold">
             Contact Us
           </motion.h1>
-
-          <motion.p
-            className="mt-4 text-lg md:text-xl text-gray-200"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.7 }}
-          >
+          <motion.p className="mt-4 text-lg md:text-xl text-gray-200">
             For quotations, technical enquiries or support — send us a message and our team will respond.
           </motion.p>
         </div>
       </motion.section>
 
-      {/* CONTACT FORM */}
+      {/* FORM */}
       <section className="py-12 px-6 bg-gradient-to-br from-[#818589] to-[#525354]">
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-10 items-start">
 
@@ -116,47 +119,33 @@ export default function Contact() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7 }}
           >
-            <h2 className="text-2xl font-semibold mb-4">Get in touch</h2>
-
-            <p className="text-gray-100 mb-6 leading-relaxed">
-              Nigeria Customs Technical Hangar Services Limited<br />
-              <strong>Phone:</strong> +234 810 407 3973<br />
-              <strong>Email:</strong> info@nigeriacustomshangar-services.ng
+            <h2 className="text-3xl font-bold text-white mb-6">Get in Touch</h2>
+            <p className="text-gray-100 mb-8 text-lg">
+              Nigeria Customs Technical & Hangar Services Limited<br />
+              <strong className="text-white">Phone:</strong> +234 810 407 3973<br />
+              <strong className="text-white">Email:</strong> info@nigeriacustomshangar-services.ng
             </p>
-
-            <div className="space-y-4">
-
-              <motion.div
-                className="p-4 bg-white rounded-lg shadow"
-                whileHover={{ scale: 1.03, y: -4 }}
-                transition={{ type: "spring", stiffness: 200 }}
-              >
-                <h4 className="font-semibold">Office Hours</h4>
-                <p className="text-sm text-gray-600">Mon - Fri, 08:30 - 17:00</p>
-              </motion.div>
-
-              <motion.div
-                className="p-4 bg-white rounded-lg shadow"
-                whileHover={{ scale: 1.03, y: -4 }}
-                transition={{ type: "spring", stiffness: 200 }}
-              >
-                <h4 className="font-semibold">Location</h4>
-                <p className="text-sm text-gray-600">Customs Airwing Hangar, General Aviation Terminal, Nnamdi Azikiwe International Airport, Abuja. (Map Below)</p>
-              </motion.div>
-
+            <div className="space-y-6">
+              <div className="p-6 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
+                <h4 className="font-bold text-xl text-white mb-2">Office Hours</h4>
+                <p className="text-gray-200">Monday - Friday: 08:30 - 17:00</p>
+              </div>
+              <div className="p-6 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
+                <h4 className="font-bold text-xl text-white mb-2">Location</h4>
+                <p className="text-gray-200">
+                  Customs Airwing Hangar,<br />
+                  Nnamdi Azikiwe International Airport, Abuja.
+                </p>
+              </div>
             </div>
           </motion.div>
 
           {/* Form */}
           <motion.form
             onSubmit={handleSubmit}
-            noValidate
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7 }}
+            className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20"
           >
-
-            {/* UPDATED honeypot */}
+            {/* Honeypot */}
             <input
               type="text"
               name="botphone"
@@ -164,115 +153,100 @@ export default function Contact() {
               onChange={handleChange}
               tabIndex="-1"
               autoComplete="off"
-              style={{ display: "none" }}
+              className="hidden"
             />
 
-            <div className="grid gap-4">
-
-              <motion.div
-                className="flex gap-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4 }}
-              >
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <input
-                  name="name"
-                  value={form.name}
+                  type="text"
+                  name="fullName"
+                  value={form.fullName}
                   onChange={handleChange}
-                  placeholder="Full name"
-                  className="w-1/2 px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0A4D2D]"
+                  placeholder="Full Name *"
+                  className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500"
                   required
                 />
-
+                />
                 <input
+                  type="email"
                   name="email"
                   value={form.email}
                   onChange={handleChange}
-                  placeholder="Email address"
-                  className="w-1/2 px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0A4D2D]"
+                  placeholder="Email Address *"
+                  className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500"
                   required
                 />
+              </div>
 
-                {/* FIXED mobile field */}
-                <input
-                  name="mobile"
-                  value={form.mobile}
-                  onChange={handleChange}
-                  placeholder="Mobile Number"
-                  className="w-1/2 px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0A4D2D]"
-                  required
-                />
-              </motion.div>
+              <input
+                type="text"
+                name="phoneNo"
+                value={form.phoneNo}
+                onChange={handleChange}
+                placeholder="Phone Number *"
+                className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500"
+                required
+              />
 
-              <motion.input
+              <input
+                type="text"
                 name="subject"
                 value={form.subject}
                 onChange={handleChange}
-                placeholder="Subject"
-                className="px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0A4D2D]"
+                placeholder="Subject *"
+                className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500"
                 required
-                whileFocus={{ scale: 1.01 }}
-                transition={{ type: "spring", stiffness: 200 }}
               />
 
-              <motion.textarea
+              <textarea
                 name="message"
                 value={form.message}
                 onChange={handleChange}
-                placeholder="Your message"
+                placeholder="Your Message *"
                 rows="6"
-                className="px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0A4D2D]"
+                className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500 resize-none"
                 required
-                whileFocus={{ scale: 1.01 }}
-                transition={{ type: "spring", stiffness: 200 }}
               />
 
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <motion.button
                   type="submit"
                   disabled={status.loading}
-                  className="bg-[#0A4D2D] text-white px-6 py-3 rounded-lg shadow inline-flex items-center gap-2"
+                  className="bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-800 hover:to-emerald-700 text-white px-10 py-4 rounded-lg font-bold text-lg shadow-xl disabled:opacity-70"
                   whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={{ type: "spring", stiffness: 300 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   {status.loading ? "Sending..." : "Send Message"}
                 </motion.button>
-
-                <motion.button
-                  type="reset"
-                  onClick={() =>
-                    setForm({
-                      name: "",
-                      email: "",
-                      subject: "",
-                      message: "",
-                      mobile: "",
-                      botphone: "",
-                    })
-                  }
-                  className="bg-white border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  Clear Form
-                </motion.button>
-
-                {status.success && <p className="text-green-600 ml-4">{status.success}</p>}
-                {status.error && <p className="text-red-600 ml-4">{status.error}</p>}
               </div>
+
+              {/* Status */}
+              {status.success && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-green-900/60 border border-green-500 text-green-100 p-5 rounded-xl text-center font-semibold"
+                >
+                  {status.success}
+                </motion.div>
+              )}
+              {status.error && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-900/60 border border-red-500 text-red-100 p-5 rounded-xl text-center"
+                >
+                  {status.error}
+                </motion.div>
+              )}
             </div>
           </motion.form>
         </div>
       </section>
 
       {/* MAP */}
-      <motion.section
-        className="w-full h-[450px] mt-10"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-      >
+      <motion.section className="w-full h-[500px]">
         <iframe
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3940.5069330037873!2d7.273863175018739!3d9.017434491043428!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x104e73fd531ddf41%3A0xf0942f93db50b157!2sNigeria%20Customs%20Technical%20%26%20Hangar%20Services%20Limited!5e0!3m2!1sen!2sng!4v1763544496971!5m2!1sen!2sng"
           width="100%"
@@ -281,9 +255,9 @@ export default function Contact() {
           allowFullScreen=""
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
+          title="NCTHSL Location"
         ></iframe>
       </motion.section>
-
     </div>
   );
 }

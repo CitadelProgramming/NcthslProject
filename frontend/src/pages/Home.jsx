@@ -1,417 +1,362 @@
 // src/pages/Home.jsx
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
-import { Award, ShieldCheck, Flame, Image, Newspaper, Target, Telescope } from "lucide-react";
 import { motion } from "framer-motion";
+import axios from "axios";
+import { Award, ShieldCheck, Flame, Image, Newspaper, Target, Telescope } from "lucide-react";
 
 import heroImg from "../assets/Images/hero/hero.jpg";
 import aboutImg from "../assets/Images/about/about.png";
 
-/* Gallery imports */
-import Gallery from "../pages/Gallery";
-import gallery1 from "../assets/Images/gallery/gallery1.jpg";
-import gallery2 from "../assets/Images/gallery/gallery2.jpg";
-import gallery3 from "../assets/Images/gallery/gallery3.jpg";
-import gallery4 from "../assets/Images/gallery/gallery4.jpg";
+const BASE_URL = "https://enchanting-expression-production.up.railway.app";
 
-/* News Images */
-import newsFbo from "../assets/Images/news/news1.png";
-import newsUav from "../assets/Images/news/news2.jpg";
-import newsSafety from "../assets/Images/news/news3.png";
+// Public endpoints
+const ABOUT_API = `${BASE_URL}/api/v1/about/all-about`;
+const NEWS_API = `${BASE_URL}/api/v1/news/all-news`;
+const GALLERY_API = `${BASE_URL}/api/v1/gallery/galleries`;
 
 export default function Home() {
-  const gallery = [gallery1, gallery2, gallery3, gallery4];
+  const [aboutData, setAboutData] = useState(null);
+  const [news, setNews] = useState([]);
+  const [galleryPreview, setGalleryPreview] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const news = [
-    {
-      title: "NCTHSL receives the Nigerian Air Force.",
-      date: "Nov 25, 2025",
-      excerpt:
-        "NCTHSL warmly receives the Nigerian Air Force Executive Airlift Group...",
-      image: newsFbo
-    },
-    {
-      title: "Strengthening Partnerships for Sustainable Growth.",
-      date: "Oct 15, 2025",
-      excerpt:
-        "Visitations to the Infrastructure Concession Regulatory Commission (ICRC)...",
-      image: newsUav
-    },
-    {
-      title: "NCTHSL Hosts Africair for a Two-Day Demonstration Flight at its Hangar",
-      date: "Oct 8, 2025",
-      excerpt:
-        "The Comptroller General of Nigeria Customs Service, BA Adeniyi MFR...",
-      image: newsSafety
-    }
-  ];
+  const getImageUrl = (path) => path ? `${BASE_URL}${path}` : null;
 
+  useEffect(() => {
+    const loadHomeData = async () => {
+      try {
+        setLoading(true);
+
+        const [aboutRes, newsRes, galleryRes] = await Promise.all([
+          axios.get(ABOUT_API),
+          axios.get(NEWS_API),
+          axios.get(GALLERY_API)
+        ]);
+
+        // About
+        const about = aboutRes.data?.[0] || {};
+        setAboutData(about);
+
+        // Latest 3 News
+        const latestNews = (newsRes.data || []).slice(0, 3).map(item => ({
+          ...item,
+          imageSrc: getImageUrl(item.imageUrl)
+        }));
+        setNews(latestNews);
+
+        // Random 4 gallery images
+        const allImages = (galleryRes.data || [])
+          .filter(g => g.galleryImage)
+          .map(g => getImageUrl(g.galleryImage));
+        const shuffled = allImages.sort(() => 0.5 - Math.random());
+        setGalleryPreview(shuffled.slice(0, 4));
+
+      } catch (err) {
+        console.error("Failed to load home data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadHomeData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0a3a0a] to-[#052a05] flex items-center justify-center">
+        <div className="text-white text-3xl font-bold">Loading NCTHSL...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
 
-      {/* ---------------- LIGHTBOX MODAL (NOW IN THE CORRECT PLACE INSIDE RETURN) ---------------- */}
+      {/* Lightbox Modal */}
       {selectedImage && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fadeIn"
-          onClick={() => setSelectedImage(null)} >
-          <div className="relative max-w-4xl w-full">
-            {/* CLOSE BUTTON */}
+        <div 
+          className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[9999] flex items-center justify-center p-6"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-5xl w-full" onClick={e => e.stopPropagation()}>
             <button
-              className="absolute -top-3 -right-3 bg-white text-black rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:bg-gray-200 transition"
-              onClick={(e) => { e.stopPropagation();
-              setSelectedImage(null); }} >
-              ✕
+              onClick={() => setSelectedImage(null)}
+              className="absolute -top-4 -right-4 bg-red-600 hover:bg-red-700 text-white w-12 h-12 rounded-full shadow-2xl flex items-center justify-center text-2xl font-bold z-10 transition"
+            >
+              ×
             </button>
-
-            {/* IMAGE */}
-            <img src={selectedImage} alt="Preview" className="w-full max-h-[80vh] object-contain rounded-xl shadow-2xl animate-zoomIn" />
+            <img 
+              src={selectedImage} 
+              alt="Full view" 
+              className="w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"
+            />
           </div>
         </div>
       )}
 
-      {/* Your remaining homepage JSX continues here... */}
-
-
       {/* HERO SECTION */}
-      <section className="relative w-full bg-gradient-to-r from-[#0A4D2D] to-[#145C36] text-white py-24 px-6 overflow-hidden animate-fadeIn">
-        {/* Background Image */}
+      <section className="relative w-full bg-gradient-to-r from-[#0A4D2D] to-[#145C36] text-white py-32 px-6 overflow-hidden">
         <img src={heroImg} alt="NCTHSL Hero" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+        <div className="absolute inset-0 bg-black/50"></div>
 
-        {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="relative max-w-7xl mx-auto text-center">
+          <motion.h1 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-5xl md:text-7xl font-extrabold mb-8 leading-tight"
+          >
+            Nigeria Customs Technical &<br/>Hangar Services Limited
+          </motion.h1>
 
-        {/* Content */}
-        <div className="relative max-w-7xl mx-auto text-center animate-fadeScale">
-          <h1 className="text-4xl md:text-6xl font-extrabold mb-6 animate-slideUp drop-shadow-lg">
-            Nigeria Customs Technical &<br/>Hangar Services Limited (NCTHSL)
-          </h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="text-xl md:text-2xl text-gray-100 max-w-4xl mx-auto mb-10 leading-relaxed"
+          >
+            {aboutData?.overview || "Premier provider of aviation services, renowned for its comprehensive range of offerings, technical expertise, and commitment to excellence in service delivery."}
+          </motion.p>
 
-          <p className="text-lg md:text-xl text-gray-100 max-w-3xl mx-auto mb-8 animate-slideUp drop-shadow">
-            Premier provider of aviation services, renowned for its comprehensive range of offerings,
-            technical expertise, and commitment to excellence in service delivery.
-          </p>
-
-          <div className="flex items-center justify-center gap-4">
-            <a href="/about" className="bg-white text-[#0A4D2D] font-semibold px-8 py-3 rounded-lg shadow hover:bg-gray-200 transition animate-slideUp">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.8 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-6"
+          >
+            <Link 
+              to="/about" 
+              className="bg-white text-[#0A4D2D] font-bold px-10 py-4 rounded-xl shadow-2xl hover:bg-gray-100 transition text-lg"
+            >
               Learn More
-            </a>
-
-            <Link to="/services" className="bg-transparent border border-white/30 text-white px-6 py-3 rounded-lg shadow hover:bg-white/10 transition animate-slideUp">
+            </Link>
+            <Link 
+              to="/services" 
+              className="bg-transparent border-2 border-white text-white px-10 py-4 rounded-xl hover:bg-white/10 transition text-lg font-medium"
+            >
               Our Services
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ABOUT PREVIEW */}
+      <section className="py-24 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05] text-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-4xl md:text-6xl font-extrabold mb-8 leading-tight">
+              About NCTHSL
+            </h2>
+            <p className="text-lg md:text-xl text-gray-200 leading-relaxed mb-10">
+              {aboutData?.overview || "Leading the future of aviation services in Nigeria with innovation, safety, and excellence."}
+            </p>
+
+            <div className="space-y-6">
+              <Link 
+                to="/testimonials" 
+                className="block bg-white/10 backdrop-blur-sm border border-white/20 px-8 py-4 rounded-xl hover:bg-white/20 transition text-lg font-medium text-center"
+              >
+                Client Testimonials
+              </Link>
+              <Link 
+                to="/about" 
+                className="block bg-red-600 hover:bg-red-700 px-8 py-4 rounded-xl text-center font-bold text-lg transition"
+              >
+                Meet Our Leadership
+              </Link>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="flex justify-center"
+          >
+            <img 
+              src={aboutImg} 
+              alt="About NCTHSL" 
+              className="w-full max-w-lg rounded-3xl shadow-2xl border-8 border-white/10"
+            />
+          </motion.div>
+        </div>
+      </section>
+
+      {/* LATEST NEWS */}
+      <section className="py-24 px-6 bg-gradient-to-br from-[#818589] to-[#525354]">
+        <div className="max-w-7xl mx-auto">
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-5xl font-bold text-center mb-16 text-white"
+          >
+            Latest News
+          </motion.h2>
+
+          <div className="grid md:grid-cols-3 gap-10">
+            {news.length === 0 ? (
+              <p className="col-span-3 text-center text-white text-xl">No news available</p>
+            ) : (
+              news.map((item, i) => (
+                <motion.article
+                  key={item.id}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.2 }}
+                  whileHover={{ y: -10 }}
+                  className="bg-white/10 backdrop-blur-lg rounded-3xl overflow-hidden shadow-2xl border border-white/10"
+                >
+                  {item.imageSrc && (
+                    <img 
+                      src={item.imageSrc} 
+                      alt={item.title}
+                      className="w-full h-56 object-cover"
+                    />
+                  )}
+                  <div className="p-8">
+                    <p className="text-sm text-gray-300 mb-3">
+                      {new Date(item.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </p>
+                    <h3 className="text-2xl font-bold mb-4 text-white">{item.title}</h3>
+                    <p className="text-gray-200 leading-relaxed">
+                      {item.preview || item.content?.substring(0, 120) + "..."}
+                    </p>
+                    <Link 
+                      to="/news" 
+                      className="inline-block mt-6 text-red-400 font-bold hover:text-red-300 transition"
+                    >
+                      Read More →
+                    </Link>
+                  </div>
+                </motion.article>
+              ))
+            )}
+          </div>
+
+          <div className="text-center mt-16">
+            <Link 
+              to="/news"
+              className="inline-block bg-red-600 hover:bg-red-700 text-white px-12 py-5 rounded-xl text-xl font-bold shadow-2xl transition transform hover:scale-105"
+            >
+              View All News
             </Link>
           </div>
         </div>
       </section>
 
-      <section id="about" className="relative py-20 text-white overflow-hidden">
-        {/* Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a3a0a] to-[#052a05] animate-fadeIn" />
-
-        {/* Soft Glow */}
-        <div className="absolute inset-0 bg-green-500 opacity-20 blur-3xl"></div>
-
-        {/* Floating Particles */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute top-10 left-20 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-24 w-40 h-40 bg-white/10 rounded-full blur-2xl animate-ping"></div>
-          <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-white/5 rounded-full blur-xl animate-bounce"></div>
-        </div>
-
-        {/* Content with Image */}
-        <div className="relative container mx-auto px-6 grid md:grid-cols-2 gap-12 animate-fadeScale">
-          {/* Text Section */}
-          <div className="text-center md:text-left">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 drop-shadow-lg animate-slideUp">
-              About Nigeria Customs Technical & Hangar Services Limited
-            </h2>
-
-            <p className="max-w-3xl text-lg md:text-xl leading-relaxed text-green-100 drop-shadow animate-slideUp">
-              Nigeria Customs Technical & Hangar Services Limited (NCTHSL) specializes in providing advanced engineering,
-              aircraft support, security technology solutions, and operational services tailored to the aviation and customs sectors.
-              Our commitment is to innovation, efficiency, and national development.
-            </p>
-
-        {/* CTA Buttons */}
-        <div className="flex justify-center md:justify-start mt-10 gap-6 animate-fadeIn">
-          <a href="/testimonials" className="px-8 py-3 bg-white text-green-700 font-semibold rounded-xl shadow-lg hover:bg-green-100 hover:scale-105 transition-all duration-300">
-            Testimonials
-          </a>
-
-          <a href="/about" className="px-8 py-3 bg-green-800 text-white font-semibold rounded-xl shadow-lg border border-green-300/30 hover:bg-green-900 hover:scale-105 transition-all duration-300">
-                Meet Our Leadership
-              </a>
-            </div>
-          </div>
-
-            {/* Image Section */}
-            <div className="flex justify-center">
-              <img src={aboutImg} alt="About NCTHSL" className="w-full max-w-md rounded-2xl shadow-xl animate-slideUp transition-transform duration-500" />
-            </div>
-          </div>
-      </section>
-
-      {/* NEWS SECTION */}
-      <section
-        id="news"
-        className="py-24 px-6 bg-gradient-to-br from-[#818589] to-[#525354] text-white"
-      >
+      {/* GALLERY PREVIEW */}
+      <section className="py-24 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05]">
         <div className="max-w-7xl mx-auto">
-
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-bold text-center mb-16"
+            className="text-5xl font-bold text-center mb-16 text-white"
           >
-            Latest News
+            Gallery Highlights
           </motion.h2>
 
-          {/* Stagger Animation Wrapper */}
-          <motion.div
-            className="grid md:grid-cols-3 gap-10"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={{
-              hidden: {},
-              visible: {
-                transition: {
-                  staggerChildren: 0.25,
-                },
-              },
-            }}
-          >
-            {news.map((item, index) => (
-              <motion.div
-                key={index}
-                variants={{
-                  hidden: { opacity: 0, y: 40 },
-                  visible: { opacity: 1, y: 0 },
-                }}
-                transition={{ duration: 0.7, ease: "easeOut" }}
-                whileHover={{ scale: 1.03, y: -5 }}
-                className="bg-white/10 rounded-2xl overflow-hidden 
-                bg-gradient-to-br from-[#0a3a0a] to-[#052a05] 
-                shadow-xl border border-white/10 backdrop-blur-md 
-                cursor-pointer transition-all duration-300"
-              >
-                {/* Image with zoom hover */}
-                <div className="overflow-hidden">
-                  <motion.img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-56 object-cover"
-                    whileHover={{ scale: 1.08 }}
-                    transition={{ duration: 0.4 }}
+          {galleryPreview.length === 0 ? (
+            <p className="text-center text-white text-xl">Gallery coming soon...</p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {galleryPreview.map((src, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.1 }}
+                  whileHover={{ scale: 1.1, y: -10 }}
+                  className="group relative overflow-hidden rounded-3xl shadow-2xl cursor-pointer"
+                  onClick={() => setSelectedImage(src)}
+                >
+                  <img 
+                    src={src} 
+                    alt={`Gallery ${i+1}`}
+                    className="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition">
+                    <div className="absolute bottom-6 left-6 text-white font-bold text-lg">
+                      View Image
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
 
-                {/* Content */}
-                <div className="p-6">
-                  <p className="text-sm text-gray-300 mb-2">{item.date}</p>
-
-                  <motion.h3
-                    whileHover={{ x: 3 }}
-                    transition={{ duration: 0.2 }}
-                    className="text-xl font-bold mb-3"
-                  >
-                    {item.title}
-                  </motion.h3>
-
-                  <p className="text-gray-200 leading-relaxed">
-                    {item.excerpt.substring(0, 110)}...
-                  </p>
-
-                  <Link
-                    to="/news"
-                    className="inline-block mt-5 text-sm font-semibold text-red-400 hover:text-red-500 transition"
-                  >
-                    Read More →
-                  </Link>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          <div className="mt-12 flex justify-center">
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                to="/news"
-                className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300"
-              >
-                View All News
-              </Link>
-            </motion.div>
+          <div className="text-center mt-16">
+            <Link 
+              to="/gallery"
+              className="inline-block bg-red-600 hover:bg-red-700 text-white px-12 py-5 rounded-xl text-xl font-bold shadow-2xl transition transform hover:scale-105"
+            >
+              Explore Full Gallery
+            </Link>
           </div>
-
         </div>
       </section>
 
-
-
-      {/* MINI GALLERY – Premium Green Theme + LIGHTBOX */}
-<section id="home-gallery" className="py-24 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05] relative">
-  <div className="max-w-7xl mx-auto">
-
-    <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-white animate-fadeUp tracking-wide">
-      Gallery
-    </h2>
-
-    {/* GRID */}
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-      {gallery.map((src, idx) => (
-        <div
-          key={idx}
-          className="group relative overflow-hidden rounded-2xl shadow-xl
-          bg-[#124E35] border border-white/10 cursor-pointer transform transition-all duration-500
-          hover:scale-[1.06] hover:-translate-y-2 hover:shadow-[0_8px_40px_rgba(0,0,0,0.35)]"
-          onClick={() => setSelectedImage(src)}
-        >
-          <img
-            src={src}
-            alt={`gallery-${idx + 1}`}
-            className="w-full h-60 object-cover rounded-2xl
-            transition-transform duration-700 ease-out group-hover:scale-110"
-          />
-
-          <div
-            className="absolute inset-0 flex items-end p-4 
-            bg-gradient-to-t from-black/50 via-black/10 to-transparent 
-            opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-          >
-            <span className="text-white text-sm font-semibold tracking-wide drop-shadow-md 
-            border-b border-yellow-400/70 pb-1">
-              View Image
-            </span>
-          </div>
-        </div>
-      ))}
-    </div>
-
-    {/* VIEW MORE BUTTON */}
-    <div className="mt-12 flex justify-center relative z-10">
-      <Link
-        to="/gallery"
-        className="px-8 py-4 bg-red-600 text-white font-semibold text-lg rounded-xl shadow-lg
-        hover:bg-red-700 transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,0,0,0.35)]
-        animate-fadeIn animate-slideUp opacity-0"
-        style={{ "--delay": "600ms" }}
-      >
-        View More
-      </Link>
-    </div>
-
-  </div>
-
-  {/* LIGHTBOX (Full View Image) */}
-{/* LIGHTBOX (Full View Image) */}
-{selectedImage && (
-  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center
-  z-[9999] px-4 animate-fadeIn">
-
-    {/* Image Wrapper - so close button aligns with the image */}
-    <div className="relative max-h-[90vh] max-w-[90vw]">
-
-      {/* Close button */}
-      <button
-        onClick={() => setSelectedImage(null)}
-        className="absolute -top-4 -right-4 text-white bg-black/60 hover:bg-black/80
-        p-3 rounded-full z-[10000] transition shadow-xl border border-white/20"
-      >
-        ✕
-      </button>
-
-      {/* Full Image */}
-      <img
-        src={selectedImage}
-        alt="Full View"
-        className="max-h-[90vh] max-w-[90vw] rounded-2xl shadow-2xl object-contain
-        animate-scaleIn"
-      />
-
-    </div>
-  </div>
-)}
-
-</section>
-
       {/* MISSION & VISION */}
-      <section id="mission-vision" className="py-24 px-6 bg-gradient-to-br from-[#818589] to-[#525354] relative overflow-hidden text-white">
-
-        <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-white drop-shadow-xl animate-fadeUp">
-          Our Mission & Vision
-        </h2>
-
-        {/* Soft Glow Background Elements */}
-        <div className="absolute top-0 left-0 w-80 h-80 bg-red-700/10 rounded-full blur-3xl opacity-40"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-red-600/10 rounded-full blur-3xl opacity-40"></div>
-
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-start relative z-10">
-
-          {/* Mission */}
-          <div className="bg-gradient-to-br from-[#0a3a0a] to-[#052a05] card-zoom group p-10 rounded-2xl shadow-xl bg-white/10 backdrop-blur-xl border border-white/10
-                    animate-slideUp animate-fadeIn opacity-0 transition-all duration-500 hover:shadow-[0_0_30px_rgba(255,0,0,0.25)]
-                    hover:-translate-y-1"
-            style={{ "--delay": "150ms" }}
+      <section className="py-24 px-6 bg-gradient-to-br from-[#818589] to-[#525354] text-white">
+        <div className="max-w-6xl mx-auto">
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-5xl font-bold text-center mb-20"
           >
-            <div className="card-zoom-inner cursor-pointer">
-            <div className="flex items-center gap-4 mb-6">
-              <span className="w-14 h-14 flex items-center justify-center rounded-full bg-red-700/20">
-                <Target className="w-16 h-16 mx-auto mb-6 text-red-600 drop-shadow-xl" />
-              </span>
-              <h2 className="text-3xl font-bold">Our Mission</h2>
-            </div>
+            Our Mission & Vision
+          </motion.h2>
 
-            <p className="text-gray-300 leading-relaxed">
-              To become the most recognized and most profitable government-owned aviation company—
-              consistently delivering healthy dividends to our shareholders while promoting excellence,
-              innovation, and sustainable operational growth.
-            </p>
+          <div className="grid md:grid-cols-2 gap-16">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              className="bg-gradient-to-br from-[#0a3a0a] to-[#052a05] p-12 rounded-3xl shadow-2xl border border-white/10"
+            >
+              <div className="flex items-center gap-6 mb-8">
+                <div className="w-20 h-20 bg-red-600/20 rounded-full flex items-center justify-center">
+                  <Target className="w-12 h-12 text-red-500" />
+                </div>
+                <h3 className="text-4xl font-bold">Our Mission</h3>
+              </div>
+              <p className="text-xl text-gray-200 leading-relaxed">
+                {aboutData?.mission || "To deliver world-class aviation services with integrity, innovation, and excellence."}
+              </p>
+            </motion.div>
 
-            <div className="mt-6 h-1 w-0 bg-red-600 rounded-full animate-growLine"></div>
-          </div>
-          </div>
-
-          {/* Vision */}
-          <div className="bg-gradient-to-br from-[#0a3a0a] to-[#052a05] card-zoom group p-10 rounded-2xl shadow-xl bg-white/10 backdrop-blur-xl border border-white/10
-                    animate-slideUp animate-fadeIn opacity-0 transition-all duration-500 hover:shadow-[0_0_30px_rgba(255,0,0,0.25)]
-                    hover:-translate-y-1"
-            style={{ "--delay": "300ms" }}
-          >
-            <div className="card-zoom-inner cursor-pointer">
-            <div className="flex items-center gap-4 mb-6">
-              <span className="w-14 h-14 flex items-center justify-center rounded-full bg-red-700/20">
-
-                <Telescope className="w-16 h-16 mx-auto mb-6 text-red-600 drop-shadow-xl" />
-              </span>
-              <h2 className="text-3xl font-bold">Our Vision</h2>
-            </div>
-
-            <p className="text-gray-300 leading-relaxed">
-              To build an aviation institution that stands the test of time—providing world-class,
-              safety-driven services to Nigeria and the global aviation sector with integrity,
-              professionalism, and exceptional operational standards.
-            </p>
-
-            <div className="mt-6 h-1 w-0 bg-red-600 rounded-full animate-growLine"></div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              className="bg-gradient-to-br from-[#0a3a0a] to-[#052a05] p-12 rounded-3xl shadow-2xl border border-white/10"
+            >
+              <div className="flex items-center gap-6 mb-8">
+                <div className="w-20 h-20 bg-red-600/20 rounded-full flex items-center justify-center">
+                  <Telescope className="w-12 h-12 text-red-500" />
+                </div>
+                <h3 className="text-4xl font-bold">Our Vision</h3>
+              </div>
+              <p className="text-xl text-gray-200 leading-relaxed">
+                {aboutData?.vision || "To be Africa's leading aviation services provider, setting global standards in safety and efficiency."}
+              </p>
+            </motion.div>
           </div>
 
+          <div className="text-center mt-16">
+            <Link 
+              to="/about"
+              className="inline-block bg-red-600 hover:bg-red-700 text-white px-12 py-5 rounded-xl text-xl font-bold shadow-2xl transition transform hover:scale-105"
+            >
+              Learn More About Us
+            </Link>
+          </div>
         </div>
-
-        {/* Centered Learn More Button */}
-        <div className="mt-12 flex justify-center relative z-10">
-          <a href="/about" className="px-8 py-4 bg-red-600 text-white font-semibold text-lg rounded-xl shadow-lg
-                    hover:bg-red-700 transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,0,0,0.35)]
-                    animate-fadeIn animate-slideUp opacity-0"
-            style={{ "--delay": "600ms" }}
-          >
-            Learn More
-          </a>
-        </div>
-
       </section>
     </div>
   );
