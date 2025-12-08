@@ -1,38 +1,10 @@
+// src/pages/Services.jsx
 import { useState, useEffect } from "react";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 import ncaaLogo from "../assets/Images/compliance/ncaa.png";
 import faanLogo from "../assets/Images/compliance/faan.png";
-import { Plane, Wrench, Satellite } from "lucide-react";
-
-/* ===========================
-   IMPORT ALL SERVICE IMAGES
-=========================== */
-
-// FBO
-import fbo1 from "../assets/Images/services/fbo/fueling.jpg";
-import fbo2 from "../assets/Images/services/fbo/parking.jpg";
-import fbo3 from "../assets/Images/services/fbo/lounging.jpg";
-
-// Maintenance
-import m1 from "../assets/Images/services/maintenance/inspection.jpg";
-import m2 from "../assets/Images/services/maintenance/tools.jpg";
-import m3 from "../assets/Images/services/maintenance/team.jpg";
-
-// Oil & Gas
-import o1 from "../assets/Images/services/oilgas/helicopter.jpg";
-import o2 from "../assets/Images/services/oilgas/offshore.jpg";
-import o3 from "../assets/Images/services/oilgas/crew-transfer.jpg";
-
-// Security
-import s1 from "../assets/Images/services/security/surveillance.jpeg";
-import s2 from "../assets/Images/services/security/patrol.jpg";
-import s3 from "../assets/Images/services/security/mapping.jpg";
-
-// Delivery
-import d1 from "../assets/Images/services/delivery/air-mail.jpg";
-import d2 from "../assets/Images/services/delivery/cash.jpg";
-import d3 from "../assets/Images/services/delivery/cargo.jpg";
-
 
 /* ===========================
    REUSABLE IMAGE SLIDER
@@ -45,16 +17,12 @@ function ImageSlider({ images }) {
     const autoSlide = setInterval(() => {
       setIndex((prev) => (prev + 1) % images.length);
     }, 4000);
+
     return () => clearInterval(autoSlide);
   }, [images.length]);
 
-  const next = () => setIndex((prev) => (prev + 1) % images.length);
-  const prev = () =>
-    setIndex((prev) => (prev - 1 + images.length) % images.length);
-
   return (
     <div className="relative w-full h-56 md:h-72 rounded-lg overflow-hidden shadow-lg">
-      {/* Image */}
       <img
         src={images[index]}
         alt=""
@@ -63,14 +31,16 @@ function ImageSlider({ images }) {
 
       {/* Controls */}
       <button
-        onClick={prev}
+        onClick={() =>
+          setIndex((prev) => (prev - 1 + images.length) % images.length)
+        }
         className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white px-3 py-1 rounded-full hover:bg-black/60 transition"
       >
         ‹
       </button>
 
       <button
-        onClick={next}
+        onClick={() => setIndex((prev) => (prev + 1) % images.length)}
         className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white px-3 py-1 rounded-full hover:bg-black/60 transition"
       >
         ›
@@ -91,174 +61,163 @@ function ImageSlider({ images }) {
   );
 }
 
+/* ===========================
+   MAIN SERVICES COMPONENT
+=========================== */
 export default function Services() {
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchSecureImage = async (relativePath) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+
+      const res = await axios.get(
+        `https://enchanting-expression-production.up.railway.app${relativePath}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: "blob",
+        }
+      );
+
+      return URL.createObjectURL(res.data);
+    } catch (err) {
+      console.error("Image fetch failed:", err);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        const token = localStorage.getItem("adminToken");
+
+        const res = await axios.get(
+          "https://enchanting-expression-production.up.railway.app/api/v1/service/all-services",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const list = res.data || [];
+
+        // Load secure images for each service item
+        const processed = await Promise.all(
+          list.map(async (service) => {
+            let loadedImages = [];
+
+            if (Array.isArray(service.images)) {
+              loadedImages = await Promise.all(
+                service.images.map(async (path) => await fetchSecureImage(path))
+              );
+            }
+
+            return {
+              ...service,
+              loadedImages,
+            };
+          })
+        );
+
+        setServices(processed);
+      } catch (error) {
+        console.error("Services Fetch Error:", error);
+        Swal.fire("Error", "Unable to load services.", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadServices();
+  }, []);
+
   return (
     <div className="w-full">
+
       {/* HEADER */}
       <section className="bg-gradient-to-br from-[#0a3a0a] to-[#052a05] text-white py-8 px-6 text-center animate-fadeIn">
         <div className="max-w-5xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold animate-slideUp">
-            Our Services
-          </h1>
-          <p className="mt-2 text-lg md:text-xl text-gray-200 animate-slideUp">
-            Comprehensive aviation, technical, logistics and security solutions
-            tailored for governmental, commercial and industrial operators.
+          <h1 className="text-4xl md:text-5xl font-bold">Our Services</h1>
+          <p className="mt-2 text-lg md:text-xl text-gray-200">
+            Comprehensive aviation, logistics, and security services tailored for civil & military operators.
           </p>
         </div>
       </section>
 
-      {/* MAIN SECTIONS */}
+      {/* SERVICES SECTION */}
       <section className="py-16 px-6 bg-gradient-to-br from-[#818589] to-[#525354]">
         <div className="max-w-7xl mx-auto space-y-20">
 
-          {/* FBO */}
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div className="order-2 md:order-1 animate-staggerFade" style={{ "--delay": "100ms" }}>
-              <h3 className="text-2xl text-red-700 font-bold mb-4">
-                Fixed Based Operations — Fueling, Parking & Lounging
-              </h3>
-              <p className="text-black mb-4">
-                NCTHSL operates secure FBO services offering fueling, parking,
-                passenger lounges and ground handling.
-              </p>
-              <ul className="list-disc list-inside text-black space-y-2">
-                <li>Fuel management</li>
-                <li>Ramp & parking services</li>
-                <li>Passenger & crew lounges</li>
-                <li>Ground handling</li>
-              </ul>
-            </div>
+          {loading && (
+            <div className="text-white text-center text-xl">Loading services...</div>
+          )}
 
-            <div className="order-1 md:order-2">
-              <ImageSlider images={[fbo1, fbo2, fbo3]} />
+          {!loading && services.length === 0 && (
+            <div className="text-white text-center text-xl">
+              No services available.
             </div>
-          </div>
+          )}
 
-          {/* Maintenance */}
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-              <ImageSlider images={[m1, m2, m3]} />
-            </div>
+          {/* Loop Render */}
+          {!loading &&
+            services.map((service, index) => (
+              <div
+                key={service.id}
+                className={`grid md:grid-cols-2 gap-8 items-center ${
+                  index % 2 === 1 ? "md:flex-row-reverse" : ""
+                }`}
+              >
+                {/* Images */}
+                <div>
+                  {service.loadedImages.length > 0 ? (
+                    <ImageSlider images={service.loadedImages} />
+                  ) : (
+                    <div className="w-full h-56 bg-gray-300 rounded-xl flex items-center justify-center">
+                      No Images
+                    </div>
+                  )}
+                </div>
 
-            <div className="animate-staggerFade" style={{ "--delay": "240ms" }}>
-              <h3 className="text-2xl text-red-700 font-bold mb-4">
-                General Aviation Maintenance, Sales & UAV Operations
-              </h3>
-              <p className="text-black mb-4">
-                From scheduled maintenance to UAV operations and aircraft
-                leasing, we ensure compliance and airworthiness.
-              </p>
-              <ul className="list-disc list-inside text-black space-y-2">
-                <li>Inspections & repairs</li>
-                <li>Component servicing</li>
-                <li>UAV data operations</li>
-                <li>Aircraft sales & leasing</li>
-              </ul>
-            </div>
-          </div>
+                {/* Text */}
+                <div className="animate-staggerFade">
+                  <h3 className="text-2xl text-red-700 font-bold mb-4">
+                    {service.title}
+                  </h3>
 
-          {/* Oil & Gas */}
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div className="order-2 md:order-1 animate-staggerFade">
-              <h3 className="text-2xl text-red-700 font-bold mb-4">
-                Oil & Gas — Offshore Support
-              </h3>
-              <p className="text-black mb-4">
-                Specialized helicopter and fixed-wing support for offshore and
-                onshore operations.
-              </p>
-              <ul className="list-disc list-inside text-black space-y-2">
-                <li>Crew transfers</li>
-                <li>Medevac operations</li>
-                <li>Offshore logistics</li>
-              </ul>
-            </div>
+                  <p className="text-black mb-4">{service.description}</p>
 
-            <div className="order-1 md:order-2">
-              <ImageSlider images={[o1, o2, o3]} />
-            </div>
-          </div>
-
-          {/* Security */}
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-              <ImageSlider images={[s1, s2, s3]} />
-            </div>
-
-            <div className="animate-staggerFade">
-              <h3 className="text-2xl text-red-700 font-bold mb-4">
-                Security & Geo-Spatial Intelligence
-              </h3>
-              <p className="text-black mb-4">
-                Aerial surveillance, patrol, mapping and intelligence services.
-              </p>
-              <ul className="list-disc list-inside text-black space-y-2">
-                <li>Aerial border patrol</li>
-                <li>Geo-spatial intelligence</li>
-                <li>Mapping & survey</li>
-                <li>Real estate management</li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Delivery */}
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div className="order-2 md:order-1 animate-staggerFade">
-              <h3 className="text-2xl text-red-700 font-bold mb-4">
-                Airborne Mail & Cash Delivery
-              </h3>
-              <p className="text-black mb-4">
-                Secure airborne logistics for high-value items and urgent packages.
-              </p>
-              <ul className="list-disc list-inside text-black space-y-2">
-                <li>Mail transport</li>
-                <li>Cash-in-transit</li>
-                <li>High-security cargo</li>
-              </ul>
-            </div>
-
-            <div className="order-1 md:order-2">
-              <ImageSlider images={[d1, d2, d3]} />
-            </div>
-          </div>
-
+                  <ul className="list-disc list-inside text-black space-y-2">
+                    {(service.bullets || []).map((b, i) => (
+                      <li key={i}>{b}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ))}
         </div>
       </section>
 
       {/* SAFETY */}
       <section className="py-12 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05] text-white">
-        <div className="max-w-6xl mx-auto text-center animate-fadeIn">
-          <h3 className="text-2xl font-bold mb-4">Quality, Safety & Compliance</h3>
+        <div className="max-w-6xl mx-auto text-center">
+          <h3 className="text-2xl font-bold mb-4">
+            Quality, Safety & Compliance
+          </h3>
+
           <p className="max-w-3xl mx-auto text-gray-100 mb-8">
-            We operate under strict international aviation safety standards and maintain
-            compliance with all Nigerian civil aviation regulatory bodies.
+            We operate under strict international aviation safety standards.
           </p>
 
           <div className="flex flex-wrap justify-center items-center gap-8 mt-6">
-            <div className="bg-white p-4 rounded-xl shadow-lg w-32 h-32 flex items-center justify-center hover:scale-105 transition duration-300">
+            <div className="bg-white p-4 rounded-xl shadow-lg w-32 h-32">
               <img src={ncaaLogo} alt="NCAA Logo" className="w-full h-full object-contain" />
             </div>
-
-            <div className="bg-white p-4 rounded-xl shadow-lg w-32 h-32 flex items-center justify-center hover:scale-105 transition duration-300">
+            <div className="bg-white p-4 rounded-xl shadow-lg w-32 h-32">
               <img src={faanLogo} alt="FAAN Logo" className="w-full h-full object-contain" />
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-16 px-6 bg-gray-100">
-        <div className="max-w-5xl mx-auto text-center animate-fadeIn">
-          <h3 className="text-2xl font-bold mb-4">Need a Custom Aviation Solution?</h3>
-          <p className="text-gray-700 mb-6">
-            Contact our engineering team for tailored services or inspections.
-          </p>
-          <a
-            href="/contact"
-            className="inline-block bg-[#B30000] text-white px-8 py-3 rounded-lg shadow hover:bg-red-700 transition hover-zoom animate-zoomInSoft"
-          >
-            Get in Touch
-          </a>
         </div>
       </section>
     </div>

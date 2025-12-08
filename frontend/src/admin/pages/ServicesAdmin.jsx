@@ -1,360 +1,455 @@
-import React, { useState } from "react";
+// src/admin/pages/ServicesAdmin.jsx
+import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import axios from "axios";
+
+const API_BASE =
+  "https://enchanting-expression-production.up.railway.app/api/v1/service";
 
 export default function ServicesAdmin() {
-  const [services, setServices] = useState([
-    {
-      id: 1,
-      title: "Aircraft Maintenance",
-      description: "Full aircraft maintenance and repair services.",
-      images: [],
-      features: ["Engine check", "Airframe repair", "Avionics inspection"],
-    },
-    {
-      id: 2,
-      title: "Fixed Based Operations",
-      description:
-        "NCTHSL operates secure FBO services offering fueling, parking, passenger lounges and ground handling.",
-      images: [],
-      features: [
-        "Fuel management",
-        "Ramp & parking services",
-        "Passenger & crew lounges",
-        "Ground handling",
-      ],
-    },
-  ]);
+  const [serviceList, setServiceList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const emptyService = {
+  const emptyForm = {
     title: "",
     description: "",
-    images: [],
     features: [""],
+    imageFile: null,
   };
 
-  const [newService, setNewService] = useState(emptyService);
-  const [editingService, setEditingService] = useState(null);
-  const [editData, setEditData] = useState(emptyService);
+  const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState(null);
+  const [previewMap, setPreviewMap] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Convert uploaded files to base64
-  const handleImagesUpload = (e, isEditing = false) => {
-    const files = Array.from(e.target.files);
-    const readers = files.map(
-      (file) =>
-        new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(file);
-        })
+  const PER_PAGE = 5;
+  const [page, setPage] = useState(1);
+
+  const getAuthConfig = () => {
+    const token = localStorage.getItem("adminToken");
+    return {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    };
+  };
+
+  // -------------------------------------------
+  // LOAD ALL SERVICES
+  // -------------------------------------------
+  const loadServices = async () => {
+    try {
+      setLoading(true);
+      const config = getAuthConfig();
+
+      const res = await axios.get(`${API_BASE}/all-service`, config);
+
+      const list = res.data || [];
+      setServiceList(list);
+
+      list.forEach((item) => loadImageWithAuth(item));
+    } catch (error) {
+      Swal.fire("Error", "Failed to load services", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // -------------------------------------------
+  // SECURE IMAGE FETCH
+  // -------------------------------------------
+  const loadImageWithAuth = async (item) => {
+    if (!item.image) return;
+
+    const fullUrl = `https://enchanting-expression-production.up.railway.app${item.image}`;
+    const token = localStorage.getItem("adminToken");
+
+    try {
+      const response = await fetch(fullUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+      });
+
+      if (!response.ok) return;
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      setPreviewMap((prev) => ({
+        ...prev,
+        [item.id]: url,
+      }));
+    } catch (error) {
+      console.log("Image fetch failed:", error);
+    }
+  };
+
+  useEffect(() => {
+    loadServices();
+  }, []);
+
+  // -------------------------------------------
+  // IMAGE UPLOAD
+  // -------------------------------------------
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setForm({ ...form, imageFile: file });
+  };
+
+  // -------------------------------------------
+  // BUILD FORMDATA (JSON + FILE)
+  // -------------------------------------------
+  const buildFormData = () => {
+    const fd = new FormData();
+
+    const dataObj = {
+      title: form.title,
+      description: form.description,
+      features: form.features
+    };
+
+    fd.append(
+      "data",
+      new Blob([JSON.stringify(dataObj)], { type: "application/json" })
     );
 
-    Promise.all(readers).then((results) => {
-      if (isEditing)
-        setEditData({ ...editData, images: [...editData.images, ...results] });
-      else
-        setNewService({
-          ...newService,
-          images: [...newService.images, ...results],
-        });
+    if (form.imageFile) {
+      fd.append("file", form.imageFile); // correct, matches backend
+    }
+
+    return fd;
+  };
+
+
+  // -------------------------------------------
+  // SAVE OR UPDATE SERVICE
+  // -------------------------------------------
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!form.title.trim() || !form.description.trim()) {
+      return Swal.fire("Error", "Title & description required", "error");
+    }
+
+    if (form.features.some((f) => !f.trim())) {
+      return Swal.fire("Error", "Features cannot be empty", "error");
+    }
+
+    try {
+      const config = getAuthConfig();
+      const fd = buildFormData();
+
+      if (editingId) {
+        await axios.put(`${API_BASE}/update/${editingId}`, fd, config);
+
+        Swal.fire("Updated!", "Service updated successfully", "success");
+
+        setServiceList((prev) =>
+          prev.map((s) =>
+            s.id === editingId ? { ...s, ...form, image: s.image } : s
+          )
+        );
+      } else {
+        const res = await axios.post(`${API_BASE}/add-service`, fd, config);
+
+        Swal.fire("Created!", "Service added successfully", "success");
+
+        const newItem = res.data?.data;
+        if (newItem) {
+          setServiceList((prev) => [newItem, ...prev]);
+          loadImageWithAuth(newItem);
+        }
+      }
+
+      cancelEdit();
+    } catch (err) {
+      Swal.fire(
+        "Error",
+        err.response?.data?.message || "Failed to save service",
+        "error"
+      );
+    }
+  };
+
+  // -------------------------------------------
+  // DELETE SERVICE
+  // -------------------------------------------
+  const deleteService = (id) => {
+    Swal.fire({
+      title: "Delete?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      confirmButtonText: "Delete",
+    }).then(async (res) => {
+      if (!res.isConfirmed) return;
+
+      try {
+        const config = getAuthConfig();
+        await axios.delete(`${API_BASE}/delete/${id}`, config);
+
+        Swal.fire("Deleted!", "Service removed", "success");
+
+        setServiceList((prev) => prev.filter((s) => s.id !== id));
+      } catch (error) {
+        Swal.fire("Error", "Failed to delete service", "error");
+      }
     });
   };
 
-  // Remove image
-  const removeImage = (index, isEditing = false) => {
-    if (isEditing) {
-      const images = [...editData.images];
-      images.splice(index, 1);
-      setEditData({ ...editData, images });
-    } else {
-      const images = [...newService.images];
-      images.splice(index, 1);
-      setNewService({ ...newService, images });
-    }
+  // -------------------------------------------
+  // EDIT SERVICE
+  // -------------------------------------------
+  const startEdit = (item) => {
+    setEditingId(item.id);
+
+    setForm({
+      title: item.title,
+      description: item.description,
+      features: item.features || [""],
+      imageFile: null,
+    });
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Add or Update service
-  const handleAddService = (e) => {
-    e.preventDefault();
-
-    const data = editingService ? editData : newService;
-
-    if (!data.title.trim() || !data.description.trim()) {
-      Swal.fire("Error", "Please fill all required fields", "error");
-      return;
-    }
-
-    if (data.features.some((f) => !f.trim())) {
-      Swal.fire(
-        "Error",
-        "Please fill all feature fields or remove empty ones",
-        "error"
-      );
-      return;
-    }
-
-    if (editingService) {
-      setServices(
-        services.map((s) =>
-          s.id === editingService ? { ...s, ...editData } : s
-        )
-      );
-      Swal.fire("Success", "Service updated successfully!", "success");
-      setEditingService(null);
-      setEditData(emptyService);
-    } else {
-      const service = { ...newService, id: Date.now() };
-      setServices([service, ...services]);
-      Swal.fire("Success", "Service added successfully!", "success");
-      setNewService(emptyService);
-    }
-  };
-
-  // Delete service
-  const handleDelete = (id) => {
-    setServices(services.filter((s) => s.id !== id));
-    Swal.fire("Deleted", "Service removed successfully", "success");
-  };
-
-  // Start editing
-  const startEdit = (service) => {
-    setEditingService(service.id);
-    setEditData({ ...service });
-  };
-
-  // Cancel edit
   const cancelEdit = () => {
-    setEditingService(null);
-    setEditData(emptyService);
+    setEditingId(null);
+    setForm(emptyForm);
   };
 
-  // Features
-  const handleFeatureChange = (index, value, isEditing = false) => {
-    const features = isEditing ? [...editData.features] : [...newService.features];
-    features[index] = value;
-
-    if (isEditing) setEditData({ ...editData, features });
-    else setNewService({ ...newService, features });
+  // -------------------------------------------
+  // FEATURES HANDLING
+  // -------------------------------------------
+  const handleFeatureChange = (index, value) => {
+    const ft = [...form.features];
+    ft[index] = value;
+    setForm({ ...form, features: ft });
   };
 
-  const addFeatureField = (isEditing = false) => {
-    if (isEditing)
-      setEditData({ ...editData, features: [...editData.features, ""] });
-    else
-      setNewService({
-        ...newService,
-        features: [...newService.features, ""],
-      });
+  const addFeatureField = () => {
+    setForm({ ...form, features: [...form.features, ""] });
   };
 
-  const removeFeatureField = (index, isEditing = false) => {
-    if (isEditing) {
-      const features = [...editData.features];
-      features.splice(index, 1);
-      setEditData({ ...editData, features });
-    } else {
-      const features = [...newService.features];
-      features.splice(index, 1);
-      setNewService({ ...newService, features });
-    }
+  const removeFeatureField = (index) => {
+    const ft = [...form.features];
+    ft.splice(index, 1);
+    setForm({ ...form, features: ft });
   };
 
-  const filteredServices = services.filter((s) =>
-    s.title.toLowerCase().includes(searchTerm.toLowerCase())
+  // -------------------------------------------
+  // SEARCH + PAGINATION
+  // -------------------------------------------
+  const filtered = serviceList.filter((s) =>
+    JSON.stringify(s).toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  // -------------------------------------------
+  // BUTTON STYLES
+  // -------------------------------------------
+  const glassButton =
+    "px-4 py-2 rounded-xl backdrop-blur-md bg-white/20 border border-white/30 shadow-md text-sm hover:bg-white/30 hover:shadow-lg active:scale-95";
+  const editBtn = `${glassButton} text-blue-700 font-semibold`;
+  const deleteBtn = `${glassButton} text-red-700 font-semibold`;
+
+  const paginationBtn =
+    "px-4 py-2 bg-white/30 border border-gray-300 rounded-lg backdrop-blur-md hover:bg-white/40 transition disabled:opacity-40";
+
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6 text-[#0a3a0a]">Services Admin</h1>
+    <div className="p-4">
+      <h1 className="text-3xl font-bold mb-6">Services Management</h1>
 
       {/* Search */}
-      <input
-        type="text"
-        placeholder="Search services..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full p-3 mb-6 border rounded-xl shadow-sm max-w-xl"
-      />
-
-      {/* Form */}
-      <form
-        onSubmit={handleAddService}
-        className="mb-6 space-y-4 bg-white p-6 shadow-xl rounded-2xl max-w-2xl border"
-      >
-        <h2 className="text-xl font-bold text-[#0a3a0a]">
-          {editingService ? "Edit Service" : "Add New Service"}
-        </h2>
-
-        {/* Title */}
+      <div className="mb-4 flex items-center gap-2">
         <input
           type="text"
-          placeholder="Service Title *"
-          value={editingService ? editData.title : newService.title}
-          onChange={(e) =>
-            editingService
-              ? setEditData({ ...editData, title: e.target.value })
-              : setNewService({ ...newService, title: e.target.value })
-          }
-          className="w-full p-3 border rounded-xl shadow-sm"
+          placeholder="Search..."
+          className="p-2 border rounded w-full max-w-md"
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setPage(1);
+          }}
         />
+        <span>{filtered.length} found</span>
+      </div>
 
-        {/* Description */}
-        <textarea
-          placeholder="Service Description *"
-          value={editingService ? editData.description : newService.description}
-          onChange={(e) =>
-            editingService
-              ? setEditData({ ...editData, description: e.target.value })
-              : setNewService({ ...newService, description: e.target.value })
-          }
-          className="w-full p-3 border rounded-xl shadow-sm"
-          rows={4}
-        />
+      {/* FORM */}
+      <div className="bg-white shadow p-4 rounded mb-6 max-w-3xl">
+        <h2 className="text-xl font-semibold mb-4">
+          {editingId ? "Edit Service" : "Add Service"}
+        </h2>
 
-        {/* Image Upload */}
-        <label className="block text-sm font-medium text-gray-700">
-          Upload Images
-        </label>
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={(e) => handleImagesUpload(e, !!editingService)}
-          className="w-full p-3 border rounded-xl"
-        />
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <input
+            type="text"
+            className="w-full p-2 border rounded"
+            placeholder="Service title"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+          />
 
-        {/* Preview Images */}
-        <div className="flex flex-wrap gap-3 mt-2">
-          {(editingService ? editData.images : newService.images).map(
-            (img, idx) => (
-              <div
-                key={idx}
-                className="relative group border rounded-lg shadow-sm"
-              >
-                <img
-                  src={img}
-                  className="w-28 h-28 object-cover rounded-lg"
-                  alt=""
+          <textarea
+            className="w-full p-2 border rounded"
+            rows="3"
+            placeholder="Description"
+            value={form.description}
+            onChange={(e) =>
+              setForm({ ...form, description: e.target.value })
+            }
+          />
+
+          {/* FEATURES */}
+          <div>
+            <label className="block font-medium mb-1">Features</label>
+
+            {form.features.map((f, i) => (
+              <div key={i} className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  className="flex-1 p-2 border rounded"
+                  placeholder={`Feature ${i + 1}`}
+                  value={f}
+                  onChange={(e) => handleFeatureChange(i, e.target.value)}
                 />
-                <button
-                  type="button"
-                  onClick={() => removeImage(idx, !!editingService)}
-                  className="absolute top-1 right-1 bg-red-600 text-white px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 transition"
-                >
-                  Remove
-                </button>
-              </div>
-            )
-          )}
-        </div>
 
-        {/* Features */}
-        <h3 className="text-lg font-semibold mt-4">Features</h3>
-        {(editingService ? editData.features : newService.features).map(
-          (f, idx) => (
-            <div key={idx} className="flex gap-2">
-              <input
-                type="text"
-                value={f}
-                placeholder="Feature"
-                onChange={(e) =>
-                  handleFeatureChange(idx, e.target.value, !!editingService)
-                }
-                className="flex-1 p-3 border rounded-xl shadow-sm"
-              />
+                {form.features.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeFeatureField(i)}
+                    className="px-3 bg-red-500 text-white rounded"
+                  >
+                    x
+                  </button>
+                )}
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={addFeatureField}
+              className="px-3 py-1 bg-gray-200 rounded"
+            >
+              + Add Feature
+            </button>
+          </div>
+
+          {/* IMAGE */}
+          <div>
+            <label className="text-sm font-medium">Service Image</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="p-2 border rounded w-full bg-gray-50"
+            />
+          </div>
+
+          {/* ACTION BUTTONS */}
+          <div className="flex gap-2">
+            <button className="bg-green-700 text-white px-4 py-2 rounded">
+              {editingId ? "Update Service" : "Add Service"}
+            </button>
+
+            {editingId && (
               <button
                 type="button"
-                onClick={() => removeFeatureField(idx, !!editingService)}
-                className="bg-red-500 text-white px-3 rounded-xl"
+                onClick={cancelEdit}
+                className="bg-gray-500 text-white px-4 py-2 rounded"
               >
-                X
+                Cancel
               </button>
-            </div>
-          )
-        )}
+            )}
+          </div>
+        </form>
+      </div>
 
-        <button
-          type="button"
-          onClick={() => addFeatureField(!!editingService)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-xl"
-        >
-          Add Feature
-        </button>
+      {/* TABLE */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full border">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="p-2 border">ID</th>
+              <th className="p-2 border">Image</th>
+              <th className="p-2 border">Title</th>
+              <th className="p-2 border">Description</th>
+              <th className="p-2 border">Features</th>
+              <th className="p-2 border">Actions</th>
+            </tr>
+          </thead>
 
-        {/* Submit */}
-        <button
-          type="submit"
-          className="bg-green-700 text-white p-3 rounded-xl w-full"
-        >
-          {editingService ? "Update Service" : "Add Service"}
-        </button>
+          <tbody>
+            {paginated.map((item) => (
+              <tr key={item.id} className="border">
+                <td className="p-2 border font-semibold">{item.id}</td>
 
-        {editingService && (
-          <button
-            type="button"
-            onClick={cancelEdit}
-            className="bg-gray-500 text-white p-3 rounded-xl w-full"
-          >
-            Cancel
-          </button>
-        )}
-      </form>
+                <td className="p-2 border">
+                  {previewMap[item.id] ? (
+                    <img
+                      src={previewMap[item.id]}
+                      className="w-20 h-14 object-cover rounded"
+                    />
+                  ) : (
+                    "Loading..."
+                  )}
+                </td>
 
-      {/* Services List */}
-      <div className="space-y-4">
-        {filteredServices.length === 0 ? (
-          <p>No services found.</p>
-        ) : (
-          filteredServices.map((s) => (
-            <div
-              key={s.id}
-              className="bg-white p-4 shadow rounded-xl border flex flex-col"
-            >
-              <div>
-                {s.images.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {s.images.map((img, idx) => (
-                      <img
-                        key={idx}
-                        src={img}
-                        alt=""
-                        className="w-24 h-24 object-cover rounded-lg border"
-                      />
-                    ))}
-                  </div>
-                )}
-                <h2 className="text-lg font-semibold text-[#0a3a0a]">
-                  {s.title}
-                </h2>
-                <p className="text-gray-700">{s.description}</p>
-
-                {s.features.length > 0 && (
-                  <ul className="list-disc pl-6 mt-2 text-sm">
-                    {s.features.map((f, i) => (
+                <td className="p-2 border">{item.title}</td>
+                <td className="p-2 border text-sm">{item.description}</td>
+                <td className="p-2 border">
+                  <ul className="list-disc ml-4 text-sm">
+                    {item.features?.map((f, i) => (
                       <li key={i}>{f}</li>
                     ))}
                   </ul>
-                )}
-              </div>
+                </td>
 
-              <div className="flex gap-4 mt-4">
-                <button
-                  onClick={() => startEdit(s)}
-                  className="text-blue-700 font-semibold"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(s.id)}
-                  className="text-red-600 font-semibold"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))
-        )}
+                <td className="p-2 border flex gap-2">
+                  <button onClick={() => startEdit(item)} className={editBtn}>
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={() => deleteService(item.id)}
+                    className={deleteBtn}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
+
+      {/* PAGINATION */}
+      {totalPages > 1 && (
+        <div className="mt-4 flex gap-2">
+          <button
+            onClick={() => setPage((p) => p - 1)}
+            disabled={page === 1}
+            className={paginationBtn}
+          >
+            Previous
+          </button>
+
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page === totalPages}
+            className={paginationBtn}
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }
