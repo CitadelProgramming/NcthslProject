@@ -1,30 +1,39 @@
-// src/layout/Navbar.jsx
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const [aboutOpen, setAboutOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [aboutHovered, setAboutHovered] = useState(false); // Controls hover dropdown
   const navigate = useNavigate();
+  const aboutRef = useRef(null);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+  const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const scrollToSection = (sectionId) => {
+  const handleAboutScroll = (sectionId) => {
     navigate("/about");
+    setOpen(false);
     setTimeout(() => {
       const section = document.getElementById(sectionId);
       if (section) {
         section.scrollIntoView({ behavior: "smooth", block: "start" });
       }
-    }, 300);
+    }, 400);
   };
+
+  const aboutDropdown = [
+    { label: "Company Overview", id: "overview" },
+    { label: "Mission & Vision", id: "mission" },
+    { label: "Core Pillars", id: "pillars" },
+    { label: "Partners", id: "partners" },
+    { label: "Leadership Team", id: "leadership" },
+  ];
 
   const navLinks = [
     { to: "/", label: "Home" },
@@ -35,14 +44,6 @@ export default function Navbar() {
     { to: "/testimonials", label: "Testimonials" },
   ];
 
-  const aboutDropdown = [
-    { label: "Company Overview", id: "overview" },
-    { label: "Mission & Vision", id: "mission" },
-    { label: "Core Pillars", id: "pillars" },
-    { label: "Partners", id: "partners" },
-    { label: "Leadership Team", id: "leadership" },
-  ];
-
   return (
     <motion.header
       initial={{ y: -100 }}
@@ -50,79 +51,101 @@ export default function Navbar() {
       transition={{ duration: 0.7, ease: "easeOut" }}
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
         scrolled
-          ? "bg-gradient-to-br from-[#0f2f20]/95 to-[#052a05]/95 backdrop-blur-xl shadow-2xl border-b border-white/10"
-          : "bg-gradient-to-br from-[#0f2f20]/90 to-[#052a05]/90 backdrop-blur-md border-b border-white/5"
+          ? "bg-gradient-to-br from-[#0A4D2D]/95 to-[#052a05]/95 backdrop-blur-xl shadow-2xl border-b border-white/10"
+          : "bg-gradient-to-br from-[#0A4D2D]/90 to-[#052a05]/90 backdrop-blur-md border-b border-white/5"
       }`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-5">
 
-        {/* Logo & Brand */}
-        <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-4">
+        {/* Logo */}
+        <motion.div whileHover={{ scale: 1.05 }}>
           <Link to="/" className="flex items-center gap-4">
             <motion.img
               src="/logo.png"
               alt="NCTHSL Logo"
-              className="w-14 h-14 md:w-20 md:h-20 object-contain drop-shadow-2xl"
+              className="w-14 h-14 md:w-20 md:h-20 rounded-xl shadow-2xl border-2 border-white/20"
               whileHover={{ rotate: 360 }}
               transition={{ duration: 0.8 }}
             />
             <div className="hidden md:block">
-              <h1 className="text-white font-bold text-xl tracking-tight">NCTHSL</h1>
-              <p className="text-green-300 text-xs -mt-1">Nigeria Customs Technical & Hangar Services</p>
+              <h1 className="text-white font-bold text-lg md:text-2xl tracking-tight drop-shadow-lg">
+                Nigeria Customs Technical
+              </h1>
+              <p className="text-green-200 text-xs md:text-sm font-medium">Hangar Services Limited</p>
             </div>
           </Link>
         </motion.div>
 
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-10">
-          {navLinks.map((link) => (
-            <div key={link.to} className="relative group">
-              {link.label === "About" ? (
-                <>
-                  <button
-                    onClick={() => navigate("/about")}
-                    className="text-white font-medium text-lg hover:text-green-400 transition relative pb-1"
-                  >
-                    About
-                    <motion.span
-                      className="absolute left-0 -bottom-1 h-0.5 bg-green-400 w-0 group-hover:w-full transition-all duration-500"
-                      layoutId="navbar-underline"
-                    />
-                  </button>
+          {/* Home */}
+          <NavLink to="/" className={({ isActive }) => 
+            `text-lg font-medium transition-all duration-300 relative group ${isActive ? "text-green-400 font-bold" : "text-white hover:text-green-300"}`
+          }>
+            Home
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-green-400 group-hover:w-full transition-all duration-500" />
+          </NavLink>
 
-                  {/* Dropdown */}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-64 bg-gradient-to-br from-[#0f2f20]/95 to-[#052a05]/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-400 translate-y-4 group-hover:translate-y-0 z-50">
-                    <div className="p-4">
-                      {aboutDropdown.map((item) => (
-                        <motion.button
-                          key={item.id}
-                          onClick={() => scrollToSection(item.id)}
-                          className="block w-full text-left px-5 py-3 text-gray-200 hover:text-white hover:bg-white/10 rounded-xl transition text-base font-medium"
-                          whileHover={{ x: 8 }}
-                        >
-                          {item.label}
-                        </motion.button>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <NavLink
-                  to={link.to}
-                  className={({ isActive }) =>
-                    `text-lg font-medium transition relative pb-1 ${
-                      isActive ? "text-green-400" : "text-white hover:text-green-400"
-                    }`
-                  }
+          {/* ABOUT WITH HOVER DROPDOWN */}
+          <div 
+            className="relative"
+            onMouseEnter={() => setAboutHovered(true)}
+            onMouseLeave={() => setAboutHovered(false)}
+            ref={aboutRef}
+          >
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="flex items-center gap-1 cursor-pointer"
+            >
+              <span className="text-lg font-medium text-white hover:text-green-300 transition">
+                About
+              </span>
+              <ChevronDown className={`w-4 h-4 text-green-300 transition-transform duration-300 ${aboutHovered ? "rotate-180" : ""}`} />
+            </motion.div>
+
+            {/* Dropdown - Only appears on hover */}
+            <AnimatePresence>
+              {aboutHovered && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-64 bg-black/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 overflow-hidden"
                 >
-                  {link.label}
-                  <motion.span
-                    className="absolute left-0 -bottom-1 h-0.5 bg-green-400 w-0 group-hover:w-full transition-all duration-500"
-                    layoutId={`underline-${link.to}`}
-                  />
-                </NavLink>
+                  {aboutDropdown.map((item) => (
+                    <motion.div
+                      key={item.id}
+                      whileHover={{ x: 8, backgroundColor: "rgba(34, 197, 94, 0.2)" }}
+                      className="px-6 py-4 text-white hover:text-green-300 cursor-pointer transition-all"
+                      onClick={() => {
+                        handleAboutScroll(item.id);
+                        setAboutHovered(false);
+                      }}
+                    >
+                      {item.label}
+                    </motion.div>
+                  ))}
+                </motion.div>
               )}
-            </div>
+            </AnimatePresence>
+          </div>
+
+          {/* Other Links */}
+          {navLinks.slice(1).map((link) => (
+            <motion.div key={link.to} whileHover={{ scale: 1.1 }} transition={{ duration: 0.3 }}>
+              <NavLink
+                to={link.to}
+                className={({ isActive }) =>
+                  `text-lg font-medium transition-all duration-300 relative group ${
+                    isActive ? "text-green-400 font-bold" : "text-white hover:text-green-300"
+                  }`
+                }
+              >
+                {link.label}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-green-400 group-hover:w-full transition-all duration-500" />
+              </NavLink>
+            </motion.div>
           ))}
         </nav>
 
@@ -130,11 +153,9 @@ export default function Navbar() {
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => setOpen(!open)}
-          className="lg:hidden text-white text-3xl z-50 relative"
+          className="lg:hidden text-white text-3xl"
         >
-          <AnimatePresence mode="wait">
-            {open ? <X size={32} /> : <Menu size={32} />}
-          </AnimatePresence>
+          {open ? <X /> : <Menu />}
         </motion.button>
       </div>
 
@@ -142,66 +163,70 @@ export default function Navbar() {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4 }}
-            className="absolute top-full left-0 w-full bg-gradient-to-br from-[#0f2f20]/98 to-[#052a05]/98 backdrop-blur-2xl border-b border-white/10 shadow-2xl"
+            initial={{ opacity: 0, x: "-100%" }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: "-100%" }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+            className="lg:hidden fixed inset-0 top-20 bg-gradient-to-br from-[#0A4D2D]/98 to-[#052a05]/98 backdrop-blur-2xl z-40"
           >
-            <nav className="px-8 py-8 space-y-6 text-center">
-              {navLinks.map((link) => (
-                <motion.div
-                  key={link.to}
-                  initial={{ opacity: 0, x: -30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  {link.label === "About" ? (
-                    <div>
-                      <button
-                        onClick={() => setAboutOpen(!aboutOpen)}
-                        className="text-xl font-semibold text-white flex items-center justify-between w-full py-3"
-                      >
-                        About
-                        <span className="text-2xl">{aboutOpen ? "−" : "+"}</span>
-                      </button>
+            <motion.nav
+              className="flex flex-col items-center pt-10 space-y-8 text-white text-xl font-medium"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <NavLink to="/" onClick={() => setOpen(false)} className="hover:text-green-400 transition">
+                Home
+              </NavLink>
 
-                      <AnimatePresence>
-                        {aboutOpen && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="ml-6 mt-3 space-y-3 border-l-2 border-green-500 pl-6"
-                          >
-                            {aboutDropdown.map((sub) => (
-                              <button
-                                key={sub.id}
-                                onClick={() => {
-                                  setOpen(false);
-                                  scrollToSection(sub.id);
-                                }}
-                                className="block text-left text-gray-300 hover:text-white py-2 text-lg transition"
-                              >
-                                {sub.label}
-                              </button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  ) : (
-                    <NavLink
-                      to={link.to}
-                      onClick={() => setOpen(false)}
-                      className="block text-xl font-semibold text-white py-3 hover:text-green-400 transition"
+              {/* ABOUT MOBILE DROPDOWN */}
+              <div className="w-full text-center">
+                <div
+                  className="flex items-center justify-center gap-3 cursor-pointer py-4"
+                  onClick={() => setAboutHovered(!aboutHovered)}
+                >
+                  <span>About</span>
+                  <ChevronDown className={`w-6 h-6 transition-transform ${aboutHovered ? "rotate-180" : ""}`} />
+                </div>
+
+                <AnimatePresence>
+                  {aboutHovered && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="mt-4 space-y-3 overflow-hidden"
                     >
-                      {link.label}
-                    </NavLink>
+                      {aboutDropdown.map((sub) => (
+                        <motion.div
+                          key={sub.id}
+                          whileHover={{ x: 10 }}
+                          onClick={() => {
+                            handleAboutScroll(sub.id);
+                            setOpen(false);
+                          }}
+                          className="text-green-300 hover:text-white cursor-pointer py-3 text-lg"
+                        >
+                          {sub.label}
+                        </motion.div>
+                      ))}
+                    </motion.div>
                   )}
-                </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Other Mobile Links */}
+              {navLinks.slice(1).map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  onClick={() => setOpen(false)}
+                  className="hover:text-green-400 transition"
+                >
+                  {link.label}
+                </NavLink>
               ))}
-            </nav>
+            </motion.nav>
           </motion.div>
         )}
       </AnimatePresence>
