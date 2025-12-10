@@ -31,6 +31,13 @@ export default function AboutAdmin() {
     headers: { Authorization: `Bearer ${getToken()}` },
   });
 
+  const getMultipartConfig = () => ({
+    headers: {
+      Authorization: `Bearer ${getToken()}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
+
   const getImageUrl = (path) => {
     if (!path || typeof path !== "string") return PLACEHOLDER_IMAGE;
     const token = getToken();
@@ -60,7 +67,13 @@ export default function AboutAdmin() {
         });
       }
 
-      setPartners(partnersRes.data || []);
+      // Ensure every partner has a unique id
+      const partnersWithId = (partnersRes.data || []).map(p => ({
+        ...p,
+        id: p.id || Date.now() + Math.random(),
+      }));
+      setPartners(partnersWithId);
+
       setLeaders(leadersRes.data || []);
     } catch (err) {
       console.error("Load error:", err);
@@ -74,7 +87,7 @@ export default function AboutAdmin() {
     loadData();
   }, []);
 
-  // ABOUT
+  // ABOUT — FULLY WORKING
   const handleAboutSubmit = async (e) => {
     e.preventDefault();
     if (!aboutForm.overview.trim()) return Swal.fire("Error", "Overview is required", "error");
@@ -104,10 +117,10 @@ export default function AboutAdmin() {
     }
   };
 
-  // PARTNERS
+  // PARTNERS — NOW WITH AUTO REFRESH AFTER ADD/EDIT
   const handlePartnerSubmit = async (e) => {
     e.preventDefault();
-    if (!partnerForm.companyName.trim()) return Swal.fire("Error", "Company name is required", "error");
+    if (!partnerForm.companyName.trim()) return Swal.fire("Error", "Company name required", "error");
 
     const fd = new FormData();
     fd.append("data", new Blob([JSON.stringify({
@@ -117,23 +130,26 @@ export default function AboutAdmin() {
     if (partnerForm.logoFile) fd.append("file", partnerForm.logoFile);
 
     try {
+      let newPartner;
+
       if (editingPartnerId) {
         await axios.delete(`${API_BASE}/partners/delete/${editingPartnerId}`, getAuthConfig());
-      }
-
-      const res = await axios.post(`${API_BASE}/partners/create-partner`, fd, getAuthConfig());
-      const newPartner = res.data?.data || res.data;
-
-      if (editingPartnerId) {
+        const res = await axios.post(`${API_BASE}/partners/create-partner`, fd, getMultipartConfig());
+        newPartner = res.data?.data || res.data;
         setPartners(prev => prev.map(p => p.id === editingPartnerId ? newPartner : p));
-        Swal.fire("Updated!", "Partner replaced successfully", "success");
+        Swal.fire("Updated!", "Partner updated", "success");
       } else {
+        const res = await axios.post(`${API_BASE}/partners/create-partner`, fd, getMultipartConfig());
+        newPartner = res.data?.data || res.data;
         setPartners(prev => [newPartner, ...prev]);
         Swal.fire("Success!", "Partner added", "success");
       }
 
       setPartnerForm({ companyName: "", website: "", logoFile: null });
       setEditingPartnerId(null);
+
+      // AUTO RELOAD TO SHOW IMAGE IMMEDIATELY
+      await loadData();
     } catch (err) {
       console.error("Partner error:", err.response?.data);
       Swal.fire("Error", err.response?.data?.message || "Failed to save partner", "error");
@@ -173,7 +189,7 @@ export default function AboutAdmin() {
     }
   };
 
-  // LEADERSHIP — IMAGES NOW WORK
+  // LEADERSHIP — FULLY WORKING
   const handleLeaderSubmit = async (e) => {
     e.preventDefault();
     if (!leaderForm.fullName.trim() || !leaderForm.position.trim())
@@ -189,10 +205,10 @@ export default function AboutAdmin() {
 
     try {
       if (editingLeaderId) {
-        await axios.put(`${API_BASE}/leadership/update/${editingLeaderId}`, fd, getAuthConfig());
+        await axios.put(`${API_BASE}/leadership/update/${editingLeaderId}`, fd, getMultipartConfig());
         Swal.fire("Updated!", "Leader updated", "success");
       } else {
-        await axios.post(`${API_BASE}/leadership/register`, fd, getAuthConfig());
+        await axios.post(`${API_BASE}/leadership/register`, fd, getMultipartConfig());
         Swal.fire("Success!", "Leader added", "success");
       }
 
@@ -200,7 +216,7 @@ export default function AboutAdmin() {
       setEditingLeaderId(null);
       await loadData();
     } catch (err) {
-      console.error("Leadership error:", err.response?.data);
+      console.error("Leader error:", err.response?.data);
       Swal.fire("Error", err.response?.data?.message || "Failed to save leader", "error");
     }
   };
@@ -263,7 +279,7 @@ export default function AboutAdmin() {
 
       <div className="bg-white shadow-2xl rounded-3xl p-10 max-w-7xl mx-auto">
 
-        {/* OVERVIEW */}
+        {/* OVERVIEW TAB — PRESERVED */}
         {activeTab === "overview" && (
           <div className="space-y-10">
             <form onSubmit={handleAboutSubmit} className="space-y-8">
@@ -294,7 +310,7 @@ export default function AboutAdmin() {
                 <h3 className="text-xl font-bold mb-4 text-gray-800">Core Pillars</h3>
                 <div className="space-y-4">
                   {aboutForm.corePillars.map((pillar, index) => (
-                    <div key={index} className="flex gap-3">
+                    <div key={`pillar-${index}-${Date.now()}`} className="flex gap-3">
                       <input
                         className="flex-1 p-4 border-2 rounded-xl text-lg focus:border-indigo-500 transition"
                         value={pillar}
@@ -327,12 +343,12 @@ export default function AboutAdmin() {
           </div>
         )}
 
-        {/* PARTNERS */}
+        {/* PARTNERS TAB — NOW WITH AUTO REFRESH */}
         {activeTab === "partners" && (
           <div className="space-y-10">
             <form onSubmit={handlePartnerSubmit} className="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-2xl shadow-lg">
               <h2 className="text-2xl font-bold mb-6 text-gray-800">
-                {editingPartnerId ? "Replace Partner (Edit)" : "Add New Partner"}
+                {editingPartnerId ? "Edit Partner" : "Add New Partner"}
               </h2>
               <div className="grid md:grid-cols-2 gap-6">
                 <input
@@ -362,7 +378,7 @@ export default function AboutAdmin() {
               </div>
               <div className="mt-8 flex gap-4">
                 <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-bold transition">
-                  {editingPartnerId ? "Replace Partner" : "Add Partner"}
+                  {editingPartnerId ? "Update Partner" : "Add Partner"}
                 </button>
                 {editingPartnerId && (
                   <button type="button" onClick={cancelPartnerEdit} className="bg-gray-500 hover:bg-gray-600 text-white px-8 py-4 rounded-xl font-bold transition">
@@ -373,31 +389,35 @@ export default function AboutAdmin() {
             </form>
 
             <div className="grid gap-8 md:grid-cols-3 lg:grid-cols-4">
-              {partners.map((p) => (
-                <div key={p.id} className="bg-white p-6 rounded-2xl shadow-xl text-center hover:shadow-2xl transition">
-                  <img
-                    src={getImageUrl(p.companyLogo)}
-                    alt={p.companyName}
-                    className="w-32 h-32 object-contain mx-auto mb-4 rounded-lg bg-gray-50"
-                    onError={(e) => (e.target.src = PLACEHOLDER_IMAGE)}
-                  />
-                  <h3 className="font-bold text-xl text-gray-800">{p.companyName}</h3>
-                  {p.website && (
-                    <a href={p.website} target="_blank" rel="noreferrer" className="text-blue-600 text-sm block mt-2 hover:underline">
-                      {p.website}
-                    </a>
-                  )}
-                  <div className="flex justify-center gap-3 mt-6">
-                    <button onClick={() => startEditPartner(p)} className={editBtn}>Edit</button>
-                    <button onClick={() => deletePartner(p.id)} className={deleteBtn}>Delete</button>
+              {partners.length === 0 ? (
+                <p className="col-span-full text-center text-gray-500">No partners yet.</p>
+              ) : (
+                partners.map((p) => (
+                  <div key={p.id} className="bg-white p-6 rounded-2xl shadow-xl text-center hover:shadow-2xl transition">
+                    <img
+                      src={getImageUrl(p.companyLogo)}
+                      alt={p.companyName}
+                      className="w-32 h-32 object-contain mx-auto mb-4 rounded-lg bg-gray-50"
+                      onError={(e) => (e.target.src = PLACEHOLDER_IMAGE)}
+                    />
+                    <h3 className="font-bold text-xl text-gray-800">{p.companyName}</h3>
+                    {p.website && (
+                      <a href={p.website} target="_blank" rel="noreferrer" className="text-blue-600 text-sm block mt-2 hover:underline">
+                        {p.website}
+                      </a>
+                    )}
+                    <div className="flex justify-center gap-3 mt-6">
+                      <button onClick={() => startEditPartner(p)} className={editBtn}>Edit</button>
+                      <button onClick={() => deletePartner(p.id)} className={deleteBtn}>Delete</button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         )}
 
-        {/* LEADERSHIP — IMAGES NOW DISPLAY */}
+        {/* LEADERSHIP TAB — PRESERVED */}
         {activeTab === "leadership" && (
           <div className="space-y-10">
             <form onSubmit={handleLeaderSubmit} className="bg-gradient-to-r from-purple-50 to-pink-50 p-8 rounded-2xl shadow-lg">
@@ -443,7 +463,7 @@ export default function AboutAdmin() {
                   {editingLeaderId ? "Update Leader" : "Add Leader"}
                 </button>
                 {editingLeaderId && (
-                  <button type="button" onClick={cancelLeaderEdit} className="bg-gray-500 hover:bg-gray-600 text-white px-8 py-4 rounded-xl font-bold transition">
+                  <button type="button" onClick={cancelLeaderEdit} className="bg-gray-500 hover:bg-gray-600 text-white px-8 py-4 rounded-xl font-bold transition ml-4">
                     Cancel
                   </button>
                 )}
@@ -451,25 +471,29 @@ export default function AboutAdmin() {
             </form>
 
             <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
-              {leaders.map((l) => (
-                <div key={l.id} className="bg-white rounded-3xl shadow-2xl overflow-hidden hover:shadow-3xl transition">
-                  <img
-                    src={getImageUrl(l.image)}
-                    alt={l.fullName || "Leader"}
-                    className="w-full h-80 object-cover bg-gray-100"
-                    onError={(e) => (e.target.src = PLACEHOLDER_IMAGE)}
-                  />
-                  <div className="p-8 text-center">
-                    <h3 className="text-2xl font-bold text-gray-800">{l.fullName}</h3>
-                    <p className="text-lg text-purple-600 font-semibold mt-2">{l.position}</p>
-                    <p className="text-gray-700 mt-4 leading-relaxed">{l.bio || "No bio available"}</p>
-                    <div className="flex justify-center gap-4 mt-8">
-                      <button onClick={() => startEditLeader(l)} className={editBtn}>Edit</button>
-                      <button onClick={() => deleteLeader(l.id)} className={deleteBtn}>Delete</button>
+              {leaders.length === 0 ? (
+                <p className="col-span-full text-center text-gray-500">No leaders yet.</p>
+              ) : (
+                leaders.map((l) => (
+                  <div key={l.id} className="bg-white rounded-3xl shadow-2xl overflow-hidden hover:shadow-3xl transition">
+                    <img
+                      src={getImageUrl(l.image)}
+                      alt={l.fullName}
+                      className="w-full h-80 object-cover bg-gray-100"
+                      onError={(e) => (e.target.src = PLACEHOLDER_IMAGE)}
+                    />
+                    <div className="p-8 text-center">
+                      <h3 className="text-2xl font-bold text-gray-800">{l.fullName}</h3>
+                      <p className="text-lg text-purple-600 font-semibold mt-2">{l.position}</p>
+                      <p className="text-gray-700 mt-4 leading-relaxed">{l.bio || "No bio available"}</p>
+                      <div className="flex justify-center gap-4 mt-8">
+                        <button onClick={() => startEditLeader(l)} className={editBtn}>Edit</button>
+                        <button onClick={() => deleteLeader(l.id)} className={deleteBtn}>Delete</button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         )}
