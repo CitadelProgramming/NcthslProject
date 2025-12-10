@@ -32,6 +32,10 @@ export default function About() {
           axios.get(`${API_BASE}/leadership/leaders`),
         ]);
 
+        console.log('====================================');
+        console.log(leadersRes);
+        console.log('====================================');
+
         const about = aboutRes.data?.[0] || {};
         setAboutData(about);
 

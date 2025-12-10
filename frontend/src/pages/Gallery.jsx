@@ -6,13 +6,13 @@ import axios from "axios";
 const PUBLIC_API = "https://enchanting-expression-production.up.railway.app/api/v1/gallery/galleries";
 const BASE_URL = "https://enchanting-expression-production.up.railway.app";
 
-// Reliable placeholder
 const PLACEHOLDER = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIyNTZweCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjRweCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==";
 
-export default function Gallery({ setSelectedImage, selectedImage }) {
+export default function Gallery() {
   const [selectedAlbum, setSelectedAlbum] = useState("all");
   const [albums, setAlbums] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(null); // Only one source of truth
 
   const getImageUrl = (imagePath) => {
     if (!imagePath) return PLACEHOLDER;
@@ -23,7 +23,7 @@ export default function Gallery({ setSelectedImage, selectedImage }) {
     const loadGallery = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(PUBLIC_API); // Public — no token!
+        const res = await axios.get(PUBLIC_API);
 
         const list = Array.isArray(res.data) ? res.data : [];
 
@@ -65,31 +65,36 @@ export default function Gallery({ setSelectedImage, selectedImage }) {
       ? formattedAlbums.flatMap((a) => a.images)
       : formattedAlbums.find((a) => a.id === selectedAlbum)?.images || [];
 
-  // Navigation
+  // All images for navigation
   const flatImages = formattedAlbums.flatMap((a) => a.images);
-  const currentIndex = flatImages.findIndex(
-    (img) => img.src === (selectedImage?.src || selectedImage)
-  );
+
+  const currentIndex = selectedImage
+    ? flatImages.findIndex((img) => img.src === selectedImage.src)
+    : -1;
 
   const goPrevImage = () => {
-    const prevIndex = currentIndex === 0 ? flatImages.length - 1 : currentIndex - 1;
+    if (flatImages.length === 0) return;
+    const prevIndex = currentIndex <= 0 ? flatImages.length - 1 : currentIndex - 1;
     setSelectedImage(flatImages[prevIndex]);
   };
 
   const goNextImage = () => {
-    const nextIndex = currentIndex === flatImages.length - 1 ? 0 : currentIndex + 1;
+    if (flatImages.length === 0) return;
+    const nextIndex = currentIndex >= flatImages.length - 1 ? 0 : currentIndex + 1;
     setSelectedImage(flatImages[nextIndex]);
   };
 
+  // Keyboard navigation
   useEffect(() => {
     const handler = (e) => {
+      if (!selectedImage) return;
       if (e.key === "Escape") setSelectedImage(null);
       if (e.key === "ArrowLeft") goPrevImage();
       if (e.key === "ArrowRight") goNextImage();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [currentIndex, flatImages]);
+  }, [selectedImage, currentIndex]);
 
   return (
     <section className="py-24 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05] text-white">
@@ -147,13 +152,13 @@ export default function Gallery({ setSelectedImage, selectedImage }) {
         >
           {galleryImages.map((img, idx) => (
             <motion.div
-              key={idx}
+              key={img.src + idx} // Unique key
               layout
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               whileHover={{ scale: 1.05, y: -8 }}
               className="group relative overflow-hidden rounded-2xl shadow-2xl cursor-pointer"
-              onClick={() => setSelectedImage(img)}
+              onClick={() => setSelectedImage(img)} // Always pass full object
             >
               <img
                 src={img.src}
@@ -190,10 +195,11 @@ export default function Gallery({ setSelectedImage, selectedImage }) {
                 onClick={() => setSelectedImage(null)}
                 className="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-full font-bold shadow-lg z-10 transition"
               >
-                ✕ Close
+                X Close
               </button>
 
               <motion.img
+                key={selectedImage.src}
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 src={selectedImage.src}
@@ -207,18 +213,24 @@ export default function Gallery({ setSelectedImage, selectedImage }) {
               </p>
 
               {/* Navigation Arrows */}
-              <button
-                onClick={goPrevImage}
-                className="absolute left-6 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white p-4 rounded-full text-4xl transition"
-              >
-                ←
-              </button>
-              <button
-                onClick={goNextImage}
-                className="absolute right-6 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white p-4 rounded-full text-4xl transition"
-              >
-                →
-              </button>
+              {flatImages.length > 1 && (
+                <>
+                  <button
+                    onClick={goPrevImage}
+                    className="absolute left-6 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white p-4 rounded-full text-4xl transition"
+                    aria-label="Previous image"
+                  >
+                    ←
+                  </button>
+                  <button
+                    onClick={goNextImage}
+                    className="absolute right-6 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white p-4 rounded-full text-4xl transition"
+                    aria-label="Next image"
+                  >
+                    →
+                  </button>
+                </>
+              )}
             </div>
           </motion.div>
         )}
