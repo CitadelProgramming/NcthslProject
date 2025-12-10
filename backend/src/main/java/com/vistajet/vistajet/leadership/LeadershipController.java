@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/leadership")
-@CrossOrigin(origins = "https://customshangarservices.vercel.app/")
+@CrossOrigin(origins = "http://localhost:5173")
 @Validated
 public class LeadershipController {
 

@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
-@CrossOrigin(origins = "https://customshangarservices.vercel.app/")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AuthenticationController {
 
     private final AuthenticationService service;

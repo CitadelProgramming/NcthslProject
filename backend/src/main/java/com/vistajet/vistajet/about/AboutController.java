@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = "https://customshangarservices.vercel.app/")
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/v1/about")
 public class AboutController {
 
