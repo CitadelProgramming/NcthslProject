@@ -66,15 +66,15 @@ export default function Contact() {
 
     try {
       await emailjs.send(
-        "service_8xcadkx",           // Your Service ID
-        "template_r00u2gd",          // Your Template ID
-        templateParams,              // ← THIS WAS MISSING!
-        "lbCZHFvnBJbCRKNLW"          // Your Public Key
+        "service_8xcadkx",
+        "template_r00u2gd",
+        templateParams,           // ← NOW PASSED CORRECTLY
+        "lbCZHFvnBJbCRKNLW"
       );
-      console.log("Acknowledgment email sent successfully!");
+      console.log("Acknowledgment email sent!");
     } catch (err) {
-      console.error("Failed to send email:", err);
-      // Don't block form success
+      console.error("EmailJS error:", err);
+      // Don't block success
     }
   };
 
@@ -89,14 +89,14 @@ export default function Contact() {
     }
 
     try {
-      // Step 1: Save to backend — FIXED: use "phone" not "phoneNo"
+      // Step 1: Save to backend — CORRECT FIELD: phoneNo
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName: form.fullName.trim(),
           email: form.email.trim(),
-          phone: form.phoneNo.trim(),        // ← THIS WAS THE 400 ERROR!
+          phoneNo: form.phoneNo.trim(),     // ← CORRECT FIELD NAME
           subject: form.subject.trim(),
           message: form.message.trim(),
         }),
@@ -107,7 +107,7 @@ export default function Contact() {
         throw new Error(errorData.message || "Failed to save message");
       }
 
-      // Step 2: Send acknowledgment email from frontend
+      // Step 2: Send acknowledgment email
       await sendAcknowledgmentEmail();
 
       setStatus({
@@ -115,7 +115,6 @@ export default function Contact() {
         success: "Thank you! Your message has been sent and a confirmation email has been delivered to your inbox.",
       });
 
-      // Reset form
       setForm({
         fullName: "",
         email: "",
