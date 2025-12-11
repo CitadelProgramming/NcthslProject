@@ -319,62 +319,83 @@
 
 
 /* Home advanced styling */
-
 /* src/index.css */
 @layer components {
-  .glass-panel {
-    background: rgba(255, 255, 255, 0.07);
+  /* Subtle Infinite Border Glow — Professional & Elegant */
+  .premium-glow-border {
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2rem;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .premium-glow-border::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 2rem;
+    background: linear-gradient(45deg, #10b981, #059669, #065f46, #10b981);
+    background-size: 400%;
+    filter: blur(16px);
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    animation: premiumFlow 12s linear infinite;
+    z-index: -1;
+  }
+
+  .premium-glow-border:hover::before {
+    opacity: 0.7;
+  }
+
+  .premium-glow-border:hover {
+    transform: translateY(-16px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+  }
+
+  @keyframes premiumFlow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 400% 50%; }
+  }
+
+  /* Refined 3D Card Lift */
+  .depth-lift {
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .depth-lift:hover {
+    transform: translateY(-20px) translateZ(40px);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.35);
+  }
+
+  /* Glass Panel — Ultra Clean */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 1.5rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    border-radius: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   }
 
-  .glass-panel:hover {
-    transform: translateY(-12px);
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
-    border-color: rgba(255, 255, 255, 0.3);
-  }
-
-  .depth-card {
-    transform: translateZ(0);
-    transition: transform 0.6s ease;
-  }
-
-  .depth-card:hover {
-    transform: translateY(-16px) translateZ(40px);
-  }
-
-  .soft-glow {
-    box-shadow: 0 0 40px rgba(255, 255, 255, 0.08);
-  }
-
-  .elegant-gradient {
-    background: linear-gradient(135deg, #10b981 0%, #059669 50%, #065f46 100%);
-    background-size: 200% 200%;
-    animation: gradientFlow 12s ease infinite;
-  }
-
-  @keyframes gradientFlow {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-  }
-
-  .parallax-bg {
+  /* Soft Parallax Background */
+  .parallax-hero {
     background-attachment: fixed;
     background-position: center;
     background-size: cover;
   }
 
-  .fade-in-up {
+  /* Elegant Fade-In */
+  .elegant-fade {
     opacity: 0;
-    transform: translateY(40px);
-    transition: all 1s ease-out;
+    transform: translateY(60px);
+    transition: all 1.2s cubic-bezier(0.23, 1, 0.32, 1);
   }
 
-  .fade-in-up.visible {
+  .elegant-fade.visible {
     opacity: 1;
     transform: translateY(0);
   }
