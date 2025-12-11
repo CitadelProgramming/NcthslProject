@@ -225,3 +225,70 @@
     overflow: hidden;
   }
 }
+
+/* src/index.css or globals.css */
+@layer components {
+  .glow-border {
+    position: relative;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 1.5rem;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.5s ease;
+  }
+
+  .glow-border::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 1.5rem;
+    background: linear-gradient(45deg, #00ff88, #00d4ff, #ff00c8, #ffaa00, #00ff88);
+    background-size: 400%;
+    filter: blur(12px);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    animation: glowRotate 8s linear infinite;
+    z-index: -1;
+  }
+
+  .glow-border:hover::before {
+    opacity: 1;
+  }
+
+  .glow-border:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 25px 50px -12px rgba(0, 255, 136, 0.35);
+  }
+
+  .floating-card {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+  }
+
+  @keyframes glowRotate {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 400% 50%; }
+  }
+
+  .neon-text {
+    text-shadow: 
+      0 0 10px currentColor,
+      0 0 20px currentColor,
+      0 0 40px currentColor,
+      0 0 80px currentColor;
+  }
+
+  .pulse-glow {
+    animation: pulseGlow 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulseGlow {
+    from { box-shadow: 0 0 20px rgba(0, 255, 136, 0.4); }
+    to { box-shadow: 0 0 40px rgba(0, 255, 136, 0.8); }
+  }
+}
