@@ -319,16 +319,17 @@
 
 
 /* Home advanced styling */
+/* src/index.css */
 @layer components {
-  /* Ultra-Premium Infinite Border Glow — Subtle & Institutional */
+  /* Subtle Professional Infinite Glow — Emerald Theme */
   .prestige-glow {
     position: relative;
     border-radius: 2rem;
     background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: all 0.7s cubic-bezier(0.23, 1, 0.32, 1);
     overflow: hidden;
   }
 
@@ -342,17 +343,17 @@
     filter: blur(20px);
     opacity: 0;
     transition: opacity 1s ease;
-    animation: prestigeFlow 16s linear infinite;
+    animation: prestigeFlow 15s linear infinite;
     z-index: -1;
   }
 
   .prestige-glow:hover::before {
-    opacity: 0.7;
+    opacity: 0.65;
   }
 
   .prestige-glow:hover {
-    transform: translateY(-16px);
-    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
+    transform: translateY(-14px);
+    box-shadow: 0 35px 70px rgba(0, 0, 0, 0.35);
   }
 
   @keyframes prestigeFlow {
@@ -360,29 +361,29 @@
     100% { background-position: 400% 50%; }
   }
 
-  /* Refined 3D Lift — Premium & Smooth */
+  /* Refined 3D Elevation */
   .depth-elevate {
     transition: all 0.7s cubic-bezier(0.23, 1, 0.32, 1);
   }
 
   .depth-elevate:hover {
-    transform: translateY(-20px) scale(1.02);
-    box-shadow: 0 0 50px 100px rgba(0, 0, 0, 0.35);
+    transform: translateY(-18px);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
   }
 
   /* Institutional Glass */
   .institutional-glass {
     background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 2rem;
   }
 
-  /* Elegant Fade-In */
+  /* Smooth Entry */
   .elegant-entry {
     opacity: 0;
-    transform: translateY(60px);
+    transform: translateY(50px);
     transition: all 1.4s cubic-bezier(0.23, 1, 0.32, 1);
   }
 
