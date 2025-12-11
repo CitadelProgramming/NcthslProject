@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import axios from "axios";
-import { Award, ShieldCheck, Flame, Image, Newspaper, Target, Telescope } from "lucide-react";
+import { Target, Telescope } from "lucide-react";
 
 import heroImg from "../assets/Images/hero/hero.jpg";
 import aboutImg from "../assets/Images/about/about.png";
@@ -66,7 +66,7 @@ export default function Home() {
           }
         });
       },
-      { threshold: 0.15 }
+      { threshold: window.innerWidth < 768 ? 0.1 : 0.2 }
     );
 
     sectionRefs.current.forEach(ref => ref && observer.observe(ref));
@@ -76,7 +76,7 @@ export default function Home() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0a3a0a] to-[#052a05] flex items-center justify-center">
-        <div className="text-white text-4xl font-bold tracking-widest">NCTHSL</div>
+        <div className="text-white text-3xl md:text-4xl font-bold tracking-widest">NCTHSL</div>
       </div>
     );
   }
@@ -89,13 +89,13 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black/95 backdrop-blur-sm z-[9999] flex items-center justify-center p-6"
+          className="fixed inset-0 bg-black/95 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 md:p-6"
           onClick={() => setSelectedImage(null)}
         >
           <div className="relative max-w-6xl w-full" onClick={e => e.stopPropagation()}>
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute -top-4 -right-4 bg-red-600 hover:bg-red-700 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-3xl font-bold z-10"
+              className="absolute -top-4 -right-4 md:top-4 md:right-4 bg-red-600 hover:bg-red-700 text-white w-12 h-12 md:w-14 md:h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl md:text-3xl font-bold z-10"
             >
               ×
             </button>
@@ -104,29 +104,29 @@ export default function Home() {
         </motion.div>
       )}
 
-      {/* HERO — PARALLAX + SUBTLE DEPTH */}
-      <section className="relative h-screen parallax-hero overflow-hidden" style={{ backgroundImage: `url(${heroImg})` }}>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0A4D2D]/90 via-[#0A4D2D]/60 to-transparent" />
+      {/* HERO — FULLY RESPONSIVE */}
+      <section className="relative h-screen bg-cover bg-center" style={{ backgroundImage: `url(${heroImg})` }}>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0A4D2D]/90 via-[#0A4D2D]/70 to-[#0A4D2D]/50" />
         
         <motion.div
           initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.6, ease: "easeOut" }}
-          className="relative h-full flex items-center justify-center text-center px-6 z-10"
+          transition={{ duration: 1.6 }}
+          className="relative h-full flex items-center justify-center text-center px-6 md:px-12 z-10"
         >
           <div className="max-w-6xl">
-            <h1 className="text-5xl md:text-8xl font-extrabold text-white mb-10 tracking-tight leading-tight">
-              Nigeria Customs<br/>Technical & Hangar<br/>Services Limited
+            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-white mb-6 md:mb-10 leading-tight">
+              Nigeria Customs<br className="sm:hidden" /> Technical & Hangar<br className="hidden sm:inline" /> Services Limited
             </h1>
-            <p className="text-xl md:text-3xl text-gray-100 font-light max-w-5xl mx-auto leading-relaxed mb-12">
+            <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gray-100 font-light max-w-5xl mx-auto leading-relaxed mb-10 md:mb-14 px-4">
               {aboutData?.overview || "Premier provider of aviation services, renowned for its comprehensive range of offerings, technical expertise, and commitment to excellence in service delivery."}
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
-              <Link to="/about" className="bg-white text-[#0A4D2D] font-bold px-14 py-6 rounded-xl shadow-2xl hover:shadow-3xl hover:bg-gray-100 transition text-xl depth-lift">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 md:gap-10">
+              <Link to="/about" className="bg-white text-[#0A4D2D] font-bold px-10 py-5 md:px-14 md:py-6 rounded-xl shadow-2xl hover:shadow-3xl hover:bg-gray-100 transition text-lg md:text-xl depth-lift">
                 Discover Our Legacy
               </Link>
-              <Link to="/services" className="border-2 border-white text-white px-14 py-6 rounded-xl hover:bg-white/10 transition text-xl font-medium backdrop-blur-sm depth-lift">
+              <Link to="/services" className="border-2 border-white text-white px-10 py-5 md:px-14 md:py-6 rounded-xl hover:bg-white/10 transition text-lg md:text-xl font-medium backdrop-blur-sm depth-lift">
                 Explore Services
               </Link>
             </div>
@@ -134,34 +134,34 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* ABOUT PREVIEW — GLASS + GLOW */}
-      <section ref={(el) => sectionRefs.current.push(el)} className="py-32 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05] elegant-fade">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-20 items-center">
-          <div>
-            <h2 className="text-5xl md:text-7xl font-extrabold text-white mb-10">About NCTHSL</h2>
-            <p className="text-xl text-gray-200 leading-relaxed mb-12">
+      {/* ABOUT PREVIEW */}
+      <section ref={(el) => sectionRefs.current.push(el)} className="py-20 md:py-32 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05] elegant-fade">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 md:gap-20 items-center">
+          <div className="order-2 md:order-1 text-center md:text-left">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-8">About NCTHSL</h2>
+            <p className="text-lg md:text-xl text-gray-200 leading-relaxed mb-10">
               {aboutData?.overview || "Leading the future of aviation services in Nigeria with innovation, safety, and excellence."}
             </p>
-            <Link to="/about" className="inline-block premium-glow-border p-10 text-center text-white font-bold text-2xl">
+            <Link to="/about" className="inline-block premium-glow-border p-8 md:p-10 text-white font-bold text-xl md:text-2xl">
               Meet Our Leadership
             </Link>
           </div>
-          <div className="flex justify-center">
+          <div className="order-1 md:order-2 flex justify-center">
             <motion.img
               whileHover={{ scale: 1.03 }}
               src={aboutImg}
               alt="NCTHSL"
-              className="rounded-3xl shadow-3xl border-8 border-white/10 max-w-lg w-full premium-glow-border"
+              className="rounded-3xl shadow-3xl border-8 border-white/10 w-full max-w-md md:max-w-lg premium-glow-border"
             />
           </div>
         </div>
       </section>
 
-      {/* LATEST NEWS — PREMIUM CARDS */}
-      <section ref={(el) => sectionRefs.current.push(el)} className="py-32 px-6 bg-gradient-to-br from-[#818589] to-[#525354] elegant-fade">
+      {/* LATEST NEWS */}
+      <section ref={(el) => sectionRefs.current.push(el)} className="py-20 md:py-32 px-6 bg-gradient-to-br from-[#818589] to-[#525354] elegant-fade">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-5xl md:text-6xl font-bold text-center text-white mb-20">Latest News</h2>
-          <div className="grid md:grid-cols-3 gap-12">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-center text-white mb-16 md:mb-20">Latest News</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
             {news.map((item, i) => (
               <motion.article
                 key={item.id}
@@ -171,14 +171,14 @@ export default function Home() {
                 className="premium-glow-border depth-lift overflow-hidden"
               >
                 {item.imageSrc && (
-                  <img src={item.imageSrc} alt={item.title} className="w-full h-64 object-cover" />
+                  <img src={item.imageSrc} alt={item.title} className="w-full h-56 md:h-64 object-cover" />
                 )}
-                <div className="p-10 glass-panel">
+                <div className="p-8 md:p-10 glass-panel">
                   <p className="text-sm text-gray-300 mb-4">
                     {new Date(item.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
-                  <h3 className="text-2xl font-bold text-white mb-4">{item.title}</h3>
-                  <p className="text-gray-200 leading-relaxed">
+                  <h3 className="text-xl md:text-2xl font-bold text-white mb-4">{item.title}</h3>
+                  <p className="text-gray-200 leading-relaxed text-sm md:text-base">
                     {item.preview || item.content?.substring(0, 140) + "..."}
                   </p>
                   <Link to="/news" className="inline-block mt-6 text-red-400 font-bold hover:text-red-300 transition">
@@ -191,46 +191,46 @@ export default function Home() {
         </div>
       </section>
 
-      {/* GALLERY — 3D HOVER DEPTH */}
-      <section ref={(el) => sectionRefs.current.push(el)} className="py-32 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05] elegant-fade">
+      {/* GALLERY */}
+      <section ref={(el) => sectionRefs.current.push(el)} className="py-20 md:py-32 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05] elegant-fade">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-5xl md:text-6xl font-bold text-center text-white mb-20">Gallery Highlights</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-center text-white mb-16 md:mb-20">Gallery Highlights</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {galleryPreview.map((src, i) => (
               <motion.div
                 key={i}
-                whileHover={{ scale: 1.08, y: -20, rotateY: 8 }}
+                whileHover={{ scale: 1.08, y: -16 }}
                 className="depth-lift cursor-pointer overflow-hidden rounded-3xl shadow-3xl premium-glow-border"
                 onClick={() => setSelectedImage(src)}
               >
-                <img src={src} alt={`Gallery ${i+1}`} className="w-full h-72 object-cover transition-transform duration-700 hover:scale-110" />
+                <img src={src} alt={`Gallery ${i+1}`} className="w-full h-48 md:h-72 object-cover transition-transform duration-700 hover:scale-110" />
               </motion.div>
             ))}
           </div>
-          <div className="text-center mt-16">
-            <Link to="/gallery" className="inline-block premium-glow-border p-8 text-white font-bold text-2xl">
+          <div className="text-center mt-12 md:mt-16">
+            <Link to="/gallery" className="inline-block premium-glow-border p-8 md:p-10 text-white font-bold text-xl md:text-2xl">
               Explore Full Gallery
             </Link>
           </div>
         </div>
       </section>
 
-      {/* MISSION & VISION — REFINED */}
-      <section className="py-32 px-6 bg-gradient-to-br from-[#818589] to-[#525354]">
+      {/* MISSION & VISION */}
+      <section className="py-20 md:py-32 px-6 bg-gradient-to-br from-[#818589] to-[#525354]">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-5xl md:text-6xl font-bold text-center text-white mb-20">Our Mission & Vision</h2>
-          <div className="grid md:grid-cols-2 gap-16">
-            <div className="premium-glow-border p-16 text-center depth-lift">
-              <Target className="w-24 h-24 mx-auto mb-10 text-red-500" />
-              <h3 className="text-4xl font-bold text-white mb-8">Our Mission</h3>
-              <p className="text-xl text-gray-200 leading-relaxed">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-center text-white mb-16 md:mb-20">Our Mission & Vision</h2>
+          <div className="grid md:grid-cols-2 gap-12 md:gap-16">
+            <div className="premium-glow-border p-12 md:p-16 text-center depth-lift">
+              <Target className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-8 text-red-500" />
+              <h3 className="text-3xl md:text-4xl font-bold text-white mb-6">Our Mission</h3>
+              <p className="text-lg md:text-xl text-gray-200 leading-relaxed">
                 {aboutData?.mission}
               </p>
             </div>
-            <div className="premium-glow-border p-16 text-center depth-lift">
-              <Telescope className="w-24 h-24 mx-auto mb-10 text-red-500" />
-              <h3 className="text-4xl font-bold text-white mb-8">Our Vision</h3>
-              <p className="text-xl text-gray-200 leading-relaxed">
+            <div className="premium-glow-border p-12 md:p-16 text-center depth-lift">
+              <Telescope className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-8 text-red-500" />
+              <h3 className="text-3xl md:text-4xl font-bold text-white mb-6">Our Vision</h3>
+              <p className="text-lg md:text-xl text-gray-200 leading-relaxed">
                 {aboutData?.vision}
               </p>
             </div>

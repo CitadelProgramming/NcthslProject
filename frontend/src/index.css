@@ -321,39 +321,39 @@
 /* Home advanced styling */
 /* src/index.css */
 @layer components {
-  /* Subtle Infinite Border Glow — Professional & Elegant */
+  /* Premium Infinite Border Glow — Subtle & Professional */
   .premium-glow-border {
     position: relative;
-    background: rgba(255, 255, 255, 0.05);
     border-radius: 2rem;
+    background: rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.12);
     transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    overflow: hidden;
   }
 
   .premium-glow-border::before {
     content: '';
     position: absolute;
-    inset: -3px;
+    inset: -4px;
     border-radius: 2rem;
     background: linear-gradient(45deg, #10b981, #059669, #065f46, #10b981);
     background-size: 400%;
-    filter: blur(16px);
+    filter: blur(18px);
     opacity: 0;
     transition: opacity 0.8s ease;
-    animation: premiumFlow 12s linear infinite;
+    animation: premiumFlow 14s linear infinite;
     z-index: -1;
   }
 
   .premium-glow-border:hover::before {
-    opacity: 0.7;
+    opacity: 0.6;
   }
 
   .premium-glow-border:hover {
-    transform: translateY(-16px);
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+    transform: translateY(-14px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
   }
 
   @keyframes premiumFlow {
@@ -361,34 +361,26 @@
     100% { background-position: 400% 50%; }
   }
 
-  /* Refined 3D Card Lift */
+  /* Refined 3D Lift — Mobile & Desktop */
   .depth-lift {
     transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
   }
 
   .depth-lift:hover {
-    transform: translateY(-20px) translateZ(40px);
-    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.35);
+    transform: translateY(-18px) scale(1.02);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
   }
 
-  /* Glass Panel — Ultra Clean */
+  /* Glass Panel */
   .glass-panel {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 2rem;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   }
 
-  /* Soft Parallax Background */
-  .parallax-hero {
-    background-attachment: fixed;
-    background-position: center;
-    background-size: cover;
-  }
-
-  /* Elegant Fade-In */
+  /* Smooth Fade-In */
   .elegant-fade {
     opacity: 0;
     transform: translateY(60px);
