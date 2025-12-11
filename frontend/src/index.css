@@ -226,29 +226,30 @@
   }
 }
 
-/* src/index.css or globals.css */
+/* src/index.css */
 @layer components {
   .glow-border {
     position: relative;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 1.5rem;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2rem;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.5s ease;
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    overflow: hidden;
   }
 
   .glow-border::before {
     content: '';
     position: absolute;
-    inset: -2px;
-    border-radius: 1.5rem;
+    inset: -3px;
+    border-radius: 2rem;
     background: linear-gradient(45deg, #00ff88, #00d4ff, #ff00c8, #ffaa00, #00ff88);
     background-size: 400%;
-    filter: blur(12px);
+    filter: blur(16px);
     opacity: 0;
-    transition: opacity 0.6s ease;
-    animation: glowRotate 8s linear infinite;
+    transition: opacity 0.8s ease;
+    animation: glowFlow 12s linear infinite;
     z-index: -1;
   }
 
@@ -257,22 +258,35 @@
   }
 
   .glow-border:hover {
-    transform: translateY(-12px);
-    box-shadow: 0 25px 50px -12px rgba(0, 255, 136, 0.35);
+    transform: translateY(-16px) scale(1.02);
+    box-shadow: 0 40px 80px -20px rgba(0, 255, 136, 0.4);
   }
 
   .floating-card {
-    animation: float 6s ease-in-out infinite;
+    animation: float 8s ease-in-out infinite;
+  }
+
+  .pulse-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.3;
+    animation: pulse 10s ease-in-out infinite;
   }
 
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-15px); }
+    50% { transform: translateY(-20px); }
   }
 
-  @keyframes glowRotate {
+  @keyframes glowFlow {
     0% { background-position: 0% 50%; }
     100% { background-position: 400% 50%; }
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.3; }
+    50% { transform: scale(1.4); opacity: 0.5; }
   }
 
   .neon-text {
@@ -283,12 +297,11 @@
       0 0 80px currentColor;
   }
 
-  .pulse-glow {
-    animation: pulseGlow 3s ease-in-out infinite alternate;
-  }
-
-  @keyframes pulseGlow {
-    from { box-shadow: 0 0 20px rgba(0, 255, 136, 0.4); }
-    to { box-shadow: 0 0 40px rgba(0, 255, 136, 0.8); }
+  .glass-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 2rem;
   }
 }
