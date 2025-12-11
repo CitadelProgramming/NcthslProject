@@ -71,10 +71,10 @@ export default function About() {
   }, [isMobile, aboutData]);
 
   useEffect(() => {
-    if (!isMobile || !pillars.length) return;
-    const timer = setInterval(() => setActivePillar((prev) => (prev + 1) % pillars.length), 7000);
+    if (!isMobile || !aboutData?.corePillars?.length) return;
+    const timer = setInterval(() => setActivePillar((prev) => (prev + 1) % aboutData.corePillars.length), 7000);
     return () => clearInterval(timer);
-  }, [isMobile]);
+  }, [isMobile, aboutData]);
 
   useEffect(() => {
     if (!isMobile || !partners.length) return;
@@ -84,29 +84,41 @@ export default function About() {
 
   const flipTransition = { duration: 2.5, ease: [0.2, 0.8, 0.2, 1] };
 
-  // CORE PILLARS WITH CUSTOM TEXT & ICONS
-  const pillars = [
+  // CORE PILLARS: Titles from API, everything else custom
+  const pillarConfig = [
     {
-      title: "Excellence",
       icon: Award,
       color: "from-green-600 to-emerald-700",
       iconColor: "text-green-400",
       description: "Striving for the highest standards. Continuous improvement and meticulous attention to detail in every operation.",
     },
     {
-      title: "Integrity",
       icon: Shield,
       color: "from-blue-600 to-indigo-700",
       iconColor: "text-blue-400",
       description: "Unwavering honesty and accountability. We prioritize safety and trust above all else.",
     },
     {
-      title: "Resilience & Determination",
       icon: Zap,
       color: "from-red-600 to-rose-700",
       iconColor: "text-red-400",
       description: "Adapting quickly to turbulence and operational challenges. We possess the unwavering drive to overcome any obstacle and safely achieve our mission.",
     },
+  ];
+
+  const corePillars = (aboutData?.corePillars || []).map((title, i) => ({
+    title: title.trim(),
+    ...pillarConfig[i % pillarConfig.length],
+  }));
+
+  // LEADER COLORS — 6 premium rotating colors
+  const leaderColors = [
+    "from-amber-600 to-yellow-700",
+    "from-emerald-600 to-teal-700",
+    "from-indigo-600 to-purple-700",
+    "from-rose-600 to-pink-700",
+    "from-cyan-600 to-blue-700",
+    "from-orange-600 to-red-700",
   ];
 
   if (loading) {
@@ -207,23 +219,21 @@ export default function About() {
           </div>
         ) : (
           <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12">
-            {/* MISSION - GREEN THEME */}
+            {/* MISSION - GREEN */}
             <motion.div
               whileHover={{ scale: 1.07, y: -8 }}
-              transition={{ type: "spring", stiffness: 150 }}
               className="p-10 bg-gradient-to-br from-green-600/20 to-emerald-700/20 backdrop-blur-xl border border-green-500/30 rounded-2xl shadow-2xl text-center"
             >
-              <Award className="w-20 h-20 mx-auto mb-6 text-green-400 drop-shadow-2xl" />
+              <Target className="w-20 h-20 mx-auto mb-6 text-green-400 drop-shadow-2xl" />
               <h3 className="text-3xl font-bold mb-4 text-green-300">Our Mission</h3>
               <p className="text-gray-100 text-lg">
                 {aboutData?.mission || "Delivering excellence in aviation services with integrity and innovation."}
               </p>
             </motion.div>
 
-            {/* VISION - RED THEME */}
+            {/* VISION - RED */}
             <motion.div
               whileHover={{ scale: 1.07, y: -8 }}
-              transition={{ type: "spring", stiffness: 150 }}
               className="p-10 bg-gradient-to-br from-red-600/20 to-rose-700/20 backdrop-blur-xl border border-red-500/30 rounded-2xl shadow-2xl text-center"
             >
               <Telescope className="w-20 h-20 mx-auto mb-6 text-red-400 drop-shadow-2xl" />
@@ -236,7 +246,7 @@ export default function About() {
         )}
       </section>
 
-      {/* CORE PILLARS — WITH ICONS & CUSTOM DESCRIPTIONS */}
+      {/* CORE PILLARS — TITLES FROM API, REST CUSTOM */}
       <section id="pillars" className="py-28 px-6 bg-gradient-to-br from-[#818589] to-[#525354] text-white">
         <motion.h2
           initial={{ opacity: 0, y: 50 }}
@@ -255,17 +265,17 @@ export default function About() {
               exit={{ opacity: 0, rotateY: -90, scale: 0.98 }}
               transition={flipTransition}
               style={{ transformStyle: "preserve-3d" }}
-              className={`p-10 rounded-2xl border backdrop-blur-xl shadow-xl text-center bg-gradient-to-br ${pillars[activePillar].color}/20 border-white/20`}
+              className={`p-10 rounded-2xl border backdrop-blur-xl shadow-xl text-center bg-gradient-to-br ${corePillars[activePillar]?.color}/20 border-white/20`}
             >
               <div style={{ backfaceVisibility: "hidden" }}>
-                {(() => {
-                  const PillarIcon = pillars[activePillar].icon;
+                {corePillars[activePillar] && (() => {
+                  const Icon = corePillars[activePillar].icon;
                   return (
                     <>
-                      <PillarIcon className={`w-16 h-16 mx-auto mb-6 ${pillars[activePillar].iconColor} drop-shadow-xl`} />
-                      <h3 className="text-2xl font-bold mb-3">{pillars[activePillar].title}</h3>
+                      <Icon className={`w-16 h-16 mx-auto mb-6 ${corePillars[activePillar].iconColor} drop-shadow-xl`} />
+                      <h3 className="text-2xl font-bold mb-3">{corePillars[activePillar].title}</h3>
                       <p className="text-gray-200 text-base leading-relaxed">
-                        {pillars[activePillar].description}
+                        {corePillars[activePillar].description}
                       </p>
                     </>
                   );
@@ -275,7 +285,7 @@ export default function About() {
           </div>
         ) : (
           <div className="grid md:grid-cols-3 gap-10 max-w-7xl mx-auto">
-            {pillars.map((pillar, index) => {
+            {corePillars.map((pillar, index) => {
               const Icon = pillar.icon;
               return (
                 <motion.div
@@ -340,7 +350,7 @@ export default function About() {
                   initial={{ opacity: 0, scale: 0.6 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.6, delay: idx * 0.15 }}
-                  whileHover={{ scale: 1.12, y: -10, boxShadow: "0 0 20px rgba(10,77,45,0.45)" }}
+                  whileHover={{ scale: 1.12, y: -10 }}
                   className="bg-white rounded-xl p-10 shadow-md border border-gray-200 flex flex-col items-center hover:bg-gray-50 transition"
                 >
                   <img
@@ -359,7 +369,7 @@ export default function About() {
         )}
       </section>
 
-      {/* LEADERSHIP TEAM */}
+      {/* LEADERSHIP — EACH WITH UNIQUE COLOR */}
       <section id="leadership" className="w-full">
         <div className="bg-gradient-to-br from-[#818589] to-[#525354] text-[#f7f7f7] py-16 px-6 text-center">
           <div className="max-w-4xl mx-auto">
@@ -378,34 +388,37 @@ export default function About() {
             <p className="text-center text-white text-xl">Leadership team coming soon...</p>
           ) : (
             <div className="max-w-7xl mx-auto flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory md:grid md:grid-cols-2 md:gap-12 md:overflow-visible md:snap-none lg:grid-cols-3">
-              {leaders.map((leader, index) => (
-                <motion.div
-                  key={leader.id || index}
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="group relative bg-[#B8860B] p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 hover:scale-[1.03] backdrop-blur-lg cursor-pointer flex-shrink-0 w-72 snap-center sm:w-auto"
-                >
-                  <div className="relative w-40 h-40 mx-auto mb-6 rounded-full overflow-hidden shadow-xl transition-transform duration-500 group-hover:scale-110">
-                    <img 
-                      src={leader.photoUrl} 
-                      alt={leader.name} 
-                      className="w-full h-full object-cover"
-                      onError={(e) => e.target.src = "/placeholder-avatar.jpg"}
-                    />
-                    <div className="absolute inset-0 rounded-full border-4 border-[#0A4D2D] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  </div>
+              {leaders.map((leader, index) => {
+                const color = leaderColors[index % leaderColors.length];
+                return (
+                  <motion.div
+                    key={leader.id || index}
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className={`group relative bg-gradient-to-br ${color} p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 hover:scale-[1.03] backdrop-blur-lg cursor-pointer flex-shrink-0 w-72 snap-center sm:w-auto`}
+                  >
+                    <div className="relative w-40 h-40 mx-auto mb-6 rounded-full overflow-hidden shadow-xl transition-transform duration-500 group-hover:scale-110">
+                      <img 
+                        src={leader.photoUrl} 
+                        alt={leader.name} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => e.target.src = "/placeholder-avatar.jpg"}
+                      />
+                      <div className="absolute inset-0 rounded-full border-4 border-white/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    </div>
 
-                  <h3 className="text-2xl font-bold text-[#0A4D2D] mb-1">{leader.name}</h3>
-                  <p className="text-red-700 font-semibold mb-4 text-sm tracking-wide">{leader.role}</p>
-                  <p className="text-gray-700 text-sm leading-relaxed">{leader.bio || "Dedicated leader in aviation excellence."}</p>
+                    <h3 className="text-2xl font-bold text-white mb-1">{leader.name}</h3>
+                    <p className="text-white/90 font-semibold mb-4 text-sm tracking-wide">{leader.role}</p>
+                    <p className="text-white/80 text-sm leading-relaxed">{leader.bio || "Dedicated leader in aviation excellence."}</p>
 
-                  <div className="mt-6 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 text-red-700 font-semibold">
-                    View Profile
-                    <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </motion.div>
-              ))}
+                    <div className="mt-6 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 text-white font-semibold">
+                      View Profile
+                      <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </div>
