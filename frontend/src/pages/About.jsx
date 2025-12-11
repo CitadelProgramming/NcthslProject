@@ -81,6 +81,8 @@ export default function About() {
     return () => clearInterval(timer);
   }, [isMobile, partners]);
 
+  ]);
+
   const flipTransition = { duration: 2.5, ease: [0.2, 0.8, 0.2, 1] };
 
   const pillarConfig = [
@@ -106,68 +108,61 @@ export default function About() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0a3a0a] to-[#052a05] flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-          className="w-24 h-24 border-8 border-t-cyan-400 border-r-purple-500 border-b-pink-500 border-l-green-500 rounded-full"
-        />
-        <p className="text-white text-3xl ml-8 font-bold neon-text">Loading Excellence...</p>
+        <div className="text-white text-3xl font-bold">Loading About Us...</div>
       </div>
     );
   }
 
   return (
-    <div className="w-full text-gray-800 about-enhanced-section overflow-hidden">
+    <div className="w-full text-gray-800 about-enhanced-section">
 
-      {/* HERO — CINEMATIC MASTERPIECE */}
-      <section id="overview" className="relative h-screen bg-cover bg-center flex items-center justify-center overflow-hidden" style={{ backgroundImage: `url(${aboutBg})` }}>
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20" />
-        
-        {/* Floating Orbs */}
-        <div className="absolute top-20 left-20 w-96 h-96 bg-cyan-500/30 pulse-orb" />
-        <div className="absolute bottom-32 right-32 w-80 h-80 bg-purple-500/30 pulse-orb animation-delay-2000" />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-500/20 pulse-orb animation-delay-4000" />
+      {/* HERO SECTION */}
+      <section id="overview" className="relative text-white py-40 px-6 bg-center bg-cover bg-no-repeat overflow-hidden" style={{ backgroundImage: `url(${aboutBg})` }}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} transition={{ duration: 1.5 }} className="absolute inset-0 bg-black" />
 
         <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-          className="relative z-10 text-center px-6 max-w-6xl"
+          initial={{ opacity: 0, y: 60 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.4, ease: "easeOut" }}
+          className="relative z-10 max-w-5xl mx-auto text-center"
         >
           <motion.h1
-            animate={{ scale: [1, 1.03, 1] }}
-            transition={{ repeat: Infinity, duration: 8 }}
-            className="text-6xl md:text-9xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 mb-8 neon-text"
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ repeat: Infinity, duration: 6 }}
+            className="text-5xl md:text-6xl font-extrabold tracking-wide drop-shadow-xl"
           >
-            ABOUT US
+            About Us
           </motion.h1>
-          <p className="text-xl md:text-3xl text-gray-200 font-light tracking-wider mb-12">
-            Pioneering Aviation Excellence in Nigeria
+
+          <p className="text-lg md:text-xl mt-4 opacity-90">
+            Nigeria Customs Technical & Hangar Services Limited (NCTHSL) was
+            established in August 2016 as a private company limited by shares
+            pursuant to the Companies and Allied Matters Act 1990 with the
+            Nigeria Customs Service and the Ministry of Finance Incorporated
+            (MOFI).
           </p>
 
           <motion.div
             initial={{ opacity: 0, y: 60 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 1.2 }}
-            className="glass-card p-12 rounded-3xl shadow-3xl border border-white/20 max-w-4xl mx-auto"
+            transition={{ delay: 0.3, duration: 1.2 }}
+            className="mt-16 bg-black/40 backdrop-blur-lg p-10 rounded-2xl shadow-2xl border border-white/10"
           >
-            <h2 className="text-4xl font-bold text-white mb-6">Company Overview</h2>
-            <p className="text-gray-100 text-lg leading-relaxed">
+            <h2 className="text-3xl font-bold">Company Overview</h2>
+            <p className="text-gray-200 leading-relaxed text-lg mt-4">
               {aboutData?.overview || "Premier provider of aviation services, renowned for comprehensive offerings, technical expertise, and commitment to excellence."}
             </p>
           </motion.div>
         </motion.div>
       </section>
 
-      {/* MISSION & VISION — PREMIUM GLASS CARDS */}
-      <section id="mission" className="py-32 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05] relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-        
+      {/* MISSION & VISION */}
+      <section id="mission" className="py-24 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05] text-white">
         <motion.h2
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
-          className="text-5xl md:text-7xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400 mb-20 neon-text relative z-10"
+          transition={{ duration: 1 }}
+          className="text-4xl md:text-5xl font-bold text-center mb-16"
         >
           Our Mission & Vision
         </motion.h2>
@@ -176,50 +171,67 @@ export default function About() {
           <div className="max-w-xl mx-auto" style={{ perspective: 1200 }}>
             <motion.div
               key={activeIndex}
-              initial={{ opacity: 0, rotateY: 90 }}
-              animate={{ opacity: 1, rotateY: 0 }}
-              exit={{ opacity: 0, rotateY: -90 }}
+              initial={{ opacity: 0, rotateY: 90, scale: 0.98 }}
+              animate={{ opacity: 1, rotateY: 0, scale: 1 }}
+              exit={{ opacity: 0, rotateY: -90, scale: 0.98 }}
               transition={flipTransition}
-              className={`glow-border p-12 text-center floating-card`}
+              style={{ transformStyle: "preserve-3d" }}
+              className="p-10 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-xl shadow-xl text-center"
             >
-              {activeIndex === 0 ? (
-                <>
-                  <Target className="w-20 h-20 mx-auto mb-8 text-green-400 drop-shadow-2xl" />
-                  <h3 className="text-4xl font-bold mb-6 text-green-300">Our Mission</h3>
-                  <p className="text-gray-200 text-lg">{aboutData?.mission}</p>
-                </>
-              ) : (
-                <>
-                  <Telescope className="w-20 h-20 mx-auto mb-8 text-red-400 drop-shadow-2xl" />
-                  <h3 className="text-4xl font-bold mb-6 text-red-300">Our Vision</h3>
-                  <p className="text-gray-200 text-lg">{aboutData?.vision}</p>
-                </>
-              )}
+              <div style={{ backfaceVisibility: "hidden" }}>
+                {activeIndex === 0 ? (
+                  <>
+                    <Target className="w-16 h-16 mx-auto mb-6 text-green-400 drop-shadow-xl" />
+                    <h3 className="text-3xl font-bold mb-4">Our Mission</h3>
+                    <p className="text-gray-200">
+                      {aboutData?.mission || "Delivering excellence in aviation services with integrity and innovation."}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <Telescope className="w-16 h-16 mx-auto mb-6 text-red-400 drop-shadow-xl" />
+                    <h3 className="text-3xl font-bold mb-4">Our Vision</h3>
+                    <p className="text-gray-200">
+                      {aboutData?.vision || "To be Africa's leading aviation institution with world-class standards."}
+                    </p>
+                  </>
+                )}
+              </div>
             </motion.div>
           </div>
         ) : (
-          <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 relative z-10">
-            <motion.div whileHover={{ scale: 1.05 }} className="glow-border p-12 floating-card">
-              <Target className="w-24 h-24 mx-auto mb-8 text-green-400 drop-shadow-2xl" />
-              <h3 className="text-4xl font-bold mb-6 text-green-300">Our Mission</h3>
-              <p className="text-gray-100 text-xl leading-relaxed">{aboutData?.mission}</p>
+          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12">
+            <motion.div
+              whileHover={{ scale: 1.07, y: -8 }}
+              className="p-10 bg-gradient-to-br from-green-600/20 to-emerald-700/20 backdrop-blur-xl border border-green-500/30 rounded-2xl shadow-2xl text-center"
+            >
+              <Target className="w-20 h-20 mx-auto mb-6 text-green-400 drop-shadow-2xl" />
+              <h3 className="text-3xl font-bold mb-4 text-green-300">Our Mission</h3>
+              <p className="text-gray-100 text-lg">
+                {aboutData?.mission || "Delivering excellence in aviation services with integrity and innovation."}
+              </p>
             </motion.div>
 
-            <motion.div whileHover={{ scale: 1.05 }} className="glow-border p-12 floating-card">
-              <Telescope className="w-24 h-24 mx-auto mb-8 text-red-400 drop-shadow-2xl" />
-              <h3 className="text-4xl font-bold mb-6 text-red-300">Our Vision</h3>
-              <p className="text-gray-100 text-xl leading-relaxed">{aboutData?.vision}</p>
+            <motion.div
+              whileHover={{ scale: 1.07, y: -8 }}
+              className="p-10 bg-gradient-to-br from-red-600/20 to-rose-700/20 backdrop-blur-xl border border-red-500/30 rounded-2xl shadow-2xl text-center"
+            >
+              <Telescope className="w-20 h-20 mx-auto mb-6 text-red-400 drop-shadow-2xl" />
+              <h3 className="text-3xl font-bold mb-4 text-red-300">Our Vision</h3>
+              <p className="text-gray-100 text-lg">
+                {aboutData?.vision || "To be Africa's leading aviation institution with world-class standards."}
+              </p>
             </motion.div>
           </div>
         )}
       </section>
 
-      {/* CORE PILLARS — EPIC GLOW CARDS */}
-      <section id="pillars" className="py-32 px-6 bg-gradient-to-br from-[#818589] to-[#525354] relative overflow-hidden">
+      {/* CORE PILLARS */}
+      <section id="pillars" className="py-28 px-6 bg-gradient-to-br from-[#818589] to-[#525354] text-white">
         <motion.h2
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
-          className="text-5xl md:text-7xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 mb-24 neon-text"
+          className="text-4xl md:text-5xl font-bold text-center mb-16"
         >
           Our Core Pillars
         </motion.h2>
@@ -228,37 +240,45 @@ export default function About() {
           <div className="max-w-sm mx-auto" style={{ perspective: 1200 }}>
             <motion.div
               key={activePillar}
-              initial={{ opacity: 0, rotateY: 90 }}
-              animate={{ opacity: 1, rotateY: 0 }}
-              exit={{ opacity: 0, rotateY: -90 }}
+              initial={{ opacity: 0, rotateY: 90, scale: 0.98 }}
+              animate={{ opacity: 1, rotateY: 0, scale: 1 }}
+              exit={{ opacity: 0, rotateY: -90, scale: 0.98 }}
               transition={flipTransition}
-              className="glow-border p-12 text-center floating-card"
+              style={{ transformStyle: "preserve-3d" }}
+              className={`p-10 rounded-2xl border backdrop-blur-xl shadow-xl text-center bg-gradient-to-br ${corePillars[activePillar]?.color}/20 border-white/20`}
             >
-              {corePillars[activePillar] && (() => {
-                const Icon = corePillars[activePillar].icon;
-                return (
-                  <>
-                    <Icon className={`w-20 h-20 mx-auto mb-8 ${corePillars[activePillar].iconColor} drop-shadow-2xl`} />
-                    <h3 className="text-3xl font-bold mb-6">{corePillars[activePillar].title}</h3>
-                    <p className="text-gray-200 text-lg leading-relaxed">{corePillars[activePillar].description}</p>
-                  </>
-                );
-              })()}
+              <div style={{ backfaceVisibility: "hidden" }}>
+                {corePillars[activePillar] && (() => {
+                  const Icon = corePillars[activePillar].icon;
+                  return (
+                    <>
+                      <Icon className={`w-16 h-16 mx-auto mb-6 ${corePillars[activePillar].iconColor} drop-shadow-xl`} />
+                      <h3 className="text-2xl font-bold mb-3">{corePillars[activePillar].title}</h3>
+                      <p className="text-gray-200 text-base leading-relaxed">
+                        {corePillars[activePillar].description}
+                      </p>
+                    </>
+                  );
+                })()}
+              </div>
             </motion.div>
           </div>
         ) : (
-          <div className="grid md:grid-cols-3 gap-12 max-w-7xl mx-auto">
-            {corePillars.map((pillar, i) => {
+          <div className="grid md:grid-cols-3 gap-10 max-w-7xl mx-auto">
+            {corePillars.map((pillar, index) => {
               const Icon = pillar.icon;
               return (
                 <motion.div
-                  key={i}
-                  whileHover={{ scale: 1.1, y: -16 }}
-                  className="glow-border p-12 text-center floating-card"
+                  key={index}
+                  whileHover={{ scale: 1.12, y: -12 }}
+                  transition={{ duration: 0.4 }}
+                  className={`p-10 rounded-2xl border backdrop-blur-xl shadow-2xl text-center bg-gradient-to-br ${pillar.color}/20 border-white/20`}
                 >
-                  <Icon className={`w-24 h-24 mx-auto mb-8 ${pillar.iconColor} drop-shadow-2xl`} />
-                  <h3 className="text-3xl font-bold mb-6 text-white">{pillar.title}</h3>
-                  <p className="text-gray-200 text-lg leading-relaxed">{pillar.description}</p>
+                  <Icon className={`w-20 h-20 mx-auto mb-6 ${pillar.iconColor} drop-shadow-2xl`} />
+                  <h3 className="text-2xl font-bold mb-4">{pillar.title}</h3>
+                  <p className="text-gray-200 leading-relaxed">
+                    {pillar.description}
+                  </p>
                 </motion.div>
               );
             })}
@@ -329,7 +349,7 @@ export default function About() {
         )}
       </section>
 
-      {/* LEADERSHIP — EACH WITH UNIQUE COLOR */}
+      {/* LEADERSHIP — NOW WITH SUBTLE INFINITE GLOW BORDER */}
       <section id="leadership" className="w-full">
         <div className="bg-gradient-to-br from-[#818589] to-[#525354] text-[#f7f7f7] py-16 px-6 text-center">
           <div className="max-w-4xl mx-auto">
@@ -347,7 +367,7 @@ export default function About() {
           {leaders.length === 0 ? (
             <p className="text-center text-white text-xl">Leadership team coming soon...</p>
           ) : (
-            <div className="max-w-7xl mx-auto flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory md:grid md:grid-cols-2 md:gap-12 md:overflow-visible md:snap-none lg:grid-cols-3">
+            <div className="max-w-7xl mx-auto flex gap-8 overflow-x-auto pb-6 snap-x snap-mandatory md:grid md:grid-cols-2 md:gap-12 md:overflow-visible lg:grid-cols-3">
               {leaders.map((leader, index) => {
                 const color = leaderColors[index % leaderColors.length];
                 return (
@@ -356,25 +376,31 @@ export default function About() {
                     initial={{ opacity: 0, y: 40 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className={`group relative bg-gradient-to-br ${color} p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 hover:scale-[1.03] backdrop-blur-lg cursor-pointer flex-shrink-0 w-72 snap-center sm:w-auto`}
+                    className="group relative flex-shrink-0 w-80 snap-center"
                   >
-                    <div className="relative w-40 h-40 mx-auto mb-6 rounded-full overflow-hidden shadow-xl transition-transform duration-500 group-hover:scale-110">
-                      <img 
-                        src={leader.photoUrl} 
-                        alt={leader.name} 
-                        className="w-full h-full object-cover"
-                        onError={(e) => e.target.src = "/placeholder-avatar.jpg"}
-                      />
-                      <div className="absolute inset-0 rounded-full border-4 border-white/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    </div>
+                    {/* GLOWING BORDER WRAPPER */}
+                    <div className="infinite-glow-border rounded-3xl">
+                      <div className={`bg-gradient-to-br ${color} p-8 rounded-3xl shadow-2xl backdrop-blur-sm`}>
+                        <div className="relative w-40 h-40 mx-auto mb-8 rounded-full overflow-hidden shadow-xl border-4 border-white/20">
+                          <img
+                            src={leader.photoUrl}
+                            alt={leader.name}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            onError={(e) => e.target.src = "/placeholder-avatar.jpg"}
+                          />
+                        </div>
 
-                    <h3 className="text-2xl font-bold text-white mb-1">{leader.name}</h3>
-                    <p className="text-white/90 font-semibold mb-4 text-sm tracking-wide">{leader.role}</p>
-                    <p className="text-white/80 text-sm leading-relaxed">{leader.bio || "Dedicated leader in aviation excellence."}</p>
+                        <h3 className="text-2xl font-bold text-white text-center mb-2">{leader.name}</h3>
+                        <p className="text-white/90 font-medium text-center mb-6">{leader.role}</p>
+                        <p className="text-white/80 text-sm leading-relaxed text-center">
+                          {leader.bio || "Dedicated leader in aviation excellence."}
+                        </p>
 
-                    <div className="mt-6 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 text-white font-semibold">
-                      View Profile
-                      <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        <div className="mt-8 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-400 text-white font-semibold">
+                          View Profile
+                          <ChevronRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                        </div>
+                      </div>
                     </div>
                   </motion.div>
                 );
