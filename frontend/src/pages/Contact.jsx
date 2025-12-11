@@ -1,8 +1,8 @@
 // src/pages/Contact.jsx
 import { useState } from "react";
 import { motion } from "framer-motion";
+import emailjs from "@emailjs/browser";
 
-// CORRECT PUBLIC ENDPOINT — NO AUTH REQUIRED
 const API_URL = "https://enchanting-expression-production.up.railway.app/api/v1/contact/add-contact";
 
 export default function Contact() {
@@ -12,7 +12,7 @@ export default function Contact() {
     subject: "",
     message: "",
     phoneNo: "",
-    botphone: "", // honeypot
+    botphone: "",
   });
 
   const [status, setStatus] = useState({
@@ -38,6 +38,44 @@ export default function Contact() {
     return null;
   };
 
+  const sendAcknowledgmentEmail = async () => {
+    const templateParams = {
+      to_name: form.fullName,
+      to_email: form.email,
+      from_name: "Nigeria Customs Technical & Hangar Service Limited",
+      message: `
+        Dear ${form.fullName},
+
+        Thank you for contacting Nigeria Customs Technical & Hangar Service Limited.
+
+        We have received your message and our team will respond to your inquiry shortly. Please allow us some time to review your request thoroughly.
+
+        We appreciate your patience and look forward to assisting you.
+
+        For urgent matters, please contact our Support Team.
+
+        Address
+        Custom Airwing Hangar,
+        General Aviation Terminal,
+        Nnamdi Azikiwe International Airport,
+        Abuja, Nigeria
+
+        © 2025 NCTHSL Limited. All rights reserved.
+      `.trim(),
+    };
+
+    try {
+      await emailjs.send(
+        "service_8xcadkx",     // ← Replace with your EmailJS Service ID
+        "template_r00u2gd",    // ← Replace with your EmailJS Template ID
+        "lbCZHFvnBJbCRKNLW"      // ← Replace with your EmailJS Public Key
+      );
+    } catch (err) {
+      console.error("Failed to send acknowledgment email:", err);
+      // Don't block success if email fails
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus({ loading: true, success: null, error: null });
@@ -49,11 +87,10 @@ export default function Contact() {
     }
 
     try {
+      // Step 1: Save to your backend
       const res = await fetch(API_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName: form.fullName.trim(),
           email: form.email.trim(),
@@ -63,35 +100,35 @@ export default function Contact() {
         }),
       });
 
-      if (res.ok) {
-        setStatus({
-          loading: false,
-          success: "Thank you! Your message has been sent successfully.",
-        });
-        setForm({
-          fullName: "",
-          email: "",
-          subject: "",
-          message: "",
-          phoneNo: "",
-          botphone: "",
-        });
-      } else {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to send message");
-      }
+      if (!res.ok) throw new Error("Failed to save message");
+
+      // Step 2: Send acknowledgment email from frontend
+      await sendAcknowledgmentEmail();
+
+      setStatus({
+        loading: false,
+        success: "Thank you! Your message has been sent and a confirmation email has been delivered to your inbox.",
+      });
+
+      setForm({
+        fullName: "",
+        email: "",
+        subject: "",
+        message: "",
+        phoneNo: "",
+        botphone: "",
+      });
     } catch (err) {
       console.error("Contact error:", err);
       setStatus({
         loading: false,
-        error: err.message || "Network error. Please try again.",
+        error: "Failed to send message. Please try again.",
       });
     }
   };
 
   return (
     <div className="w-full">
-
       {/* HEADER */}
       <motion.section
         className="bg-gradient-to-br from-[#0a3a0a] to-[#052a05] text-white py-20 px-6 text-center"
@@ -100,9 +137,7 @@ export default function Contact() {
         transition={{ duration: 0.8 }}
       >
         <div className="max-w-4xl mx-auto">
-          <motion.h1 className="text-4xl md:text-5xl font-bold">
-            Contact Us
-          </motion.h1>
+          <motion.h1 className="text-4xl md:text-5xl font-bold">Contact Us</motion.h1>
           <motion.p className="mt-4 text-lg md:text-xl text-gray-200">
             For quotations, technical enquiries or support — send us a message and our team will respond.
           </motion.p>
@@ -112,13 +147,8 @@ export default function Contact() {
       {/* FORM */}
       <section className="py-12 px-6 bg-gradient-to-br from-[#818589] to-[#525354]">
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-10 items-start">
-
           {/* Contact Info */}
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7 }}
-          >
+          <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.7 }}>
             <h2 className="text-3xl font-bold text-white mb-6">Get in Touch</h2>
             <p className="text-gray-100 mb-8 text-lg">
               Nigeria Customs Technical & Hangar Services Limited<br />
@@ -145,59 +175,16 @@ export default function Contact() {
             onSubmit={handleSubmit}
             className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20"
           >
-            {/* Honeypot */}
-            <input
-              type="text"
-              name="botphone"
-              value={form.botphone}
-              onChange={handleChange}
-              tabIndex="-1"
-              autoComplete="off"
-              className="hidden"
-            />
+            <input type="text" name="botphone" value={form.botphone} onChange={handleChange} className="hidden" tabIndex="-1" autoComplete="off" />
 
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <input
-                  type="text"
-                  name="fullName"
-                  value={form.fullName}
-                  onChange={handleChange}
-                  placeholder="Full Name *"
-                  className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500"
-                  required
-                />
-                
-                <input
-                  type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="Email Address *"
-                  className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500"
-                  required
-                />
+                <input type="text" name="fullName" value={form.fullName} onChange={handleChange} placeholder="Full Name *" className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500" required />
+                <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="Email Address *" className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500" required />
               </div>
 
-              <input
-                type="text"
-                name="phoneNo"
-                value={form.phoneNo}
-                onChange={handleChange}
-                placeholder="Phone Number *"
-                className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500"
-                required
-              />
-
-              <input
-                type="text"
-                name="subject"
-                value={form.subject}
-                onChange={handleChange}
-                placeholder="Subject *"
-                className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500"
-                required
-              />
+              <input type="text" name="phoneNo" value={form.phoneNo} onChange={handleChange} placeholder="Phone Number *" className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500" required />
+              <input type="text" name="subject" value={form.subject} onChange={handleChange} placeholder="Subject *" className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500" required />
 
               <textarea
                 name="message"
@@ -221,22 +208,13 @@ export default function Contact() {
                 </motion.button>
               </div>
 
-              {/* Status */}
               {status.success && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-green-900/60 border border-green-500 text-green-100 p-5 rounded-xl text-center font-semibold"
-                >
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-green-900/60 border border-green-500 text-green-100 p-5 rounded-xl text-center font-semibold">
                   {status.success}
                 </motion.div>
               )}
               {status.error && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-900/60 border border-red-500 text-red-100 p-5 rounded-xl text-center"
-                >
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-red-900/60 border border-red-500 text-red-100 p-5 rounded-xl text-center">
                   {status.error}
                 </motion.div>
               )}
