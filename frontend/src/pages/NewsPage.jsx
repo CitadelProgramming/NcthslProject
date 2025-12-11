@@ -20,6 +20,18 @@ export default function NewsPage() {
     setExpandedId(expandedId === id ? null : id);
   };
 
+  const formatDate = (dateArray) => {
+    if (!dateArray || !Array.isArray(dateArray)) return "Recently";
+    
+    const [year, month, day] = dateArray;
+    const date = new Date(year, month - 1, day); // month is 1-based in array
+    return date.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return PLACEHOLDER;
     return `${BASE_URL}${imageUrl}`;
@@ -108,7 +120,16 @@ export default function NewsPage() {
 
                     <div className="p-8 md:p-10">
                       <div className="text-sm text-gray-500 mb-3 font-medium">
-                        {item.createdAt?.slice(0, 10) || "Recently"} • {item.author || "NCTHSL"}
+                        {(() => {
+                          if (!item.createdAt || !Array.isArray(item.createdAt)) return "Recently";
+                          const [year, month, day] = item.createdAt;
+                          const date = new Date(year, month - 1, day);
+                          return date.toLocaleDateString('en-GB', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                          });
+                        })()} • {item.author || "NCTHSL"}
                       </div>
 
                       <h2 className="text-2xl md:text-3xl font-bold text-[#0A4D2D] mb-4">
