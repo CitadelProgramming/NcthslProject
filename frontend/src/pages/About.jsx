@@ -81,8 +81,6 @@ export default function About() {
     return () => clearInterval(timer);
   }, [isMobile, partners]);
 
-  ]);
-
   const flipTransition = { duration: 2.5, ease: [0.2, 0.8, 0.2, 1] };
 
   const pillarConfig = [
