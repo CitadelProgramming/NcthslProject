@@ -66,13 +66,15 @@ export default function Contact() {
 
     try {
       await emailjs.send(
-        "service_8xcadkx",     // ← Replace with your EmailJS Service ID
-        "template_r00u2gd",    // ← Replace with your EmailJS Template ID
-        "lbCZHFvnBJbCRKNLW"      // ← Replace with your EmailJS Public Key
+        "service_8xcadkx",           // Your Service ID
+        "template_r00u2gd",          // Your Template ID
+        templateParams,              // ← THIS WAS MISSING!
+        "lbCZHFvnBJbCRKNLW"          // Your Public Key
       );
+      console.log("Acknowledgment email sent successfully!");
     } catch (err) {
-      console.error("Failed to send acknowledgment email:", err);
-      // Don't block success if email fails
+      console.error("Failed to send email:", err);
+      // Don't block form success
     }
   };
 
@@ -87,20 +89,23 @@ export default function Contact() {
     }
 
     try {
-      // Step 1: Save to your backend
+      // Step 1: Save to backend — FIXED: use "phone" not "phoneNo"
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName: form.fullName.trim(),
           email: form.email.trim(),
+          phone: form.phoneNo.trim(),        // ← THIS WAS THE 400 ERROR!
           subject: form.subject.trim(),
           message: form.message.trim(),
-          phoneNo: form.phoneNo.trim(),
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to save message");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to save message");
+      }
 
       // Step 2: Send acknowledgment email from frontend
       await sendAcknowledgmentEmail();
@@ -110,6 +115,7 @@ export default function Contact() {
         success: "Thank you! Your message has been sent and a confirmation email has been delivered to your inbox.",
       });
 
+      // Reset form
       setForm({
         fullName: "",
         email: "",
