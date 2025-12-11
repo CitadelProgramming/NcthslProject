@@ -319,75 +319,74 @@
 
 
 /* Home advanced styling */
-/* src/index.css */
 @layer components {
-  /* Premium Infinite Border Glow — Subtle & Professional */
-  .premium-glow-border {
+  /* Ultra-Premium Infinite Border Glow — Subtle & Institutional */
+  .prestige-glow {
     position: relative;
     border-radius: 2rem;
     background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
     overflow: hidden;
   }
 
-  .premium-glow-border::before {
+  .prestige-glow::before {
     content: '';
     position: absolute;
     inset: -4px;
     border-radius: 2rem;
-    background: linear-gradient(45deg, #10b981, #059669, #065f46, #10b981);
+    background: linear-gradient(45deg, #10b981, #059669, #047857, #10b981);
     background-size: 400%;
-    filter: blur(18px);
+    filter: blur(20px);
     opacity: 0;
-    transition: opacity 0.8s ease;
-    animation: premiumFlow 14s linear infinite;
+    transition: opacity 1s ease;
+    animation: prestigeFlow 16s linear infinite;
     z-index: -1;
   }
 
-  .premium-glow-border:hover::before {
-    opacity: 0.6;
+  .prestige-glow:hover::before {
+    opacity: 0.7;
   }
 
-  .premium-glow-border:hover {
-    transform: translateY(-14px);
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+  .prestige-glow:hover {
+    transform: translateY(-16px);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
   }
 
-  @keyframes premiumFlow {
+  @keyframes prestigeFlow {
     0% { background-position: 0% 50%; }
     100% { background-position: 400% 50%; }
   }
 
-  /* Refined 3D Lift — Mobile & Desktop */
-  .depth-lift {
-    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  /* Refined 3D Lift — Premium & Smooth */
+  .depth-elevate {
+    transition: all 0.7s cubic-bezier(0.23, 1, 0.32, 1);
   }
 
-  .depth-lift:hover {
-    transform: translateY(-18px) scale(1.02);
-    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
+  .depth-elevate:hover {
+    transform: translateY(-20px) scale(1.02);
+    box-shadow: 0 0 50px 100px rgba(0, 0, 0, 0.35);
   }
 
-  /* Glass Panel */
-  .glass-panel {
+  /* Institutional Glass */
+  .institutional-glass {
     background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 2rem;
   }
 
-  /* Smooth Fade-In */
-  .elegant-fade {
+  /* Elegant Fade-In */
+  .elegant-entry {
     opacity: 0;
     transform: translateY(60px);
-    transition: all 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+    transition: all 1.4s cubic-bezier(0.23, 1, 0.32, 1);
   }
 
-  .elegant-fade.visible {
+  .elegant-entry.visible {
     opacity: 1;
     transform: translateY(0);
   }
