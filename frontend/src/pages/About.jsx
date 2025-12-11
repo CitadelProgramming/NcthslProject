@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
-import { Target, Telescope, ChevronRight } from "lucide-react";
+import { Target, Telescope, ChevronRight, Award, Shield, Zap } from "lucide-react";
 import aboutBg from "../assets/Images/about/about-bg.jpg";
 
 const API_BASE = "https://enchanting-expression-production.up.railway.app/api/v1";
@@ -14,8 +14,6 @@ export default function About() {
   const [leaders, setLeaders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Public image URL (no token needed if backend allows public access)
-  // BUT if images are protected → use ?access_token= from localStorage if admin is logged in
   const getImageUrl = (path) => {
     if (!path) return "/placeholder-avatar.jpg";
     return `${BASE_URL}${path}`;
@@ -25,20 +23,14 @@ export default function About() {
     const loadAboutData = async () => {
       try {
         setLoading(true);
-
         const [aboutRes, partnersRes, leadersRes] = await Promise.all([
           axios.get(`${API_BASE}/about/all-about`),
           axios.get(`${API_BASE}/partners/all-partners`),
           axios.get(`${API_BASE}/leadership/leaders`),
         ]);
 
-        console.log('====================================');
-        console.log(leadersRes);
-        console.log('====================================');
-
         const about = aboutRes.data?.[0] || {};
         setAboutData(about);
-
         setPartners(partnersRes.data || []);
 
         const leaderList = leadersRes.data || [];
@@ -79,10 +71,10 @@ export default function About() {
   }, [isMobile, aboutData]);
 
   useEffect(() => {
-    if (!isMobile || !aboutData?.corePillars?.length) return;
-    const timer = setInterval(() => setActivePillar((prev) => (prev + 1) % aboutData.corePillars.length), 7000);
+    if (!isMobile || !pillars.length) return;
+    const timer = setInterval(() => setActivePillar((prev) => (prev + 1) % pillars.length), 7000);
     return () => clearInterval(timer);
-  }, [isMobile, aboutData]);
+  }, [isMobile]);
 
   useEffect(() => {
     if (!isMobile || !partners.length) return;
@@ -91,6 +83,31 @@ export default function About() {
   }, [isMobile, partners]);
 
   const flipTransition = { duration: 2.5, ease: [0.2, 0.8, 0.2, 1] };
+
+  // CORE PILLARS WITH CUSTOM TEXT & ICONS
+  const pillars = [
+    {
+      title: "Excellence",
+      icon: Award,
+      color: "from-green-600 to-emerald-700",
+      iconColor: "text-green-400",
+      description: "Striving for the highest standards. Continuous improvement and meticulous attention to detail in every operation.",
+    },
+    {
+      title: "Integrity",
+      icon: Shield,
+      color: "from-blue-600 to-indigo-700",
+      iconColor: "text-blue-400",
+      description: "Unwavering honesty and accountability. We prioritize safety and trust above all else.",
+    },
+    {
+      title: "Resilience & Determination",
+      icon: Zap,
+      color: "from-red-600 to-rose-700",
+      iconColor: "text-red-400",
+      description: "Adapting quickly to turbulence and operational challenges. We possess the unwavering drive to overcome any obstacle and safely achieve our mission.",
+    },
+  ];
 
   if (loading) {
     return (
@@ -143,7 +160,7 @@ export default function About() {
         </motion.div>
       </section>
 
-      {/* MISSION & VISION */}
+      {/* MISSION & VISION — DIFFERENT COLORS */}
       <section id="mission" className="py-24 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05] text-white">
         <motion.h2
           initial={{ opacity: 0, y: 50 }}
@@ -163,12 +180,14 @@ export default function About() {
               exit={{ opacity: 0, rotateY: -90, scale: 0.98 }}
               transition={flipTransition}
               style={{ transformStyle: "preserve-3d" }}
-              className="p-10 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-xl shadow-xl text-center"
+              className={`p-10 rounded-2xl border border-white/20 backdrop-blur-xl shadow-xl text-center ${
+                activeIndex === 0 ? "bg-gradient-to-br from-green-600/30 to-emerald-700/30" : "bg-gradient-to-br from-red-600/30 to-rose-700/30"
+              }`}
             >
               <div style={{ backfaceVisibility: "hidden" }}>
                 {activeIndex === 0 ? (
                   <>
-                    <Target className="w-16 h-16 mx-auto mb-6 text-red-600 drop-shadow-xl" />
+                    <Target className="w-16 h-16 mx-auto mb-6 text-green-400 drop-shadow-xl" />
                     <h3 className="text-3xl font-bold mb-4">Our Mission</h3>
                     <p className="text-gray-200">
                       {aboutData?.mission || "Delivering excellence in aviation services with integrity and innovation."}
@@ -176,7 +195,7 @@ export default function About() {
                   </>
                 ) : (
                   <>
-                    <Telescope className="w-16 h-16 mx-auto mb-6 text-red-600 drop-shadow-xl" />
+                    <Telescope className="w-16 h-16 mx-auto mb-6 text-red-400 drop-shadow-xl" />
                     <h3 className="text-3xl font-bold mb-4">Our Vision</h3>
                     <p className="text-gray-200">
                       {aboutData?.vision || "To be Africa's leading aviation institution with world-class standards."}
@@ -188,26 +207,28 @@ export default function About() {
           </div>
         ) : (
           <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12">
+            {/* MISSION - GREEN THEME */}
             <motion.div
-              whileHover={{ scale: 1.07, y: -8, boxShadow: "0 0 25px rgba(255,255,255,0.35)" }}
+              whileHover={{ scale: 1.07, y: -8 }}
               transition={{ type: "spring", stiffness: 150 }}
-              className="p-10 bg-white/10 rounded-2xl backdrop-blur-xl border border-white/20 shadow-xl text-center"
+              className="p-10 bg-gradient-to-br from-green-600/20 to-emerald-700/20 backdrop-blur-xl border border-green-500/30 rounded-2xl shadow-2xl text-center"
             >
-              <Target className="w-20 h-20 mx-auto mb-6 text-red-600 drop-shadow-xl" />
-              <h3 className="text-3xl font-bold mb-4">Our Mission</h3>
-              <p className="text-gray-200">
+              <Award className="w-20 h-20 mx-auto mb-6 text-green-400 drop-shadow-2xl" />
+              <h3 className="text-3xl font-bold mb-4 text-green-300">Our Mission</h3>
+              <p className="text-gray-100 text-lg">
                 {aboutData?.mission || "Delivering excellence in aviation services with integrity and innovation."}
               </p>
             </motion.div>
 
+            {/* VISION - RED THEME */}
             <motion.div
-              whileHover={{ scale: 1.07, y: -8, boxShadow: "0 0 25px rgba(255,255,255,0.35)" }}
+              whileHover={{ scale: 1.07, y: -8 }}
               transition={{ type: "spring", stiffness: 150 }}
-              className="p-10 bg-white/10 rounded-2xl backdrop-blur-xl border border-white/20 shadow-xl text-center"
+              className="p-10 bg-gradient-to-br from-red-600/20 to-rose-700/20 backdrop-blur-xl border border-red-500/30 rounded-2xl shadow-2xl text-center"
             >
-              <Telescope className="w-20 h-20 mx-auto mb-6 text-red-600 drop-shadow-xl" />
-              <h3 className="text-3xl font-bold mb-4">Our Vision</h3>
-              <p className="text-gray-200">
+              <Telescope className="w-20 h-20 mx-auto mb-6 text-red-400 drop-shadow-2xl" />
+              <h3 className="text-3xl font-bold mb-4 text-red-300">Our Vision</h3>
+              <p className="text-gray-100 text-lg">
                 {aboutData?.vision || "To be Africa's leading aviation institution with world-class standards."}
               </p>
             </motion.div>
@@ -215,11 +236,15 @@ export default function About() {
         )}
       </section>
 
-      {/* CORE PILLARS */}
+      {/* CORE PILLARS — WITH ICONS & CUSTOM DESCRIPTIONS */}
       <section id="pillars" className="py-28 px-6 bg-gradient-to-br from-[#818589] to-[#525354] text-white">
-        <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
+        <motion.h2
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          className="text-4xl md:text-5xl font-bold text-center mb-16"
+        >
           Our Core Pillars
-        </h2>
+        </motion.h2>
 
         {isMobile ? (
           <div className="max-w-sm mx-auto" style={{ perspective: 1200 }}>
@@ -230,35 +255,43 @@ export default function About() {
               exit={{ opacity: 0, rotateY: -90, scale: 0.98 }}
               transition={flipTransition}
               style={{ transformStyle: "preserve-3d" }}
-              className="p-10 bg-white/10 backdrop-blur-xl rounded-2xl text-center shadow-xl border border-white/10"
+              className={`p-10 rounded-2xl border backdrop-blur-xl shadow-xl text-center bg-gradient-to-br ${pillars[activePillar].color}/20 border-white/20`}
             >
               <div style={{ backfaceVisibility: "hidden" }}>
-                <div className="w-16 h-16 mx-auto mb-4 bg-red-600/20 rounded-full flex items-center justify-center">
-                  <span className="text-3xl font-bold text-red-500">
-                    {aboutData?.corePillars?.[activePillar]?.[0] || "E"}
-                  </span>
-                </div>
-                <h3 className="text-2xl font-bold">{aboutData?.corePillars?.[activePillar] || "Excellence"}</h3>
-                <p className="text-gray-300 mt-3">Core value driving our operations.</p>
+                {(() => {
+                  const PillarIcon = pillars[activePillar].icon;
+                  return (
+                    <>
+                      <PillarIcon className={`w-16 h-16 mx-auto mb-6 ${pillars[activePillar].iconColor} drop-shadow-xl`} />
+                      <h3 className="text-2xl font-bold mb-3">{pillars[activePillar].title}</h3>
+                      <p className="text-gray-200 text-base leading-relaxed">
+                        {pillars[activePillar].description}
+                      </p>
+                    </>
+                  );
+                })()}
               </div>
             </motion.div>
           </div>
         ) : (
           <div className="grid md:grid-cols-3 gap-10 max-w-7xl mx-auto">
-            {(aboutData?.corePillars || ["Excellence", "Integrity", "Resilience"]).map((pillar, index) => (
-              <motion.div
-                key={index}
-                whileHover={{ scale: 1.12, y: -12, boxShadow: "0 0 30px rgba(0,255,180,0.35)" }}
-                transition={{ duration: 0.35 }}
-                className="p-10 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/10 text-center shadow-xl"
-              >
-                <div className="w-16 h-16 mx-auto mb-4 bg-red-600/20 rounded-full flex items-center justify-center">
-                  <span className="text-3xl font-bold text-red-500">{pillar[0]}</span>
-                </div>
-                <h3 className="font-bold text-2xl mb-2">{pillar}</h3>
-                <p className="text-gray-300">Core value driving our operations.</p>
-              </motion.div>
-            ))}
+            {pillars.map((pillar, index) => {
+              const Icon = pillar.icon;
+              return (
+                <motion.div
+                  key={index}
+                  whileHover={{ scale: 1.12, y: -12 }}
+                  transition={{ duration: 0.4 }}
+                  className={`p-10 rounded-2xl border backdrop-blur-xl shadow-2xl text-center bg-gradient-to-br ${pillar.color}/20 border-white/20`}
+                >
+                  <Icon className={`w-20 h-20 mx-auto mb-6 ${pillar.iconColor} drop-shadow-2xl`} />
+                  <h3 className="text-2xl font-bold mb-4">{pillar.title}</h3>
+                  <p className="text-gray-200 leading-relaxed">
+                    {pillar.description}
+                  </p>
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </section>
@@ -326,7 +359,7 @@ export default function About() {
         )}
       </section>
 
-      {/* LEADERSHIP TEAM SECTION */}
+      {/* LEADERSHIP TEAM */}
       <section id="leadership" className="w-full">
         <div className="bg-gradient-to-br from-[#818589] to-[#525354] text-[#f7f7f7] py-16 px-6 text-center">
           <div className="max-w-4xl mx-auto">
