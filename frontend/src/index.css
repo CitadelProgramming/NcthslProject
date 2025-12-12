@@ -451,3 +451,55 @@
     transform: translateY(0);
   }
 }
+
+/* Home Advanced Styling */
+@layer components {
+  /* Multi-Color Infinite Border Glow — Subtle & Premium */
+  .mv-glow {
+    position: relative;
+    border-radius: 3rem;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 2px; /* For the glowing border */
+    transition: all 0.6s ease;
+    overflow: hidden;
+  }
+
+  .mv-glow::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 3rem;
+    background: linear-gradient(45deg, #10b981, #059669, #dc2626, #b91c1c, #10b981);
+    background-size: 400%;
+    filter: blur(20px);
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    animation: mvFlow 12s linear infinite;
+    z-index: -1;
+  }
+
+  .mv-glow:hover::before {
+    opacity: 0.7;
+  }
+
+  .mv-glow:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+  }
+
+  @keyframes mvFlow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 400% 50%; }
+  }
+
+  /* Inner Card */
+  .mv-inner {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    border-radius: 3rem;
+    padding: 3rem;
+    height: 100%;
+  }
+}
