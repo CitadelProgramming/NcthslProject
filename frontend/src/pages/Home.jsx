@@ -225,7 +225,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* MISSION & VISION — MULTI-COLOR BORDER GLOW (ONLY BORDER) */}
+      {/* MISSION & VISION — MULTI-COLOR BORDER GLOW (ONLY AROUND THE CARD) */}
       <section className="py-24 px-6 bg-gradient-to-br from-[#818589] to-[#525354] text-white">
         <div className="max-w-6xl mx-auto">
           <motion.h2
@@ -237,7 +237,7 @@ export default function Home() {
           </motion.h2>
 
           <div className="grid md:grid-cols-2 gap-16">
-            {/* MISSION — GREEN INNER + RAINBOW BORDER GLOW */}
+            {/* MISSION — GREEN INNER + RAINBOW BORDER GLOW (OUTSIDE ONLY) */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -256,7 +256,7 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* VISION — RED INNER + RAINBOW BORDER GLOW */}
+            {/* VISION — RED INNER + RAINBOW BORDER GLOW (OUTSIDE ONLY) */}
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
