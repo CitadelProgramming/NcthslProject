@@ -1,193 +1,166 @@
 // src/pages/Services.jsx
-import { useState, useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
-import axios from "axios"; // ← THIS WAS MISSING!
-
-// Public endpoint — confirmed working in Postman without token
-const PUBLIC_API = "https://enchanting-expression-production.up.railway.app/api/v1/service/all-service";
-const BASE_URL = "https://enchanting-expression-production.up.railway.app";
-
-// Reliable placeholder (works offline)
-const PLACEHOLDER = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIyNTZweCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjRweCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==";
+import axios from "axios";
 
 import ncaaLogo from "../assets/Images/compliance/ncaa.png";
 import faanLogo from "../assets/Images/compliance/faan.png";
 
+const PUBLIC_API = "https://enchanting-expression-production.up.railway.app/api/v1/service/all-service";
+const BASE_URL = "https://enchanting-expression-production.up.railway.app";
+
+const PLACEHOLDER = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIyNTZweCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjRweCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==";
+
 export default function Services() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const sectionRefs = useRef([]);
 
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) return PLACEHOLDER;
-    return `${BASE_URL}${imagePath}`;
-  };
+  const getImageUrl = (imagePath) => imagePath ? `${BASE_URL}${imagePath}` : PLACEHOLDER;
 
   useEffect(() => {
     const fetchServices = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(PUBLIC_API); // Public endpoint — no token needed
-
+        const res = await axios.get(PUBLIC_API);
         const list = res.data || [];
         const processed = list.map((service) => ({
           ...service,
           imageSrc: service.image ? getImageUrl(service.image) : null,
         }));
-
         setServices(processed);
       } catch (err) {
         console.error("Failed to load services:", err);
-        setServices([]); // Ensure we don't show "loading" forever
       } finally {
         setLoading(false);
       }
     };
-
     fetchServices();
   }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach(e => e.isIntersecting && e.target.classList.add("visible")),
+      { threshold: window.innerWidth < 768 ? 0.1 : 0.2 }
+    );
+    sectionRefs.current.forEach(ref => ref && observer.observe(ref));
+    return () => observer.disconnect();
+  }, [loading]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#818589] to-[#525354] flex items-center justify-center">
-        <div className="text-white text-2xl font-medium">Loading services...</div>
+        <div className="text-white text-3xl font-medium tracking-widest">Loading Services...</div>
       </div>
     );
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full min-h-screen bg-gradient-to-br from-[#818589] to-[#525354]">
+
       {/* Header */}
-      <section className="bg-gradient-to-br from-[#0a3a0a] to-[#052a05] text-white py-16 px-6 text-center">
+      <section className="py-24 md:py-32 px-6 text-center">
         <div className="max-w-5xl mx-auto">
           <motion.h1
-            initial={{ opacity: 0, y: -30 }}
+            initial={{ opacity: 0, y: -40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-4xl md:text-6xl font-bold tracking-tight leading-tight"
+            transition={{ duration: 1.2 }}
+            className="text-5xl md:text-7xl font-extrabold text-white mb-8 tracking-tight"
           >
             Our Services
           </motion.h1>
           <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            className="mt-4 text-lg md:text-xl text-gray-200 max-w-3xl mx-auto"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-xl md:text-2xl text-gray-200 max-w-4xl mx-auto leading-relaxed"
           >
-            Comprehensive aviation, logistics, and security services tailored for civil & military operators.
+            Comprehensive aviation solutions delivered with precision, safety, and excellence.
           </motion.p>
         </div>
       </section>
 
-      {/* Services Grid */}
-      <section className="py-16 md:py-20 px-4 md:px-6 bg-gradient-to-br from-[#818589] to-[#525354]">
-        <div className="max-w-7xl mx-auto space-y-20 md:space-y-24">
-
-          {services.length === 0 ? (
-            <div className="text-center text-white text-2xl py-20 font-medium">
-              No services available at the moment.
-            </div>
-          ) : (
-            services.map((service, index) => (
+      {/* Services — Alternating Layout with Premium Cards */}
+      <section className="py-16 md:py-24 px-6 md:px-12">
+        <div className="max-w-7xl mx-auto space-y-32 md:space-y-48">
+          {services.map((service, index) => {
+            const isEven = index % 2 === 0;
+            return (
               <motion.div
                 key={service.id}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: index * 0.1 }}
-                className={`grid grid-cols-1 md:grid-cols-2 gap-12 items-center ${
-                  index % 2 === 1 ? "md:flex-row-reverse" : ""
-                }`}
+                ref={el => sectionRefs.current.push(el)}
+                className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center elegant-entry ${isEven ? "" : "lg:flex-row-reverse"}`}
               >
                 {/* Image */}
-                <div className="w-full flex justify-center">
-                  {service.imageSrc ? (
-                    <motion.img
-                      src={service.imageSrc}
+                <div className="flex justify-center lg:justify-end">
+                  <motion.div
+                    whileHover={{ scale: 1.03 }}
+                    className="service-glow depth-lift w-full max-w-lg"
+                  >
+                    <img
+                      src={service.imageSrc || PLACEHOLDER}
                       alt={service.title}
-                      className="w-full max-w-xl h-64 sm:h-72 md:h-96 object-cover rounded-2xl shadow-2xl"
-                      whileHover={{ scale: 1.03 }}
-                      transition={{ duration: 0.4 }}
-                      onError={(e) => {
-                        e.target.src = PLACEHOLDER;
-                      }}
+                      className="w-full h-80 md:h-96 lg:h-full object-cover rounded-3xl shadow-3xl"
                     />
-                  ) : (
-                    <div className="w-full h-64 md:h-96 bg-gray-300 rounded-2xl flex items-center justify-center text-gray-600 text-xl font-medium shadow-xl">
-                      No Image Available
-                    </div>
-                  )}
+                  </motion.div>
                 </div>
 
                 {/* Content */}
-                <motion.div
-                  initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.7 }}
-                  className="text-white px-2 md:px-4"
-                >
-                  <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-red-700 mb-4 md:mb-6 leading-snug">
+                <div className={`text-white ${isEven ? "lg:pr-12" : "lg:pl-12"} text-center lg:text-left`}>
+                  <motion.h3
+                    initial={{ opacity: 0, x: isEven ? -50 : 50 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    className="text-3xl md:text-5xl font-extrabold mb-8 text-red-500"
+                  >
                     {service.title}
-                  </h3>
-
-                  <p className="text-base sm:text-lg md:text-xl text-gray-200 leading-relaxed mb-6 md:mb-8">
+                  </motion.h3>
+                  <p className="text-lg md:text-xl text-gray-200 leading-relaxed mb-10">
                     {service.description}
                   </p>
-
-                  <ul className="space-y-3 md:space-y-4">
+                  <ul className="space-y-5 text-left max-w-2xl mx-auto lg:mx-0">
                     {service.features?.map((feature, i) => (
                       <motion.li
                         key={i}
-                        initial={{ opacity: 0, x: -20 }}
+                        initial={{ opacity: 0, x: -30 }}
                         whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
                         transition={{ delay: i * 0.1 }}
-                        className="flex items-start gap-3 text-base sm:text-lg"
+                        className="flex items-start gap-4 text-base md:text-lg"
                       >
-                        <span className="text-red-700 mt-1.5">›</span>
-                        <span className="text-black">{feature}</span>
+                        <span className="text-red-500 text-2xl mt-1">•</span>
+                        <span className="text-gray-100">{feature}</span>
                       </motion.li>
                     ))}
                   </ul>
-                </motion.div>
+                </div>
               </motion.div>
-            ))
-          )}
+            );
+          })}
         </div>
       </section>
 
-      {/* Compliance Section */}
-      <section className="py-16 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05] text-white">
+      {/* Compliance */}
+      <section className="py-20 md:py-32 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05]">
         <div className="max-w-6xl mx-auto text-center">
           <motion.h3
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 md:mb-6"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="text-4xl md:text-6xl font-extrabold text-white mb-12"
           >
-            Quality, Safety & Compliance
+            Certified Excellence
           </motion.h3>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="max-w-3xl mx-auto text-base sm:text-lg text-gray-200 mb-10 md:mb-12"
-          >
-            We operate under strict international aviation safety standards.
-          </motion.p>
-
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              className="bg-white p-4 md:p-6 rounded-2xl shadow-2xl w-32 h-32 md:w-40 md:h-40 flex items-center justify-center"
-            >
-              <img src={ncaaLogo} alt="NCAA" className="w-full h-full object-contain" />
+          <p className="text-xl md:text-2xl text-gray-200 mb-16 max-w-4xl mx-auto">
+            Fully compliant with Nigeria's highest aviation safety and regulatory standards.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-12 md:gap-20">
+            <motion.div whileHover={{ scale: 1.1 }} className="depth-lift">
+              <div className="bg-white p-8 md:p-12 rounded-3xl shadow-3xl w-48 h-48 md:w-64 md:h-64 flex items-center justify-center">
+                <img src={ncaaLogo} alt="NCAA" className="w-full h-full object-contain" />
+              </div>
             </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              className="bg-white p-4 md:p-6 rounded-2xl shadow-2xl w-32 h-32 md:w-40 md:h-40 flex items-center justify-center"
-            >
-              <img src={faanLogo} alt="FAAN" className="w-full h-full object-contain" />
+            <motion.div whileHover={{ scale: 1.1 }} className="depth-lift">
+              <div className="bg-white p-8 md:p-12 rounded-3xl shadow-3xl w-48 h-48 md:w-64 md:h-64 flex items-center justify-center">
+                <img src={faanLogo} alt="FAAN" className="w-full h-full object-contain" />
+              </div>
             </motion.div>
           </div>
         </div>

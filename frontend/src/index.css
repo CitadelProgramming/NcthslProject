@@ -378,3 +378,76 @@
     color: #d1d5db; /* Gray */
   }
 }
+
+/* Services Advanced Styling */
+@layer components {
+  /* Premium Infinite Glow — Subtle Emerald */
+  .service-glow {
+    position: relative;
+    border-radius: 2.5rem;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(16, 185, 129, 0.18);
+    transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    overflow: hidden;
+  }
+
+  .service-glow::before {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 2.5rem;
+    background: linear-gradient(45deg, #10b981, #059669, #047857, #10b981);
+    background-size: 400%;
+    filter: blur(24px);
+    opacity: 0;
+    transition: opacity 1s ease;
+    animation: serviceFlow 16s linear infinite;
+    z-index: -1;
+  }
+
+  .service-glow:hover::before {
+    opacity: 0.7;
+  }
+
+  .service-glow:hover {
+    transform: translateY(-20px);
+    box-shadow: 0 50px 100px rgba(0, 0, 0, 0.35);
+  }
+
+  @keyframes serviceFlow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 400% 50%; }
+  }
+
+  /* Refined 3D Lift */
+  .depth-lift {
+    transition: all 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .depth-lift:hover {
+    transform: translateY(-24px) scale(1.02);
+  }
+
+  /* Institutional Glass */
+  .institutional-glass {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 2.5rem;
+  }
+
+  /* Elegant Entry */
+  .elegant-entry {
+    opacity: 0;
+    transform: translateY(80px);
+    transition: all 1.4s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .elegant-entry.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
