@@ -318,4 +318,63 @@
 }
 
 
-/* Home advanced styling */
+/* Testimonials advanced styling */
+@layer components {
+  /* Premium Subtle Infinite Glow — Institutional Emerald */
+  .testimonial-glow {
+    position: relative;
+    border-radius: 2.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    transition: all 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+    overflow: hidden;
+  }
+
+  .testimonial-glow::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 2.5rem;
+    background: linear-gradient(45deg, #10b981, #059669, #047857, #10b981);
+    background-size: 400%;
+    filter: blur(20px);
+    opacity: 0;
+    transition: opacity 0.9s ease;
+    animation: testimonialFlow 14s linear infinite;
+    z-index: -1;
+  }
+
+  .testimonial-glow:hover::before {
+    opacity: 0.6;
+  }
+
+  .testimonial-glow:hover {
+    transform: translateY(-16px);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.25);
+  }
+
+  @keyframes testimonialFlow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 400% 50%; }
+  }
+
+  /* Refined 3D Lift */
+  .depth-lift {
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .depth-lift:hover {
+    transform: translateY(-20px) scale(1.03);
+  }
+
+  /* Star Rating Colors */
+  .star-filled {
+    color: #f59e0b; /* Amber gold */
+  }
+
+  .star-empty {
+    color: #d1d5db; /* Gray */
+  }
+}

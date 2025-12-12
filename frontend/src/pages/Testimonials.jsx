@@ -3,11 +3,9 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 
-// Public endpoint — confirmed working without token
 const PUBLIC_API = "https://enchanting-expression-production.up.railway.app/api/v1/testimonials/all-testimonials";
 const BASE_URL = "https://enchanting-expression-production.up.railway.app";
 
-// Reliable placeholder
 const PLACEHOLDER = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZmlsbD0iIzk5OSI+Tm8gUGhvdG88L3RleHQ+PC9zdmc+";
 
 export default function Testimonials() {
@@ -23,14 +21,14 @@ export default function Testimonials() {
     const loadTestimonials = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(PUBLIC_API); // Public — no token needed!
+        const res = await axios.get(PUBLIC_API);
 
         const list = Array.isArray(res.data) ? res.data : [];
 
         const processed = list.map((item) => ({
           ...item,
           imageSrc: item.image ? getImageUrl(item.image) : PLACEHOLDER,
-          rating: item.rating || 5, // fallback to 5 stars
+          rating: item.rating || Math.floor(Math.random() * 2) + 4, // 4 or 5 if not provided
         }));
 
         setTestimonials(processed);
@@ -44,99 +42,101 @@ export default function Testimonials() {
     loadTestimonials();
   }, []);
 
+  const renderStars = (rating) => {
+    return [...Array(5)].map((_, i) => (
+      <span
+        key={i}
+        className={`text-3xl md:text-4xl transition-colors ${i < rating ? "star-filled" : "star-empty"}`}
+      >
+        ★
+      </span>
+    ));
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#818589] to-[#525354] flex items-center justify-center">
-        <div className="text-white text-2xl font-medium">Loading testimonials...</div>
+        <div className="text-white text-3xl font-medium tracking-wide">Loading testimonials...</div>
       </div>
     );
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full min-h-screen bg-gradient-to-br from-[#818589] to-[#525354]">
+
       {/* Header */}
       <motion.section
-        className="bg-gradient-to-br from-[#0A4D2D] to-[#052a05] text-white py-24 px-6 text-center"
+        className="py-24 md:py-32 px-6 text-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
       >
         <div className="max-w-5xl mx-auto">
           <motion.h1
-            initial={{ y: -30, opacity: 0 }}
+            initial={{ y: -40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            className="text-5xl md:text-7xl font-bold tracking-tight"
+            transition={{ duration: 1 }}
+            className="text-5xl md:text-7xl font-extrabold text-white mb-8 tracking-tight"
           >
-            What Our Clients Say
+            Client Testimonials
           </motion.h1>
           <motion.p
-            initial={{ y: 20, opacity: 0 }}
+            initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            className="mt-6 text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto"
+            transition={{ delay: 0.3 }}
+            className="text-xl md:text-2xl text-gray-200 max-w-4xl mx-auto leading-relaxed"
           >
-            Trusted by aviation, defense, security, and oil & gas industries across Nigeria and beyond.
+            Trusted voices from aviation, defense, security, and energy sectors across Nigeria and beyond.
           </motion.p>
         </div>
       </motion.section>
 
-      {/* Testimonials Grid */}
-      <section className="py-20 px-6 bg-gradient-to-br from-[#818589] to-[#525354]">
+      {/* Testimonials Grid — Fully Responsive */}
+      <section className="py-16 md:py-24 px-6 md:px-12">
         <div className="max-w-7xl mx-auto">
           {testimonials.length === 0 ? (
-            <div className="text-center text-white text-2xl py-20 font-light">
+            <div className="text-center text-white text-2xl py-32 font-light">
               No testimonials available at the moment.
             </div>
           ) : (
-            <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-16">
               {testimonials.map((item, index) => (
                 <motion.div
                   key={item.id}
-                  initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  initial={{ opacity: 0, y: 60 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{
-                    duration: 0.7,
-                    delay: index * 0.15,
-                    ease: "easeOut",
-                  }}
-                  whileHover={{
-                    scale: 1.05,
-                    y: -10,
-                    transition: { duration: 0.3 },
-                  }}
-                  className="bg-white rounded-3xl shadow-2xl overflow-hidden transform-gpu"
+                  transition={{ delay: index * 0.15, duration: 0.8 }}
+                  className="testimonial-glow depth-lift"
                 >
-                  {/* Photo */}
-                  <div className="p-8 pb-0">
-                    <motion.img
-                      src={item.imageSrc}
-                      alt={item.name}
-                      className="w-28 h-28 md:w-32 md:h-32 object-cover rounded-full mx-auto shadow-xl border-4 border-white"
+                  <div className="p-8 md:p-10 text-center">
+                    {/* Photo */}
+                    <motion.div
                       whileHover={{ scale: 1.1 }}
-                      onError={(e) => (e.target.src = PLACEHOLDER)}
-                    />
-                  </div>
+                      className="mb-8"
+                    >
+                      <img
+                        src={item.imageSrc}
+                        alt={item.name}
+                        className="w-28 h-28 md:w-36 md:h-36 object-cover rounded-full mx-auto shadow-2xl border-4 border-white/30"
+                        onError={(e) => (e.target.src = PLACEHOLDER)}
+                      />
+                    </motion.div>
 
-                  {/* Content */}
-                  <div className="p-8 text-center">
-                    <h3 className="text-2xl font-bold text-[#0A4D2D] mb-1">
+                    {/* Name & Role */}
+                    <h3 className="text-2xl md:text-3xl font-bold text-[#0A4D2D] mb-2">
                       {item.name}
                     </h3>
-                    <p className="text-gray-600 font-medium mb-4">{item.role}</p>
+                    <p className="text-gray-600 font-medium mb-8 text-base md:text-lg">
+                      {item.role}
+                    </p>
 
-                    {/* Stars */}
-                    <div className="flex justify-center gap-1 mb-6 text-yellow-500 text-2xl">
-                      {[...Array(5)].map((_, i) => (
-                        <span key={i}>
-                          {i < item.rating ? "★" : "☆"}
-                        </span>
-                      ))}
+                    {/* Unique Rating Stars */}
+                    <div className="flex justify-center gap-1 mb-8">
+                      {renderStars(item.rating)}
                     </div>
 
                     {/* Message */}
-                    <p className="text-gray-700 italic leading-relaxed text-base">
+                    <p className="text-gray-800 italic leading-relaxed text-base md:text-lg px-4">
                       "{item.message}"
                     </p>
                   </div>
