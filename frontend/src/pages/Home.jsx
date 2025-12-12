@@ -225,7 +225,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* MISSION & VISION — DIFFERENT COLORS + MULTI-COLOR INFINITE GLOW */}
+      {/* MISSION & VISION — MULTI-COLOR BORDER GLOW (ONLY BORDER) */}
       <section className="py-24 px-6 bg-gradient-to-br from-[#818589] to-[#525354] text-white">
         <div className="max-w-6xl mx-auto">
           <motion.h2
@@ -237,13 +237,13 @@ export default function Home() {
           </motion.h2>
 
           <div className="grid md:grid-cols-2 gap-16">
-            {/* MISSION — GREEN THEME + GLOW */}
+            {/* MISSION — GREEN INNER + RAINBOW BORDER GLOW */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
-              className="mv-glow"
+              className="rainbow-border-glow"
             >
-              <div className="mv-inner bg-gradient-to-br from-emerald-900/30 to-green-900/30">
+              <div className="inner-card bg-gradient-to-br from-emerald-900/30 to-green-900/30">
                 <div className="flex items-center gap-6 mb-8">
                   <div className="w-20 h-20 bg-emerald-600/30 rounded-full flex items-center justify-center">
                     <Target className="w-12 h-12 text-emerald-400" />
@@ -256,13 +256,13 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* VISION — RED THEME + GLOW */}
+            {/* VISION — RED INNER + RAINBOW BORDER GLOW */}
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
-              className="mv-glow"
+              className="rainbow-border-glow"
             >
-              <div className="mv-inner bg-gradient-to-br from-red-900/30 to-rose-900/30">
+              <div className="inner-card bg-gradient-to-br from-red-900/30 to-rose-900/30">
                 <div className="flex items-center gap-6 mb-8">
                   <div className="w-20 h-20 bg-red-600/30 rounded-full flex items-center justify-center">
                     <Telescope className="w-12 h-12 text-red-400" />
