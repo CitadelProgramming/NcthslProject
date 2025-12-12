@@ -59,7 +59,7 @@ export default function Services() {
     <div className="w-full min-h-screen bg-gradient-to-br from-[#818589] to-[#525354]">
 
       {/* Header */}
-      <section className="py-24 md:py-32 px-6 text-center">
+      <section className="py-20 md:py-28 px-6 text-center">
         <div className="max-w-5xl mx-auto">
           <motion.h1
             initial={{ opacity: 0, y: -40 }}
@@ -80,19 +80,19 @@ export default function Services() {
         </div>
       </section>
 
-      {/* Services — Alternating Layout with Premium Cards */}
-      <section className="py-16 md:py-24 px-6 md:px-12">
-        <div className="max-w-7xl mx-auto space-y-32 md:space-y-48">
+      {/* Services — Reduced Spacing, Scalable for Many Items */}
+      <section className="py-12 md:py-16 px-6 md:px-12">
+        <div className="max-w-7xl mx-auto space-y-20 md:space-y-28">  {/* Reduced from 32/48 to 20/28 */}
           {services.map((service, index) => {
             const isEven = index % 2 === 0;
             return (
               <motion.div
                 key={service.id}
                 ref={el => sectionRefs.current.push(el)}
-                className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center elegant-entry ${isEven ? "" : "lg:flex-row-reverse"}`}
+                className={`grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-16 items-center elegant-entry ${isEven ? "" : "lg:flex-row-reverse"}`}
               >
                 {/* Image */}
-                <div className="flex justify-center lg:justify-end">
+                <div className="flex justify-center">
                   <motion.div
                     whileHover={{ scale: 1.03 }}
                     className="service-glow depth-lift w-full max-w-lg"
@@ -100,30 +100,30 @@ export default function Services() {
                     <img
                       src={service.imageSrc || PLACEHOLDER}
                       alt={service.title}
-                      className="w-full h-80 md:h-96 lg:h-full object-cover rounded-3xl shadow-3xl"
+                      className="w-full h-72 md:h-96 object-cover rounded-3xl shadow-3xl"
                     />
                   </motion.div>
                 </div>
 
                 {/* Content */}
-                <div className={`text-white ${isEven ? "lg:pr-12" : "lg:pl-12"} text-center lg:text-left`}>
+                <div className={`text-white ${isEven ? "lg:pr-8" : "lg:pl-8"} text-center lg:text-left`}>
                   <motion.h3
-                    initial={{ opacity: 0, x: isEven ? -50 : 50 }}
+                    initial={{ opacity: 0, x: isEven ? -40 : 40 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    className="text-3xl md:text-5xl font-extrabold mb-8 text-red-500"
+                    className="text-3xl md:text-5xl font-extrabold mb-6 text-red-500"
                   >
                     {service.title}
                   </motion.h3>
-                  <p className="text-lg md:text-xl text-gray-200 leading-relaxed mb-10">
+                  <p className="text-lg md:text-xl text-gray-200 leading-relaxed mb-8">
                     {service.description}
                   </p>
-                  <ul className="space-y-5 text-left max-w-2xl mx-auto lg:mx-0">
+                  <ul className="space-y-4 text-left max-w-xl mx-auto lg:mx-0">
                     {service.features?.map((feature, i) => (
                       <motion.li
                         key={i}
                         initial={{ opacity: 0, x: -30 }}
                         whileInView={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.1 }}
+                        transition={{ delay: i * 0.08 }}
                         className="flex items-start gap-4 text-base md:text-lg"
                       >
                         <span className="text-red-500 text-2xl mt-1">•</span>
@@ -139,19 +139,19 @@ export default function Services() {
       </section>
 
       {/* Compliance */}
-      <section className="py-20 md:py-32 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05]">
+      <section className="py-20 md:py-28 px-6 bg-gradient-to-br from-[#0a3a0a] to-[#052a05]">
         <div className="max-w-6xl mx-auto text-center">
           <motion.h3
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-extrabold text-white mb-12"
+            className="text-4xl md:text-6xl font-extrabold text-white mb-10"
           >
             Certified Excellence
           </motion.h3>
-          <p className="text-xl md:text-2xl text-gray-200 mb-16 max-w-4xl mx-auto">
+          <p className="text-xl md:text-2xl text-gray-200 mb-14 max-w-4xl mx-auto">
             Fully compliant with Nigeria's highest aviation safety and regulatory standards.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-12 md:gap-20">
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-10 md:gap-16">
             <motion.div whileHover={{ scale: 1.1 }} className="depth-lift">
               <div className="bg-white p-8 md:p-12 rounded-3xl shadow-3xl w-48 h-48 md:w-64 md:h-64 flex items-center justify-center">
                 <img src={ncaaLogo} alt="NCAA" className="w-full h-full object-contain" />
