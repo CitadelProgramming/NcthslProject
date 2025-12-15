@@ -31,11 +31,30 @@ export default function MessagesAdmin() {
     loadMessages();
   }, []);
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "long",
+  // FIXED DATE FORMATTER — Handles backend array format [year, month, day, hour, minute...]
+  const formatDate = (dateInput) => {
+    if (!dateInput) return "Recently";
+
+    if (Array.isArray(dateInput)) {
+      const [year, month, day, hour = 0, minute = 0] = dateInput;
+      const date = new Date(year, month - 1, day, hour, minute);
+      if (isNaN(date.getTime())) return "Recently";
+      return date.toLocaleString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+
+    // Fallback for standard string dates
+    const date = new Date(dateInput);
+    if (isNaN(date.getTime())) return "Recently";
+    return date.toLocaleString("en-GB", {
       day: "numeric",
+      month: "long",
+      year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
