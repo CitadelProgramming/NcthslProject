@@ -15,6 +15,19 @@ export default function Contact() {
     botphone: "",
   });
 
+  // Kept as requested — useful utility even if not used here
+  const formatDate = (dateArray) => {
+    if (!dateArray || !Array.isArray(dateArray)) return "Recently";
+    
+    const [year, month, day] = dateArray;
+    const date = new Date(year, month - 1, day); // month is 1-based in array
+    return date.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
   const [status, setStatus] = useState({
     loading: false,
     success: null,
@@ -40,41 +53,21 @@ export default function Contact() {
 
   const sendAcknowledgmentEmail = async () => {
     const templateParams = {
-      to_name: form.fullName,
-      to_email: form.email,
-      from_name: "Nigeria Customs Technical & Hangar Service Limited",
-      message: `
-        Dear ${form.fullName},
-
-        Thank you for contacting Nigeria Customs Technical & Hangar Service Limited.
-
-        We have received your message and our team will respond to your inquiry shortly. Please allow us some time to review your request thoroughly.
-
-        We appreciate your patience and look forward to assisting you.
-
-        For urgent matters, please contact our Support Team.
-
-        Address
-        Custom Airwing Hangar,
-        General Aviation Terminal,
-        Nnamdi Azikiwe International Airport,
-        Abuja, Nigeria
-
-        © 2025 NCTHSL Limited. All rights reserved.
-      `.trim(),
+      to_name: form.fullName.trim(),
+      to_email: form.email.trim(),  // Sends to the user's email address
     };
 
     try {
       await emailjs.send(
-        "service_8xcadkx",
-        "template_r00u2gd",
-        templateParams,           // ← NOW PASSED CORRECTLY
-        "lbCZHFvnBJbCRKNLW"
+        "service_8xcadkx",           // Your Service ID
+        "template_r00u2gd",          // Your Template ID
+        templateParams,
+        "lbCZHFvnBJbCRKNLW"          // Your Public Key
       );
-      console.log("Acknowledgment email sent!");
+      console.log("Acknowledgment email sent via EmailJS template!");
     } catch (err) {
       console.error("EmailJS error:", err);
-      // Don't block success
+      // Don't block form submission if email fails
     }
   };
 
@@ -89,14 +82,14 @@ export default function Contact() {
     }
 
     try {
-      // Step 1: Save to backend — CORRECT FIELD: phoneNo
+      // Save to backend
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName: form.fullName.trim(),
           email: form.email.trim(),
-          phoneNo: form.phoneNo.trim(),     // ← CORRECT FIELD NAME
+          phoneNo: form.phoneNo.trim(),
           subject: form.subject.trim(),
           message: form.message.trim(),
         }),
@@ -107,14 +100,15 @@ export default function Contact() {
         throw new Error(errorData.message || "Failed to save message");
       }
 
-      // Step 2: Send acknowledgment email
+      // Send acknowledgment using your EmailJS template
       await sendAcknowledgmentEmail();
 
       setStatus({
         loading: false,
-        success: "Thank you! Your message has been sent and a confirmation email has been delivered to your inbox.",
+        success: "Thank you! Your message has been sent. A confirmation email has been delivered to your inbox.",
       });
 
+      // Reset form
       setForm({
         fullName: "",
         email: "",
@@ -124,10 +118,10 @@ export default function Contact() {
         botphone: "",
       });
     } catch (err) {
-      console.error("Contact error:", err);
+      console.error("Contact submission error:", err);
       setStatus({
         loading: false,
-        error: "Failed to send message. Please try again.",
+        error: "Failed to send message. Please try again later.",
       });
     }
   };
@@ -153,7 +147,11 @@ export default function Contact() {
       <section className="py-12 px-6 bg-gradient-to-br from-[#818589] to-[#525354]">
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-10 items-start">
           {/* Contact Info */}
-          <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.7 }}>
+          <motion.div
+            initial={{ opacity: 0, x: -40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7 }}
+          >
             <h2 className="text-3xl font-bold text-white mb-6">Get in Touch</h2>
             <p className="text-gray-100 mb-8 text-lg">
               Nigeria Customs Technical & Hangar Services Limited<br />
@@ -180,16 +178,56 @@ export default function Contact() {
             onSubmit={handleSubmit}
             className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20"
           >
-            <input type="text" name="botphone" value={form.botphone} onChange={handleChange} className="hidden" tabIndex="-1" autoComplete="off" />
+            <input
+              type="text"
+              name="botphone"
+              value={form.botphone}
+              onChange={handleChange}
+              className="hidden"
+              tabIndex="-1"
+              autoComplete="off"
+            />
 
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <input type="text" name="fullName" value={form.fullName} onChange={handleChange} placeholder="Full Name *" className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500" required />
-                <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="Email Address *" className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500" required />
+                <input
+                  type="text"
+                  name="fullName"
+                  value={form.fullName}
+                  onChange={handleChange}
+                  placeholder="Full Name *"
+                  className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500"
+                  required
+                />
+                <input
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="Email Address *"
+                  className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500"
+                  required
+                />
               </div>
 
-              <input type="text" name="phoneNo" value={form.phoneNo} onChange={handleChange} placeholder="Phone Number *" className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500" required />
-              <input type="text" name="subject" value={form.subject} onChange={handleChange} placeholder="Subject *" className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500" required />
+              <input
+                type="text"
+                name="phoneNo"
+                value={form.phoneNo}
+                onChange={handleChange}
+                placeholder="Phone Number *"
+                className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500"
+                required
+              />
+              <input
+                type="text"
+                name="subject"
+                value={form.subject}
+                onChange={handleChange}
+                placeholder="Subject *"
+                className="w-full px-5 py-4 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-300 focus:ring-2 focus:ring-green-500"
+                required
+              />
 
               <textarea
                 name="message"
@@ -214,12 +252,20 @@ export default function Contact() {
               </div>
 
               {status.success && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-green-900/60 border border-green-500 text-green-100 p-5 rounded-xl text-center font-semibold">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-green-900/60 border border-green-500 text-green-100 p-5 rounded-xl text-center font-semibold"
+                >
                   {status.success}
                 </motion.div>
               )}
               {status.error && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-red-900/60 border border-red-500 text-red-100 p-5 rounded-xl text-center">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-900/60 border border-red-500 text-red-100 p-5 rounded-xl text-center"
+                >
                   {status.error}
                 </motion.div>
               )}
