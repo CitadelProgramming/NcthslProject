@@ -7,6 +7,7 @@ import { Award, ShieldCheck, Flame, Image, Newspaper, Target, Telescope } from "
 
 import heroImg from "../assets/Images/hero/hero.jpg";
 import aboutImg from "../assets/Images/about/about.png";
+import GlassButton from "../layout/GlassButton";
 
 const BASE_URL = "https://enchanting-expression-production.up.railway.app";
 
@@ -367,6 +368,7 @@ export default function Home() {
             >
               Learn More About Us
             </Link>
+            <GlassButton text="Learn More About Us" to="/about" variant="red"></GlassButton>
           </div>
         </div>
       </section>
